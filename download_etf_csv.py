@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 
 # Define local storage directory
-SAVE_DIR = "data"
+SAVE_DIR = "pcfs"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 # URL of the Simplex ETF page
@@ -58,5 +58,12 @@ if csv_link:
     os.rename(temp_csv_path, final_csv_path)
     
     print(f"✅ CSV file saved successfully to: {final_csv_path}")
+    
+    # Commit the file to the GitHub repository
+    os.system("git config --global user.name 'github-actions'")
+    os.system("git config --global user.email 'github-actions@github.com'")
+    os.system(f"git add {final_csv_path}")
+    os.system("git commit -m 'Updated ETF Data'")
+    os.system("git push")
 else:
     print("❌ CSV link for ETF 318A not found.")
