@@ -37,7 +37,7 @@ jobs:
       run: python download_etf_csv.py
 
     - name: Upload CSV file as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: etf-data
         path: data/*.csv
