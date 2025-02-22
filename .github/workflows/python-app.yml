@@ -1,5 +1,4 @@
-# This workflow will install Python dependencies and run the ETF scraper script
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# This workflow will install Python dependencies, run the ETF scraper, and commit results to the repo.
 
 name: Python ETF Scraper
 
@@ -12,7 +11,7 @@ on:
     - cron: "0 6 * * *"  # Runs daily at 6 AM UTC
 
 permissions:
-  contents: read
+  contents: write  # Grant push permissions to the workflow
 
 jobs:
   build:
@@ -22,6 +21,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false  # We will use PAT for pushing
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v4
@@ -36,8 +37,12 @@ jobs:
     - name: Run ETF Scraper
       run: python download_etf_csv.py
 
-    - name: Upload CSV file as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: etf-data
-        path: data/*.csv
+    - name: Commit and Push Results
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add pcfs/*.csv
+        git commit -m "Updated ETF Data"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
