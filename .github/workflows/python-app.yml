@@ -41,3 +41,4 @@ jobs:
       with:
         name: etf-data
         path: data/*.csv
+        retention-days: 399  # Keeps the artifact for 399 days (400 is max)
