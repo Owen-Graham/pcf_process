@@ -1,2 +1,7 @@
-date,timestamp,VX=F,/VXH5,/VXJ5,/VXK5
-2025-02-26,202502262332,,,,
+date,timestamp,VX=F,/VXH5,/VXJ5,/VXK5,VX=F_yahoo
+2025-02-26,202502262332,,,,,
+2025-02-26,202502262349,"Ticker
+^VIX    19.1
+Name: 2025-02-26 00:00:00, dtype: float64",,,,"Ticker
+^VIX    19.1
+Name: 2025-02-26 00:00:00, dtype: float64"
