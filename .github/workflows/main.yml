@@ -43,11 +43,23 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "actions@github.com"
-        git pull origin main --rebase  # Pull latest changes before committing
+        
+        # Stash any changes before pull
+        git stash -u || true
+        
+        # Pull with rebase
+        git pull origin main --rebase
+        
+        # Pop the stash if there was something stashed
+        git stash pop || true
+        
+        # Add and commit changes
         git add data/*.csv
         git add data/*.log
         git commit -m "Daily ETF data update $(date +'%Y-%m-%d')" || echo "No changes to commit"
-        git push
+        
+        # Push with force (be careful with this!)
+        git push --force
 
     - name: Upload ETF data as artifacts
       uses: actions/upload-artifact@v4
@@ -105,14 +117,26 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "actions@github.com"
-        git pull origin main --rebase  # Pull latest changes before committing
+        
+        # Stash any changes before pull
+        git stash -u || true
+        
+        # Pull with rebase
+        git pull origin main --rebase
+        
+        # Pop the stash if there was something stashed
+        git stash pop || true
+        
+        # Add and commit changes
         git add data/vix_futures_*.csv
         git add data/vix_downloader.log
         git add data/cboe_vix_downloader.log
         git add data/yahoo_vix_downloader.log
         git add data/cboe_debug.html
         git commit -m "VIX futures update $(date +'%Y-%m-%d')" || echo "No changes to commit"
-        git push
+        
+        # Push with force (be careful with this!)
+        git push --force
 
     - name: Upload VIX futures data as artifacts
       uses: actions/upload-artifact@v4
