@@ -31,7 +31,7 @@ def find_latest_etf_file():
 
 def parse_etf_characteristics(file_path=None):
     """
-    Parse ETF characteristics from PCF file
+    Parse ETF characteristics from PCF file using a simplified approach
     
     Args:
         file_path: Path to PCF file (optional, will find latest if not provided)
@@ -64,162 +64,127 @@ def parse_etf_characteristics(file_path=None):
             'shares_amount_far_future': 0
         }
         
-        # First pass: Read the header to get fund date, shares outstanding, and cash component
+        # 1. Read the header section (first 2 rows) to get fund info
         try:
-            header_df = pd.read_csv(file_path, nrows=5)  # Read first few rows
+            header_df = pd.read_csv(file_path, nrows=2)
+            logger.info(f"Header columns: {header_df.columns.tolist()}")
             
-            # Check for expected columns
-            if 'ETF Code' in header_df.columns and 'Fund Date' in header_df.columns:
-                # Extract fund date
-                if 'Fund Date' in header_df.columns and not header_df['Fund Date'].isna().all():
-                    fund_date = str(header_df['Fund Date'].iloc[0]).strip()
-                    # Convert format if needed (sometimes it's YYYYMMDD, sometimes MM/DD/YYYY)
-                    if '/' in fund_date:
-                        date_parts = fund_date.split('/')
-                        if len(date_parts) == 3:
-                            # Convert MM/DD/YYYY to YYYYMMDD
-                            fund_date = f"{date_parts[2]}{date_parts[0].zfill(2)}{date_parts[1].zfill(2)}"
-                    characteristics['fund_date'] = fund_date
-                
-                # Extract shares outstanding
-                if 'Shares Outstanding' in header_df.columns and not header_df['Shares Outstanding'].isna().all():
-                    shares_str = str(header_df['Shares Outstanding'].iloc[0]).strip()
-                    try:
-                        characteristics['shares_outstanding'] = int(shares_str)
-                    except ValueError:
-                        logger.warning(f"Could not convert shares outstanding to integer: {shares_str}")
-                
-                # Extract fund cash component
-                if 'Fund Cash Component' in header_df.columns and not header_df['Fund Cash Component'].isna().all():
-                    cash_str = str(header_df['Fund Cash Component'].iloc[0]).strip()
-                    try:
-                        characteristics['fund_cash_component'] = float(cash_str)
-                    except ValueError:
-                        logger.warning(f"Could not convert fund cash component to float: {cash_str}")
+            # Extract fund date
+            if 'Fund Date' in header_df.columns and not header_df['Fund Date'].isna().all():
+                fund_date = str(header_df['Fund Date'].iloc[0]).strip()
+                # Convert format if needed (sometimes it's YYYYMMDD, sometimes MM/DD/YYYY)
+                if '/' in fund_date:
+                    date_parts = fund_date.split('/')
+                    if len(date_parts) == 3:
+                        # Convert MM/DD/YYYY to YYYYMMDD
+                        fund_date = f"{date_parts[2]}{date_parts[0].zfill(2)}{date_parts[1].zfill(2)}"
+                characteristics['fund_date'] = fund_date
+                logger.info(f"Found fund date: {fund_date}")
+            
+            # Extract shares outstanding
+            if 'Shares Outstanding' in header_df.columns and not header_df['Shares Outstanding'].isna().all():
+                shares_str = str(header_df['Shares Outstanding'].iloc[0]).strip()
+                try:
+                    characteristics['shares_outstanding'] = int(shares_str)
+                    logger.info(f"Found shares outstanding: {shares_str}")
+                except ValueError:
+                    logger.warning(f"Could not convert shares outstanding to integer: {shares_str}")
+            
+            # Extract fund cash component
+            if 'Fund Cash Component' in header_df.columns and not header_df['Fund Cash Component'].isna().all():
+                cash_str = str(header_df['Fund Cash Component'].iloc[0]).strip()
+                try:
+                    characteristics['fund_cash_component'] = float(cash_str)
+                    logger.info(f"Found fund cash component: {cash_str}")
+                except ValueError:
+                    logger.warning(f"Could not convert fund cash component to float: {cash_str}")
         except Exception as e:
             logger.warning(f"Error parsing PCF header: {str(e)}")
         
-        # Second pass: look for the holdings section to find VIX futures and their shares
+        # 2. Read the holding section (starting from row 4)
         try:
-            # Read the full file
-            full_df = pd.read_csv(file_path)
+            # Skip the first 3 rows (header section and blank row)
+            holdings_df = pd.read_csv(file_path, skiprows=3)
+            logger.info(f"Holdings columns: {holdings_df.columns.tolist()}")
             
-            # Look for 'Code' and 'Name' columns that might indicate the holdings section
-            codes_section_start = None
-            for i, col_name in enumerate(full_df.columns):
-                if col_name.lower() == 'code':
-                    # Check if the next column is 'Name' or similar
-                    if i+1 < len(full_df.columns) and ('name' in full_df.columns[i+1].lower() or 'description' in full_df.columns[i+1].lower()):
-                        codes_section_start = i
-                        break
+            # Look for the CBOEVIX futures in the holdings
+            futures_rows = []
             
-            # If we found the holdings section, extract the VIX futures
-            if codes_section_start is not None:
-                code_col = full_df.columns[codes_section_start]
-                name_col = full_df.columns[codes_section_start+1]
+            # Make sure 'Shares Amount' and 'Name' columns exist
+            if 'Shares Amount' in holdings_df.columns and 'Name' in holdings_df.columns:
+                logger.info("Found both 'Shares Amount' and 'Name' columns")
                 
-                # Find the "Shares Amount" column specifically
-                shares_col = None
-                for col in full_df.columns:
-                    if col.lower() == 'shares amount' or col.lower() == 'shares_amount':
-                        shares_col = col
-                        logger.info(f"Found Shares Amount column: {col}")
-                        break
-                
-                # Fallback approaches if the exact column name isn't found
-                if shares_col is None:
-                    for col in full_df.columns:
-                        if 'shares' in col.lower() and 'amount' in col.lower():
-                            shares_col = col
-                            logger.info(f"Found column containing 'shares' and 'amount': {col}")
-                            break
-                
-                if shares_col is None:
-                    # Try to find column with numeric values that could be shares
-                    for col in full_df.columns[codes_section_start+2:]:
-                        if full_df[col].dtype.kind in 'fi':  # float or integer column
-                            # Check if values look like shares (positive integers)
-                            if not full_df[col].isna().all() and (full_df[col] >= 0).all():
-                                shares_col = col
-                                logger.info(f"Using numeric column as shares: {col}")
-                                break
-                
-                if shares_col:
-                    # Find rows with CBOEVIX contracts
-                    vix_futures_rows = []
-                    for i, row in full_df.iterrows():
-                        if not pd.isna(row[name_col]):
-                            name = str(row[name_col]).upper()
-                            if 'CBOEVIX' in name or ('VIX' in name and 'FUTURE' in name):
-                                # Use the Shares Amount column for the share count
-                                shares_value = row[shares_col] if not pd.isna(row[shares_col]) else 0
-                                vix_futures_rows.append((row[code_col], row[name_col], shares_value))
-                    
-                    # Sort VIX futures by contract date
-                    def extract_contract_date(code_name_tuple):
-                        code, name, _ = code_name_tuple
+                # Find rows with CBOEVIX contracts
+                for i, row in holdings_df.iterrows():
+                    name = str(row['Name']).upper() if not pd.isna(row['Name']) else ""
+                    if 'CBOEVIX' in name or ('VIX' in name and 'FUTURE' in name):
+                        # Get the share amount directly
+                        shares_amount = 0
+                        if not pd.isna(row['Shares Amount']):
+                            try:
+                                shares_amount = int(row['Shares Amount'])
+                            except (ValueError, TypeError):
+                                logger.warning(f"Could not convert shares amount to integer: {row['Shares Amount']}")
                         
-                        # Try to extract YYMM code
-                        match = re.search(r'(\d{4})', str(name))
-                        if match:
-                            return match.group(1)
-                        match = re.search(r'(\d{4})', str(code))
-                        if match:
-                            return match.group(1)
-                        return '9999'  # Default sort value
-                    
-                    sorted_futures = sorted(vix_futures_rows, key=extract_contract_date)
-                    
-                    # Assign shares to near and far futures
-                    if len(sorted_futures) >= 1:
-                        try:
-                            characteristics['shares_amount_near_future'] = int(sorted_futures[0][2])
-                            logger.info(f"Near future: {sorted_futures[0][1]} with {sorted_futures[0][2]} shares")
-                        except (ValueError, TypeError):
-                            logger.warning(f"Could not convert near future shares to integer: {sorted_futures[0][2]}")
-                    
-                    if len(sorted_futures) >= 2:
-                        try:
-                            characteristics['shares_amount_far_future'] = int(sorted_futures[1][2])
-                            logger.info(f"Far future: {sorted_futures[1][1]} with {sorted_futures[1][2]} shares")
-                        except (ValueError, TypeError):
-                            logger.warning(f"Could not convert far future shares to integer: {sorted_futures[1][2]}")
+                        # Get the code/contract month
+                        code = str(row['Code']) if 'Code' in holdings_df.columns and not pd.isna(row['Code']) else ""
+                        
+                        futures_rows.append((code, name, shares_amount))
+                        logger.info(f"Found future: {name}, code: {code}, shares: {shares_amount}")
             else:
-                # Alternative approach: look for CBOEVIX in any column
-                vix_futures = []
-                for i, row in full_df.iterrows():
-                    for col in full_df.columns:
-                        value = str(row[col]).upper() if not pd.isna(row[col]) else ""
-                        if 'CBOEVIX' in value:
-                            # Try to find a numeric column in this row that could be shares
-                            for num_col in full_df.columns:
-                                if num_col != col and not pd.isna(row[num_col]):
-                                    try:
-                                        shares = int(row[num_col])
-                                        if shares > 0:  # Looks like a valid shares value
-                                            # Extract YYMM from CBOEVIX
-                                            match = re.search(r'CBOEVIX\s*(\d{4})', value)
-                                            if match:
-                                                contract_code = match.group(1)
-                                                vix_futures.append((contract_code, value, shares))
-                                            break
-                                    except (ValueError, TypeError):
-                                        pass
+                logger.warning("Missing 'Shares Amount' or 'Name' columns in holdings section")
+                # Try to infer column names based on content
+                for col in holdings_df.columns:
+                    if 'shares' in col.lower() and 'amount' in col.lower():
+                        logger.info(f"Found alternative shares column: {col}")
+                        shares_col = col
+                        for i, row in holdings_df.iterrows():
+                            # Try to find VIX futures in any text column
+                            for text_col in holdings_df.columns:
+                                if holdings_df[text_col].dtype == 'object':
+                                    cell_text = str(row[text_col]).upper() if not pd.isna(row[text_col]) else ""
+                                    if 'CBOEVIX' in cell_text or ('VIX' in cell_text and 'FUTURE' in cell_text):
+                                        shares_amount = 0
+                                        if not pd.isna(row[shares_col]):
+                                            try:
+                                                shares_amount = int(row[shares_col])
+                                            except (ValueError, TypeError):
+                                                pass
+                                        futures_rows.append(("", cell_text, shares_amount))
+                                        break
+            
+            # Sort futures by contract date/code
+            def extract_contract_date(code_name_tuple):
+                code, name, _ = code_name_tuple
                 
-                # Sort and assign futures
-                sorted_futures = sorted(vix_futures)
-                if len(sorted_futures) >= 1:
-                    characteristics['shares_amount_near_future'] = sorted_futures[0][2]
-                if len(sorted_futures) >= 2:
-                    characteristics['shares_amount_far_future'] = sorted_futures[1][2]
-        
+                # Try to extract YYMM code from name or code
+                for source in [name, code]:
+                    match = re.search(r'(\d{4})', str(source))
+                    if match:
+                        return match.group(1)
+                return '9999'  # Default sort value
+            
+            sorted_futures = sorted(futures_rows, key=extract_contract_date)
+            logger.info(f"Sorted futures: {sorted_futures}")
+            
+            # Assign shares to near and far futures
+            if len(sorted_futures) >= 1:
+                characteristics['shares_amount_near_future'] = sorted_futures[0][2]
+                logger.info(f"Near future: {sorted_futures[0][1]} with {sorted_futures[0][2]} shares")
+            
+            if len(sorted_futures) >= 2:
+                characteristics['shares_amount_far_future'] = sorted_futures[1][2]
+                logger.info(f"Far future: {sorted_futures[1][1]} with {sorted_futures[1][2]} shares")
+            
         except Exception as e:
             logger.warning(f"Error parsing VIX futures holdings: {str(e)}")
+            logger.warning(f"Exception details: {str(e)}", exc_info=True)
         
         return characteristics
     
     except Exception as e:
         logger.error(f"Error parsing ETF characteristics: {str(e)}")
+        logger.error(f"Exception details:", exc_info=True)
         return None
 
 def save_etf_characteristics(characteristics, save_dir=SAVE_DIR):
