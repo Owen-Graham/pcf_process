@@ -175,4 +175,53 @@ def download_vix_futures_from_yfinance():
                 return futures_data
             else:
                 logger.warning("Could not retrieve any VIX futures data from Yahoo Finance")
-                return futures_data  # Return with just
+                return futures_data  # Return with just the VIX index if available
+    
+    except Exception as e:
+        logger.error(f"Error in Yahoo Finance download: {str(e)}")
+        logger.error(traceback.format_exc())
+        return None
+
+def save_yahoo_data(futures_data, save_dir=SAVE_DIR):
+    """Save Yahoo futures data as CSV"""
+    if not futures_data or len(futures_data) <= 2:
+        logger.warning("No Yahoo futures data to save")
+        return None
+    
+    try:
+        # Format data into standardized records
+        records = format_vix_data(futures_data, "Yahoo")
+        
+        # Create DataFrame
+        df = pd.DataFrame(records)
+        
+        # Save to CSV
+        timestamp = datetime.now().strftime("%Y%m%d%H%M")
+        csv_filename = f"vix_futures_yahoo_{timestamp}.csv"
+        csv_path = os.path.join(save_dir, csv_filename)
+        
+        df.to_csv(csv_path, index=False)
+        logger.info(f"Saved Yahoo futures data to {csv_path}")
+        
+        return csv_path
+    
+    except Exception as e:
+        logger.error(f"Error saving Yahoo data: {str(e)}")
+        logger.error(traceback.format_exc())
+        return None
+
+if __name__ == "__main__":
+    # Download VIX futures from Yahoo Finance
+    yahoo_data = download_vix_futures_from_yfinance()
+    
+    # Save to CSV if data was found
+    if yahoo_data:
+        csv_path = save_yahoo_data(yahoo_data)
+        if csv_path:
+            print(f"✅ Yahoo VIX futures data saved to: {csv_path}")
+        else:
+            print("❌ Failed to save Yahoo data")
+            exit(1)
+    else:
+        print("❌ No VIX futures data found from Yahoo Finance")
+        exit(1)
