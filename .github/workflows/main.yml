@@ -43,7 +43,11 @@ jobs:
       run: python etf_characteristics_parser.py
       
     - name: Parse Simplex NAV Data
-      run: python simplex_nav_parser.py
+      run: |
+        # Try to parse from website first
+        python simplex_nav_parser.py --debug || \
+        # If website parsing fails, try with local file
+        python simplex_nav_parser.py --local --debug
 
     - name: Commit and Push ETF data
       run: |
