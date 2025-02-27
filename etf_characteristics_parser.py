@@ -83,12 +83,17 @@ def parse_etf_characteristics(file_path=None):
             
             # Extract shares outstanding
             if 'Shares Outstanding' in header_df.columns and not header_df['Shares Outstanding'].isna().all():
-                shares_str = str(header_df['Shares Outstanding'].iloc[0]).strip()
+                shares_value = header_df['Shares Outstanding'].iloc[0]
                 try:
-                    characteristics['shares_outstanding'] = int(shares_str)
-                    logger.info(f"Found shares outstanding: {shares_str}")
-                except ValueError:
-                    logger.warning(f"Could not convert shares outstanding to integer: {shares_str}")
+                    # Convert from float to int if it's a number with decimal
+                    if isinstance(shares_value, float):
+                        characteristics['shares_outstanding'] = int(shares_value)
+                    else:
+                        shares_str = str(shares_value).strip()
+                        characteristics['shares_outstanding'] = int(float(shares_str))
+                    logger.info(f"Found shares outstanding: {characteristics['shares_outstanding']}")
+                except (ValueError, TypeError):
+                    logger.warning(f"Could not convert shares outstanding to integer: {shares_value}")
             
             # Extract fund cash component
             if 'Fund Cash Component' in header_df.columns and not header_df['Fund Cash Component'].isna().all():
