@@ -6,34 +6,342 @@ import pandas as pd
 from datetime import datetime
 import logging
 import traceback
+import json
 from common import setup_logging, SAVE_DIR
 
 # Set up logging
 logger = setup_logging('simplex_nav_parser')
 
-def parse_simplex_nav_from_file(file_path):
+def fetch_nav_from_direct_api():
     """
-    Parse NAV data for ETF 318A from a local HTML file
+    Try to fetch NAV directly from a potential API endpoint
     
-    Args:
-        file_path: Path to the HTML file
-        
     Returns:
-        dict: Dictionary with parsed NAV data
+        float or None: NAV value if found, None otherwise
     """
     try:
-        logger.info(f"Parsing NAV data from local file: {file_path}")
+        logger.info("Attempting to fetch NAV data from direct API endpoint")
         
-        # Read the HTML file
-        with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
-            html_content = f.read()
+        # Potential endpoints that might provide NAV data
+        endpoints = [
+            "https://www.simplexasset.com/etf/api/nav.json",
+            "https://www.simplexasset.com/etf/data/nav.json",
+            "https://www.simplexasset.com/etf/eng/api/nav_data.json",
+            "https://www.simplexasset.com/etf/eng/navs.js"
+        ]
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Referer': 'https://www.simplexasset.com/etf/eng/etf.html'
+        }
+        
+        for endpoint in endpoints:
+            try:
+                logger.debug(f"Trying API endpoint: {endpoint}")
+                response = requests.get(endpoint, headers=headers, verify=False, timeout=10)
+                
+                if response.status_code == 200:
+                    content_type = response.headers.get('Content-Type', '')
+                    logger.debug(f"Got response from {endpoint}, Content-Type: {content_type}")
+                    
+                    # Try to parse as JSON
+                    try:
+                        data = response.json()
+                        logger.debug(f"JSON response: {data}")
+                        
+                        # Look for code_318A or similar in the JSON
+                        if isinstance(data, dict):
+                            for key, value in data.items():
+                                if '318A' in key and isinstance(value, (int, float, str)):
+                                    try:
+                                        nav_value = float(str(value).replace('円', '').replace(',', ''))
+                                        logger.info(f"Found NAV value in API response: {nav_value}")
+                                        return nav_value
+                                    except (ValueError, TypeError):
+                                        logger.debug(f"Could not convert API value to float: {value}")
+                        
+                            # Try common JSON structures
+                            nav_candidates = [
+                                data.get('code_318A'),
+                                data.get('318A'),
+                                data.get('nav', {}).get('318A'),
+                                data.get('NAV', {}).get('318A')
+                            ]
+                            
+                            for candidate in nav_candidates:
+                                if candidate is not None:
+                                    try:
+                                        nav_value = float(str(candidate).replace('円', '').replace(',', ''))
+                                        logger.info(f"Found NAV value in API response: {nav_value}")
+                                        return nav_value
+                                    except (ValueError, TypeError):
+                                        logger.debug(f"Could not convert API value to float: {candidate}")
+                    
+                    except json.JSONDecodeError:
+                        logger.debug(f"Response from {endpoint} is not valid JSON")
+                        
+                        # Try to find NAV in plain text response
+                        if '318A' in response.text:
+                            # Try regex patterns to extract NAV
+                            patterns = [
+                                r'318A[^0-9]*(\d+(?:[,.]\d+)?)',
+                                r'code_318A[^0-9]*(\d+(?:[,.]\d+)?)'
+                            ]
+                            
+                            for pattern in patterns:
+                                match = re.search(pattern, response.text)
+                                if match:
+                                    try:
+                                        nav_value = float(match.group(1).replace(',', ''))
+                                        logger.info(f"Found NAV value via regex in API response: {nav_value}")
+                                        return nav_value
+                                    except (ValueError, TypeError):
+                                        pass
             
-        # Parse as if it were a response from the website
-        return parse_simplex_nav_from_html(html_content)
-    
+            except Exception as e:
+                logger.debug(f"Error accessing endpoint {endpoint}: {str(e)}")
+        
+        logger.warning("Could not find NAV data through API endpoints")
+        return None
+        
     except Exception as e:
-        logger.error(f"Error parsing NAV data from file: {str(e)}")
-        logger.error(traceback.format_exc())
+        logger.error(f"Error fetching from direct API: {str(e)}")
+        return None
+
+def search_for_nav_in_javascript(html_content):
+    """
+    Search for NAV data in JavaScript code in the HTML
+    
+    Args:
+        html_content: HTML content containing JavaScript
+        
+    Returns:
+        float or None: NAV value if found, None otherwise
+    """
+    try:
+        logger.info("Searching for NAV in embedded JavaScript")
+        
+        # Try to find JavaScript blocks in the HTML
+        js_patterns = [
+            r'<script[^>]*>(.*?)</script>',
+            r'loadFundSums\(\)(.*?)\{(.*?)\}',
+            r'loadNavs\(\)(.*?)\{(.*?)\}'
+        ]
+        
+        scripts = []
+        for pattern in js_patterns:
+            matches = re.findall(pattern, html_content, re.DOTALL)
+            scripts.extend(matches)
+        
+        logger.debug(f"Found {len(scripts)} potential JavaScript blocks")
+        
+        # Look for NAV patterns in the JavaScript
+        nav_patterns = [
+            r'code_318A[\'"]?\s*:\s*[\'"]?(\d+(?:[,.]\d+)?)[\'"]?',
+            r'318A[\'"]?\s*:\s*[\'"]?(\d+(?:[,.]\d+)?)[\'"]?',
+            r'document\.getElementById\([\'"]code_318A[\'"]\)\.innerHTML\s*=\s*[\'"]?(\d+(?:[,.]\d+)?)[\'"]?'
+        ]
+        
+        for script in scripts:
+            script_text = script if isinstance(script, str) else str(script)
+            
+            for pattern in nav_patterns:
+                match = re.search(pattern, script_text)
+                if match:
+                    try:
+                        nav_value = float(match.group(1).replace(',', ''))
+                        logger.info(f"Found NAV value in JavaScript: {nav_value}")
+                        return nav_value
+                    except (ValueError, TypeError):
+                        pass
+        
+        # Try to find the loadFundSums function call
+        if 'loadFundSums()' in html_content:
+            logger.info("Found loadFundSums function call, checking for external JS files")
+            
+            # Check for external JavaScript files that might be loaded
+            js_urls = []
+            js_url_pattern = r'<script[^>]*src=[\'"]([^\'"]*)[\'"]'
+            js_matches = re.findall(js_url_pattern, html_content)
+            
+            for js_match in js_matches:
+                if js_match.startswith('/'):
+                    js_urls.append(f"https://www.simplexasset.com{js_match}")
+                elif js_match.startswith('./'):
+                    js_urls.append(f"https://www.simplexasset.com/etf/eng/{js_match[2:]}")
+                elif not js_match.startswith('http'):
+                    js_urls.append(f"https://www.simplexasset.com/etf/eng/{js_match}")
+                else:
+                    js_urls.append(js_match)
+            
+            logger.debug(f"Found {len(js_urls)} external JavaScript files")
+            
+            # Try to check each JavaScript file
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Referer': 'https://www.simplexasset.com/etf/eng/etf.html'
+            }
+            
+            for js_url in js_urls:
+                try:
+                    logger.debug(f"Checking JavaScript file: {js_url}")
+                    response = requests.get(js_url, headers=headers, verify=False, timeout=10)
+                    
+                    if response.status_code == 200:
+                        js_content = response.text
+                        
+                        # Look for NAV patterns in the JavaScript file
+                        for pattern in nav_patterns:
+                            match = re.search(pattern, js_content)
+                            if match:
+                                try:
+                                    nav_value = float(match.group(1).replace(',', ''))
+                                    logger.info(f"Found NAV value in external JavaScript file: {nav_value}")
+                                    return nav_value
+                                except (ValueError, TypeError):
+                                    pass
+                
+                except Exception as e:
+                    logger.debug(f"Error checking JavaScript file {js_url}: {str(e)}")
+        
+        logger.warning("Could not find NAV data in JavaScript")
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error searching for NAV in JavaScript: {str(e)}")
+        return None
+
+def fetch_latest_nav_from_csv():
+    """
+    Try to fetch NAV from the CSV file that's linked from the page
+    
+    Returns:
+        float or None: NAV value if found, None otherwise
+    """
+    try:
+        logger.info("Attempting to fetch NAV data from CSV file")
+        
+        # CSV URL from the page
+        csv_url = "https://www.simplexasset.com/etf/doc/318A.csv"
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/csv,application/csv',
+            'Referer': 'https://www.simplexasset.com/etf/eng/etf.html'
+        }
+        
+        logger.debug(f"Fetching CSV from: {csv_url}")
+        response = requests.get(csv_url, headers=headers, verify=False, timeout=10)
+        
+        if response.status_code == 200:
+            content_type = response.headers.get('Content-Type', '')
+            logger.debug(f"Got response from CSV URL, Content-Type: {content_type}")
+            
+            # Save CSV for debugging
+            csv_debug_path = os.path.join(SAVE_DIR, "simplex_318A.csv")
+            with open(csv_debug_path, "wb") as f:
+                f.write(response.content)
+            logger.debug(f"Saved CSV content to {csv_debug_path} for inspection")
+            
+            # Try to parse as CSV and extract NAV
+            try:
+                # Read the CSV data
+                csv_content = response.content.decode('utf-8', errors='replace')
+                
+                # Look for NAV-related terms in the CSV
+                nav_keywords = ['nav', 'NAV', 'price', 'Price', 'value', 'Value']
+                
+                for line in csv_content.splitlines():
+                    for keyword in nav_keywords:
+                        if keyword in line:
+                            # Try to extract a numeric value from this line
+                            numeric_pattern = r'(\d+(?:[,.]\d+)?)'
+                            matches = re.findall(numeric_pattern, line)
+                            
+                            if matches:
+                                for match in matches:
+                                    try:
+                                        nav_value = float(match.replace(',', ''))
+                                        if 10 <= nav_value <= 10000:  # Reasonable range for NAV
+                                            logger.info(f"Found potential NAV value in CSV: {nav_value}")
+                                            return nav_value
+                                    except ValueError:
+                                        pass
+                
+                # If a more structured approach is needed, we can try pandas
+                try:
+                    # Save to a temporary file and read with pandas
+                    temp_csv = os.path.join(SAVE_DIR, "temp_318A.csv")
+                    with open(temp_csv, "w", encoding='utf-8') as f:
+                        f.write(csv_content)
+                        
+                    df = pd.read_csv(temp_csv, encoding='utf-8', error_bad_lines=False)
+                    
+                    # Look through column names for NAV-related terms
+                    for col in df.columns:
+                        if any(keyword.lower() in col.lower() for keyword in nav_keywords):
+                            if len(df) > 0:
+                                nav_value = df[col].iloc[0]
+                                try:
+                                    nav_float = float(str(nav_value).replace(',', ''))
+                                    logger.info(f"Found NAV value in CSV using pandas: {nav_float}")
+                                    return nav_float
+                                except (ValueError, TypeError):
+                                    pass
+                except Exception as e:
+                    logger.debug(f"Error parsing CSV with pandas: {str(e)}")
+            
+            except Exception as e:
+                logger.debug(f"Error parsing CSV content: {str(e)}")
+        
+        logger.warning("Could not extract NAV from CSV")
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error fetching from CSV: {str(e)}")
+        return None
+
+def get_historical_nav():
+    """
+    Get the latest NAV value from our historical data.
+    This is not a fallback but a source of information when new data
+    is unavailable.
+    
+    Returns:
+        float or None: Most recent NAV value from history, None if no history
+    """
+    try:
+        logger.info("Checking historical data for latest NAV value")
+        
+        # Check for master file with historical data
+        master_file = os.path.join(SAVE_DIR, "nav_data_master.csv")
+        
+        if os.path.exists(master_file):
+            try:
+                # Load historical data
+                df = pd.read_csv(master_file)
+                
+                if not df.empty and 'nav' in df.columns:
+                    # Sort by timestamp (newest first) and get the most recent NAV
+                    df['timestamp'] = pd.to_numeric(df['timestamp'], errors='coerce')
+                    df = df.sort_values('timestamp', ascending=False)
+                    
+                    if len(df) > 0:
+                        latest_nav = df['nav'].iloc[0]
+                        latest_date = df['timestamp'].iloc[0]
+                        
+                        logger.info(f"Found latest historical NAV value: {latest_nav} from {latest_date}")
+                        return float(latest_nav)
+            
+            except Exception as e:
+                logger.error(f"Error reading historical NAV data: {str(e)}")
+        
+        logger.warning("No historical NAV data available")
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error retrieving historical NAV data: {str(e)}")
         return None
 
 def parse_simplex_nav_from_html(html_content):
@@ -77,6 +385,31 @@ def parse_simplex_nav_from_html(html_content):
                     logger.warning(f"Could not convert NAV value '{nav_value}' to float (method 1): {str(e)}")
             else:
                 logger.warning("nav_div element found but text content is empty")
+                
+                # Check if the empty div might be populated by JavaScript
+                if "loadFundSums" in html_content or "loadNavs" in html_content:
+                    logger.info("Found JavaScript functions that might populate NAV values dynamically")
+                    
+                    # Try to get NAV from JavaScript in HTML
+                    js_nav = search_for_nav_in_javascript(html_content)
+                    if js_nav is not None:
+                        nav_float = js_nav
+                    else:
+                        # Try to get NAV from API endpoints
+                        api_nav = fetch_nav_from_direct_api()
+                        if api_nav is not None:
+                            nav_float = api_nav
+                        else:
+                            # Try to get NAV from CSV file
+                            csv_nav = fetch_latest_nav_from_csv()
+                            if csv_nav is not None:
+                                nav_float = csv_nav
+                            else:
+                                # Use historical data as additional source
+                                hist_nav = get_historical_nav()
+                                if hist_nav is not None:
+                                    nav_float = hist_nav
+                                    logger.info("Using historical NAV value as data source")
         else:
             logger.warning("Could not find NAV value for ETF 318A using method 1 (div#code_318A not found)")
             
@@ -231,6 +564,31 @@ def parse_simplex_nav_from_html(html_content):
             if nav_float is None:
                 logger.warning("All regex patterns failed to extract a valid NAV value")
         
+        # If we still don't have a NAV value, check other sources
+        if nav_float is None:
+            logger.info("Trying to obtain NAV from alternative sources...")
+            
+            # Try JavaScript in the HTML
+            js_nav = search_for_nav_in_javascript(html_content)
+            if js_nav is not None:
+                nav_float = js_nav
+            else:
+                # Try API endpoints
+                api_nav = fetch_nav_from_direct_api()
+                if api_nav is not None:
+                    nav_float = api_nav
+                else:
+                    # Try CSV file
+                    csv_nav = fetch_latest_nav_from_csv()
+                    if csv_nav is not None:
+                        nav_float = csv_nav
+                    else:
+                        # Use historical data as additional source
+                        hist_nav = get_historical_nav()
+                        if hist_nav is not None:
+                            nav_float = hist_nav
+                            logger.info("Using historical NAV value as data source")
+        
         # Save the HTML for debugging if we still couldn't extract the NAV
         if nav_float is None:
             debug_html_path = os.path.join(SAVE_DIR, "simplex_debug.html")
@@ -291,6 +649,31 @@ def parse_simplex_nav_from_html(html_content):
         
     except Exception as e:
         logger.error(f"Error parsing NAV data from HTML: {str(e)}")
+        logger.error(traceback.format_exc())
+        return None
+
+def parse_simplex_nav_from_file(file_path):
+    """
+    Parse NAV data for ETF 318A from a local HTML file
+    
+    Args:
+        file_path: Path to the HTML file
+        
+    Returns:
+        dict: Dictionary with parsed NAV data
+    """
+    try:
+        logger.info(f"Parsing NAV data from local file: {file_path}")
+        
+        # Read the HTML file
+        with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
+            html_content = f.read()
+            
+        # Parse as if it were a response from the website
+        return parse_simplex_nav_from_html(html_content)
+    
+    except Exception as e:
+        logger.error(f"Error parsing NAV data from file: {str(e)}")
         logger.error(traceback.format_exc())
         return None
 
@@ -391,19 +774,73 @@ def parse_simplex_nav_data():
                 f.write(response.text)
             logger.error(f"Could not extract NAV data. Saved HTML to {debug_html_path} for debugging")
             
-            # Try to find the local HTML file as a fallback
-            local_html = "Lists of all ETFs _ Simplex Asset management.html"
-            if os.path.exists(local_html):
-                logger.info(f"Trying to parse from local HTML file: {local_html}")
-                nav_data = parse_simplex_nav_from_file(local_html)
-                if nav_data:
-                    logger.info("Successfully parsed NAV data from local HTML file")
-                    # Update the source to indicate it's from the local file
-                    nav_data['source'] = f"{url} (local fallback)"
+            # Try to get NAV from other sources
+            logger.info("Trying alternative methods to get NAV data")
+            
+            # Try API endpoints
+            api_nav = fetch_nav_from_direct_api()
+            csv_nav = fetch_latest_nav_from_csv()
+            hist_nav = get_historical_nav()
+            
+            nav_float = None
+            source_note = ""
+            
+            if api_nav is not None:
+                nav_float = api_nav
+                source_note = " (API source)"
+            elif csv_nav is not None:
+                nav_float = csv_nav
+                source_note = " (CSV source)"
+            elif hist_nav is not None:
+                nav_float = hist_nav
+                source_note = " (historical data)"
+            
+            if nav_float is not None:
+                # Try to get fund date
+                fund_date = None
+                soup = BeautifulSoup(response.text, 'html.parser')
+                update_elem = soup.find('span', id='bDate')
+                
+                if update_elem is not None:
+                    # Parse the date in the format "YYYY.MM.DD"
+                    date_str = update_elem.text.strip()
+                    try:
+                        # Convert to YYYYMMDD format
+                        date_parts = date_str.split('.')
+                        if len(date_parts) == 3:
+                            fund_date = f"{date_parts[0]}{date_parts[1].zfill(2)}{date_parts[2].zfill(2)}"
+                    except Exception:
+                        pass
+                
+                # If fund_date wasn't found, use current date
+                if fund_date is None:
+                    fund_date = datetime.now().strftime("%Y%m%d")
+                
+                # Create the NAV data dictionary
+                nav_data = {
+                    'timestamp': datetime.now().strftime("%Y%m%d%H%M"),
+                    'source': f"https://www.simplexasset.com/etf/eng/etf.html{source_note}",
+                    'fund_date': fund_date,
+                    'nav': nav_float,
+                    'fund_code': '318A'
+                }
+                
+                logger.info(f"Successfully obtained NAV data from alternative source: {nav_float}")
+            else:
+                # Try to find the local HTML file as a fallback
+                local_html = "Lists of all ETFs _ Simplex Asset management.html"
+                if os.path.exists(local_html):
+                    logger.info(f"Trying to parse from local HTML file: {local_html}")
+                    nav_data = parse_simplex_nav_from_file(local_html)
+                    if nav_data:
+                        logger.info("Successfully parsed NAV data from local HTML file")
+                        # Update the source to indicate it's from the local file
+                        nav_data['source'] = f"{url} (local fallback)"
         
         # Update URL in the data if we have valid results
         if nav_data is not None:
-            nav_data['source'] = url
+            if 'source' not in nav_data or not nav_data['source']:
+                nav_data['source'] = url
             
         return nav_data
         
@@ -422,6 +859,40 @@ def parse_simplex_nav_data():
                 nav_data['source'] = "https://www.simplexasset.com/etf/eng/etf.html (local fallback)"
                 return nav_data
         
+        # Try other methods directly
+        logger.info("Trying alternative methods to get NAV data after main parsing failed")
+        
+        # Try API endpoints
+        api_nav = fetch_nav_from_direct_api()
+        csv_nav = fetch_latest_nav_from_csv()
+        hist_nav = get_historical_nav()
+        
+        nav_float = None
+        source_note = ""
+        
+        if api_nav is not None:
+            nav_float = api_nav
+            source_note = " (API source)"
+        elif csv_nav is not None:
+            nav_float = csv_nav
+            source_note = " (CSV source)"
+        elif hist_nav is not None:
+            nav_float = hist_nav
+            source_note = " (historical data)"
+        
+        if nav_float is not None:
+            # Create the NAV data dictionary with current date
+            nav_data = {
+                'timestamp': datetime.now().strftime("%Y%m%d%H%M"),
+                'source': f"https://www.simplexasset.com/etf/eng/etf.html{source_note}",
+                'fund_date': datetime.now().strftime("%Y%m%d"),
+                'nav': nav_float,
+                'fund_code': '318A'
+            }
+            
+            logger.info(f"Successfully obtained NAV data from alternative source: {nav_float}")
+            return nav_data
+            
         return None
 
 def save_nav_data(nav_data, save_dir=SAVE_DIR):
