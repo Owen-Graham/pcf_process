@@ -1,24 +1,3 @@
-import os
-import requests
-from bs4 import BeautifulSoup
-import re
-import traceback
-import time
-from datetime import datetime
-import pandas as pd
-from common import setup_logging, SAVE_DIR, format_vix_data
-
-# For Selenium
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-# Set up logging
-logger = setup_logging('cboe_vix_downloader')
-
 def download_vix_futures_from_cboe():
     """
     Download VIX futures prices from CBOE website using Selenium
@@ -38,10 +17,8 @@ def download_vix_futures_from_cboe():
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
-        options.add_argument("--window-size=1920,1080")
         
         # Initialize the browser
-        logger.info("Initializing Chrome browser...")
         browser = webdriver.Chrome(options=options)
         
         # CBOE VIX futures page
@@ -75,113 +52,248 @@ def download_vix_futures_from_cboe():
             'timestamp': datetime.now().strftime("%Y%m%d%H%M")
         }
         
-        # Find tables that might contain futures data
+        # Try to find VIX futures data table
         tables = soup.find_all('table')
-        logger.debug(f"Found {len(tables)} tables on CBOE page")
+        logger.info(f"Found {len(tables)} tables on the page")
         
-        # Look for VIX futures table - typically has columns like Symbol, Expiration, Last, etc.
         for i, table in enumerate(tables):
-            try:
-                logger.debug(f"Analyzing table {i+1}")
+            headers = []
+            header_row = table.find('tr')
+            if header_row:
+                # Get table headers
+                headers = [th.get_text().strip() for th in header_row.find_all(['th'])]
+                if not headers and header_row.find_all(['td']):
+                    # Sometimes headers are in td tags
+                    headers = [td.get_text().strip() for td in header_row.find_all(['td'])]
                 
-                # Get headers to identify the futures table
-                headers = [th.get_text().strip() for th in table.find_all(['th', 'td']) if th.get_text().strip()]
-                logger.debug(f"Table {i+1} headers: {headers}")
+                logger.info(f"Table {i+1} headers: {headers}")
                 
-                # Check if this looks like a futures table
-                required_headers = ['SYMBOL', 'EXPIRATION', 'LAST', 'SETTLEMENT']
-                if any(header.upper() in [h.upper() for h in headers] for header in required_headers):
+                # Check if this looks like a VIX futures table
+                if any(header.upper() in ['SYMBOL', 'EXPIRATION', 'SETTLEMENT', 'LAST'] for header in headers):
                     logger.info(f"Found potential VIX futures table (table {i+1})")
                     
-                    # Map column positions to their meaning
+                    # Map column indices
                     col_map = {}
                     for j, header in enumerate(headers):
                         header_upper = header.upper()
                         if 'SYMBOL' in header_upper:
                             col_map['symbol'] = j
-                        elif 'EXPIRATION' in header_upper or 'DATE' in header_upper:
+                        elif 'EXPIRATION' in header_upper:
                             col_map['expiration'] = j
                         elif 'SETTLEMENT' in header_upper:
                             col_map['settlement'] = j
                         elif 'LAST' in header_upper:
                             col_map['last'] = j
+                        elif 'VOLUME' in header_upper:
+                            col_map['volume'] = j
                     
-                    # Process the rows
-                    rows = table.find_all('tr')
-                    logger.debug(f"Processing {len(rows)-1} data rows")
+                    # Default mappings if not found
+                    if 'symbol' not in col_map:
+                        col_map['symbol'] = 0  # Assume first column is symbol
+                    if 'settlement' not in col_map and 'last' not in col_map:
+                        # Try to find price columns by position
+                        if len(headers) >= 7:
+                            col_map['settlement'] = 6  # Often 7th column
+                        if len(headers) >= 3:
+                            col_map['last'] = 2  # Often 3rd column
                     
-                    for row in rows[1:]:  # Skip header row
+                    # Process all rows
+                    data_rows = table.find_all('tr')[1:]  # Skip header
+                    logger.info(f"Processing {len(data_rows)} data rows")
+                    
+                    contracts_found = 0
+                    
+                    for row in data_rows:
                         cells = row.find_all(['td'])
-                        if len(cells) < len(headers):
+                        if len(cells) < max(col_map.values()) + 1:
                             continue
                         
-                        # Extract data based on column mapping
-                        symbol_text = cells[col_map.get('symbol', 0)].get_text().strip()
-                        
-                        # Get settlement price or last price
-                        price = None
-                        if 'settlement' in col_map and cells[col_map['settlement']].get_text().strip():
-                            price_text = cells[col_map['settlement']].get_text().strip()
-                            try:
-                                price = float(price_text.replace(',', '').replace('$', ''))
-                            except ValueError:
-                                price = None
-                        
-                        # Use last price if settlement not available
-                        if price is None and 'last' in col_map and cells[col_map['last']].get_text().strip():
-                            price_text = cells[col_map['last']].get_text().strip()
-                            try:
-                                price = float(price_text.replace(',', '').replace('$', ''))
-                            except ValueError:
+                        try:
+                            symbol_cell = cells[col_map['symbol']]
+                            symbol = symbol_cell.get_text().strip()
+                            
+                            # Try to get settlement price
+                            settlement_price = None
+                            if 'settlement' in col_map:
+                                settlement_text = cells[col_map['settlement']].get_text().strip()
+                                if settlement_text and settlement_text != '-':
+                                    try:
+                                        settlement_price = float(settlement_text.replace(',', ''))
+                                    except ValueError:
+                                        pass
+                            
+                            # If no settlement price, try last price
+                            if (settlement_price is None or settlement_price == 0) and 'last' in col_map:
+                                last_text = cells[col_map['last']].get_text().strip()
+                                if last_text and last_text != '-' and last_text != '0':
+                                    try:
+                                        settlement_price = float(last_text.replace(',', ''))
+                                    except ValueError:
+                                        pass
+                            
+                            if not symbol or settlement_price is None or settlement_price == 0:
                                 continue
-                        
-                        if price is None:
-                            continue
-                        
-                        # Extract the contract code from the symbol (various formats possible)
-                        vx_pattern = re.compile(r'VX([A-Z])(\d{1,2})|VX\/([A-Z])(\d{1,2})|VIX\s+([A-Za-z]{3})[^0-9]*(\d{2})', re.IGNORECASE)
-                        match = vx_pattern.search(symbol_text)
-                        
-                        if match:
-                            # Determine which pattern matched and extract info
-                            if match.group(1) and match.group(2):  # VXH5 format
-                                month_code = match.group(1)
-                                year_digit = match.group(2)[-1]  # Last digit of year
-                            elif match.group(3) and match.group(4):  # VX/H5 format
-                                month_code = match.group(3)
-                                year_digit = match.group(4)[-1]
-                            else:  # VIX MAR 25 format
-                                month_str = match.group(5).upper()
-                                year_digit = match.group(6)[-1]
                                 
-                                # Convert month name to code
-                                month_map = {
-                                    'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
-                                    'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
-                                    'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
-                                }
-                                month_code = month_map.get(month_str, '?')
+                            # Special case for VIX index
+                            if symbol.upper() == 'VIX':
+                                futures_data['CBOE:VIX'] = settlement_price
+                                logger.info(f"Extracted VIX index: {settlement_price}")
+                                contracts_found += 1
+                                continue
                             
-                            # Format the VIX future contract codes
-                            cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
-                            std_ticker = f"/VX{month_code}{year_digit}"
+                            # Process VIX futures symbols
+                            vx_patterns = [
+                                re.compile(r'VX(\d+)?\/([A-Z])(\d+)'),  # VX/H5, VX09/H5
+                                re.compile(r'VX([A-Z])(\d+)'),          # VXH5, VXH25
+                                re.compile(r'VIX\s+([A-Z]{3})[^0-9]*(\d{2})') # VIX MAR 25
+                            ]
                             
-                            # Store both formats
-                            futures_data[cboe_ticker] = price
-                            futures_data[std_ticker] = price
-                            logger.info(f"Extracted: {cboe_ticker} = {price}")
-                        elif symbol_text.upper() == 'VIX' and price is not None:
-                            # This is the VIX index itself
-                            futures_data['CBOE:VIX'] = price
-                            logger.info(f"Extracted VIX index: {price}")
-            except Exception as e:
-                logger.warning(f"Error processing table {i+1}: {str(e)}")
+                            for pattern in vx_patterns:
+                                match = pattern.match(symbol)
+                                if match:
+                                    # Extract month code and year
+                                    if len(match.groups()) == 3 and match.group(2):  # VX/H5 format
+                                        month_code = match.group(2)
+                                        year_digit = match.group(3)[-1]  # Last digit of year
+                                    elif len(match.groups()) == 2 and match.group(1):
+                                        if len(match.group(1)) == 1:  # VXH5 format
+                                            month_code = match.group(1)
+                                            year_digit = match.group(2)[-1]
+                                        else:  # VIX MAR 25 format
+                                            month_str = match.group(1).upper()
+                                            year_digit = match.group(2)[-1]
+                                            
+                                            # Convert month name to code
+                                            month_map = {
+                                                'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
+                                                'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
+                                                'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
+                                            }
+                                            month_code = month_map.get(month_str, '?')
+                                    else:
+                                        continue
+                                    
+                                    # Format standard tickers
+                                    cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
+                                    std_ticker = f"/VX{month_code}{year_digit}"
+                                    
+                                    futures_data[cboe_ticker] = settlement_price
+                                    futures_data[std_ticker] = settlement_price
+                                    
+                                    logger.info(f"Extracted future: {cboe_ticker} = {settlement_price}")
+                                    contracts_found += 1
+                                    break
+                            
+                        except Exception as e:
+                            logger.warning(f"Error processing row: {str(e)}")
+                    
+                    if contracts_found > 0:
+                        logger.info(f"Found {contracts_found} contracts in table {i+1}")
+                        break  # Stop after finding a valid table
         
         # Check if we found any futures data
         if len(futures_data) > 2:  # More than just date and timestamp
             logger.info(f"Successfully extracted {len(futures_data)-2} VIX futures from CBOE (processing took {time.time() - start_time:.2f}s)")
             return futures_data
         else:
+            # Try direct extraction from page using driver
+            logger.info("Attempting direct extraction from browser elements")
+            try:
+                # Find the VIX futures table
+                tables = browser.find_elements(By.TAG_NAME, "table")
+                if tables:
+                    # Get rows directly
+                    rows = tables[0].find_elements(By.TAG_NAME, "tr")
+                    if len(rows) > 1:  # Skip header
+                        contracts_found = 0
+                        
+                        for row in rows[1:]:
+                            cells = row.find_elements(By.TAG_NAME, "td")
+                            if len(cells) < 7:  # Need minimum cells
+                                continue
+                                
+                            try:
+                                symbol = cells[0].text.strip()
+                                
+                                # Try settlement price first
+                                settlement_text = cells[6].text.strip() if len(cells) > 6 else ""
+                                settlement_price = None
+                                
+                                if settlement_text and settlement_text != '-':
+                                    try:
+                                        settlement_price = float(settlement_text.replace(',', ''))
+                                    except ValueError:
+                                        pass
+                                
+                                # If no settlement price, try last price
+                                if settlement_price is None or settlement_price == 0:
+                                    last_text = cells[2].text.strip() if len(cells) > 2 else ""
+                                    if last_text and last_text != '-' and last_text != '0':
+                                        try:
+                                            settlement_price = float(last_text.replace(',', ''))
+                                        except ValueError:
+                                            pass
+                                
+                                if not symbol or settlement_price is None or settlement_price == 0:
+                                    continue
+                                
+                                # Process symbol (similar to above)
+                                if symbol.upper() == 'VIX':
+                                    futures_data['CBOE:VIX'] = settlement_price
+                                    logger.info(f"Extracted VIX index: {settlement_price}")
+                                    contracts_found += 1
+                                    continue
+                                    
+                                # Use same regex patterns as above
+                                vx_patterns = [
+                                    re.compile(r'VX(\d+)?\/([A-Z])(\d+)'),
+                                    re.compile(r'VX([A-Z])(\d+)'),
+                                    re.compile(r'VIX\s+([A-Z]{3})[^0-9]*(\d{2})')
+                                ]
+                                
+                                for pattern in vx_patterns:
+                                    match = pattern.match(symbol)
+                                    if match:
+                                        # Extract month and year (similar to above)
+                                        if len(match.groups()) == 3 and match.group(2):
+                                            month_code = match.group(2)
+                                            year_digit = match.group(3)[-1]
+                                        elif len(match.groups()) == 2 and match.group(1):
+                                            if len(match.group(1)) == 1:
+                                                month_code = match.group(1)
+                                                year_digit = match.group(2)[-1]
+                                            else:
+                                                month_str = match.group(1).upper()
+                                                year_digit = match.group(2)[-1]
+                                                
+                                                month_map = {
+                                                    'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
+                                                    'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
+                                                    'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
+                                                }
+                                                month_code = month_map.get(month_str, '?')
+                                        else:
+                                            continue
+                                        
+                                        cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
+                                        std_ticker = f"/VX{month_code}{year_digit}"
+                                        
+                                        futures_data[cboe_ticker] = settlement_price
+                                        futures_data[std_ticker] = settlement_price
+                                        
+                                        logger.info(f"Extracted future (direct): {cboe_ticker} = {settlement_price}")
+                                        contracts_found += 1
+                                        break
+                                
+                            except Exception as e:
+                                logger.warning(f"Error in direct extraction: {str(e)}")
+                        
+                        if contracts_found > 0:
+                            logger.info(f"Successfully extracted {contracts_found} contracts via direct browser access")
+                            return futures_data
+            except Exception as e:
+                logger.warning(f"Direct extraction failed: {str(e)}")
+            
             logger.warning("Could not extract VIX futures data from CBOE website")
             return None
     
@@ -198,47 +310,3 @@ def download_vix_futures_from_cboe():
                 logger.info("Browser session closed")
             except Exception as e:
                 logger.warning(f"Error closing browser: {str(e)}")
-
-def save_cboe_data(futures_data, save_dir=SAVE_DIR):
-    """Save CBOE futures data as CSV"""
-    if not futures_data or len(futures_data) <= 2:
-        logger.warning("No CBOE futures data to save")
-        return None
-    
-    try:
-        # Format data into standardized records
-        records = format_vix_data(futures_data, "CBOE")
-        
-        # Create DataFrame
-        df = pd.DataFrame(records)
-        
-        # Save to CSV
-        timestamp = datetime.now().strftime("%Y%m%d%H%M")
-        csv_filename = f"vix_futures_cboe_{timestamp}.csv"
-        csv_path = os.path.join(save_dir, csv_filename)
-        
-        df.to_csv(csv_path, index=False)
-        logger.info(f"Saved CBOE futures data to {csv_path}")
-        
-        return csv_path
-    
-    except Exception as e:
-        logger.error(f"Error saving CBOE data: {str(e)}")
-        logger.error(traceback.format_exc())
-        return None
-
-if __name__ == "__main__":
-    # Download VIX futures from CBOE
-    cboe_data = download_vix_futures_from_cboe()
-    
-    # Save to CSV if data was found
-    if cboe_data:
-        csv_path = save_cboe_data(cboe_data)
-        if csv_path:
-            print(f"✅ CBOE VIX futures data saved to: {csv_path}")
-        else:
-            print("❌ Failed to save CBOE data")
-            exit(1)
-    else:
-        print("❌ No VIX futures data found from CBOE")
-        exit(1)
