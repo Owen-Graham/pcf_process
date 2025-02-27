@@ -1,0 +1,63 @@
+name: VIX Futures Price Collection
+
+on:
+  schedule:
+    - cron: "15 23 * * 1-5"  # Runs at 23:15 UTC Mon-Fri (after market close)
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  contents: write  # Need write permission to push files back to repo
+
+jobs:
+  collect-prices:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for commits
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install yfinance pandas requests beautifulsoup4
+
+    - name: Run CBOE VIX Downloader
+      run: python cboe_vix_downloader.py
+
+    - name: Run Yahoo Finance VIX Downloader
+      run: python yahoo_vix_downloader.py
+
+    - name: Commit and Push new data
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+        git add data/vix_futures_*.csv
+        git add data/*.log
+        git commit -m "VIX futures price update $(date +'%Y-%m-%d')" || echo "No changes to commit"
+        git push
+
+    - name: Upload price data as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: vix-futures-prices
+        path: |
+          data/vix_futures_*.csv
+          data/*.log
+        retention-days: 399  # Keep for 399 days
+
+    - name: Display log files (for debugging)
+      if: always()  # Run even if previous steps fail
+      run: |
+        echo "=== CBOE VIX DOWNLOADER LOG ==="
+        cat data/cboe_vix_downloader.log
+        echo "================================"
+        echo "=== YAHOO VIX DOWNLOADER LOG ==="
+        cat data/yahoo_vix_downloader.log
+        echo "================================="
