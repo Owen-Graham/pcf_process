@@ -27,11 +27,14 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
+        
+    - name: Setup Chrome
+      uses: browser-actions/setup-chrome@v1
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests beautifulsoup4 pandas
+        pip install requests beautifulsoup4 pandas selenium webdriver-manager
 
     - name: Run ETF Data Downloader
       run: python download_etf_data.py
@@ -43,11 +46,7 @@ jobs:
       run: python etf_characteristics_parser.py
       
     - name: Parse Simplex NAV Data
-      run: |
-        # Try to parse from website first
-        python simplex_nav_parser.py --debug || \
-        # If website parsing fails, try with local file
-        python simplex_nav_parser.py --local --debug
+      run: python simplex_nav_parser.py --debug
 
     - name: Commit and Push ETF data
       run: |
@@ -78,6 +77,8 @@ jobs:
         path: |
           data/*.csv
           data/*.log
+          data/*.html
+          data/*.png
         retention-days: 399  # Keep for 399 days
 
     - name: Display log file (for debugging)
@@ -147,11 +148,7 @@ jobs:
         git add data/vix_futures_*.csv
         git add data/etf_characteristics_*.csv
         git add data/nav_data_*.csv
-        git add data/vix_downloader.log
-        git add data/cboe_vix_downloader.log
-        git add data/yahoo_vix_downloader.log
-        git add data/etf_characteristics.log
-        git add data/simplex_nav_parser.log
+        git add data/*.log
         git add data/cboe_debug.html
         git commit -m "VIX futures update $(date +'%Y-%m-%d')" || echo "No changes to commit"
         
@@ -167,7 +164,8 @@ jobs:
           data/etf_characteristics_*.csv
           data/nav_data_*.csv
           data/*.log
-          data/cboe_debug.html
+          data/*.html
+          data/*.png
         retention-days: 399  # Keep for 399 days
 
     - name: Display log files (for debugging)
