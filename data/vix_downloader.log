@@ -26,3 +26,56 @@ Name: 2025-02-26 00:00:00, dtype: float64
 Name: 2025-02-26 00:00:00, dtype: float64
 2025-02-27 00:06:55,612 - INFO - Source comparison:
 2025-02-27 00:06:55,612 - INFO - Script completed successfully.
+2025-02-27 01:00:54,345 - INFO - [vix_futures_downloader.py:560] - Starting VIX futures download process
+2025-02-27 01:00:54,345 - INFO - [vix_futures_downloader.py:154] - Downloading VIX futures data from CBOE...
+2025-02-27 01:00:54,954 - WARNING - [vix_futures_downloader.py:256] - Could not extract VIX futures data from CBOE website
+2025-02-27 01:00:54,955 - INFO - [vix_futures_downloader.py:273] - Downloading VIX futures data from Yahoo Finance...
+2025-02-27 01:00:55,215 - INFO - [vix_futures_downloader.py:288] - Yahoo: ^VIX = Ticker
+^VIX    19.1
+Name: 2025-02-26 00:00:00, dtype: float64
+2025-02-27 01:00:55,215 - INFO - [vix_futures_downloader.py:324] - Trying ticker pattern group: ['^VFTW1', '^VFTW2', '^VFTW3']
+2025-02-27 01:00:55,323 - INFO - [vix_futures_downloader.py:338] - Yahoo: ^VFTW1 → /VXK5 = Ticker
+^VFTW1    18.139999
+Name: 2025-02-26 00:00:00, dtype: float64
+2025-02-27 01:00:55,430 - INFO - [vix_futures_downloader.py:338] - Yahoo: ^VFTW2 → /VXM5 = Ticker
+^VFTW2    18.610001
+Name: 2025-02-26 00:00:00, dtype: float64
+2025-02-27 01:00:57,418 - ERROR - [multi.py:181] - 
+1 Failed download:
+2025-02-27 01:00:57,418 - ERROR - [multi.py:194] - ['^VFTW3']: YFPricesMissingError('possibly delisted; no price data found  (period=1d) (Yahoo error = "No data found, symbol may be delisted")')
+2025-02-27 01:00:57,420 - WARNING - [vix_futures_downloader.py:344] - No data found for ticker ^VFTW3
+2025-02-27 01:00:57,421 - INFO - [vix_futures_downloader.py:324] - Trying ticker pattern group: ['^VXIND1', '^VXIND2', '^VXIND3']
+2025-02-27 01:00:57,519 - INFO - [vix_futures_downloader.py:338] - Yahoo: ^VXIND1 → /VXK5 = Ticker
+^VXIND1    18.133699
+Name: 2025-02-26 00:00:00, dtype: float64
+2025-02-27 01:00:57,670 - INFO - [vix_futures_downloader.py:338] - Yahoo: ^VXIND2 → /VXM5 = Ticker
+^VXIND2    18.603399
+Name: 2025-02-26 00:00:00, dtype: float64
+2025-02-27 01:00:57,765 - INFO - [vix_futures_downloader.py:338] - Yahoo: ^VXIND3 → /VXN5 = Ticker
+^VXIND3    18.852501
+Name: 2025-02-26 00:00:00, dtype: float64
+2025-02-27 01:00:57,765 - INFO - [vix_futures_downloader.py:368] - Successfully retrieved VIX futures data from Yahoo Finance (processing took 2.81s)
+2025-02-27 01:00:57,765 - INFO - [vix_futures_downloader.py:37] - Reading latest Simplex ETF 318A data
+2025-02-27 01:00:57,766 - WARNING - [vix_futures_downloader.py:44] - No Simplex ETF 318A files found. Make sure download_etf_csv.py has been run.
+2025-02-27 01:00:57,766 - INFO - [vix_futures_downloader.py:410] - === SOURCE SUMMARY ===
+2025-02-27 01:00:57,766 - INFO - [vix_futures_downloader.py:415] - CBOE: No data retrieved
+2025-02-27 01:00:57,766 - INFO - [vix_futures_downloader.py:419] - Yahoo Finance: Found 9 contracts/tickers: VX=F, /VXK5, ^VFTW1, /VXM5, ^VFTW2, ^VXIND1, ^VXIND2, /VXN5, ^VXIND3
+2025-02-27 01:00:57,766 - INFO - [vix_futures_downloader.py:427] - Simplex ETF: No data retrieved
+2025-02-27 01:00:57,766 - INFO - [vix_futures_downloader.py:429] - =====================
+2025-02-27 01:00:57,769 - INFO - [vix_futures_downloader.py:500] - Data for 2025-02-27 already exists in master file. Updating...
+2025-02-27 01:00:57,776 - INFO - [vix_futures_downloader.py:506] - Updated master CSV file: data/vix_futures_master.csv
+2025-02-27 01:00:57,780 - INFO - [vix_futures_downloader.py:519] - Saved daily snapshot to: data/vix_futures_202502270100.csv
+2025-02-27 01:00:57,780 - INFO - [vix_futures_downloader.py:522] - Data collected:
+2025-02-27 01:00:57,783 - INFO - [vix_futures_downloader.py:523] -          date     timestamp                                                                  /VXM5                                                                  /VXK5                                                           VX=F                                                                  /VXN5
+0  2025-02-27  202502270100  Ticker
+^VXIND2    18.603399
+Name: 2025-02-26 00:00:00, dtype: float64  Ticker
+^VXIND1    18.133699
+Name: 2025-02-26 00:00:00, dtype: float64  Ticker
+^VIX    19.1
+Name: 2025-02-26 00:00:00, dtype: float64  Ticker
+^VXIND3    18.852501
+Name: 2025-02-26 00:00:00, dtype: float64
+2025-02-27 01:00:57,783 - INFO - [vix_futures_downloader.py:527] - Source comparison:
+2025-02-27 01:00:57,783 - INFO - [vix_futures_downloader.py:550] - Total processing time: 3.44s
+2025-02-27 01:00:57,783 - INFO - [vix_futures_downloader.py:566] - Script completed successfully.

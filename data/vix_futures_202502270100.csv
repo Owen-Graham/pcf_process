@@ -1,15 +1,5 @@
-date,timestamp,VX=F,/VXH5,/VXJ5,/VXK5,VX=F_yahoo,/VXK5_yahoo,^VFTW1_yahoo,/VXM5_yahoo,^VFTW2_yahoo,^VXIND1_yahoo,^VXIND2_yahoo,/VXN5_yahoo,^VXIND3_yahoo,/VXM5,/VXN5
-2025-02-26,202502262332,,,,,,,,,,,,,,,
-2025-02-26,202502262349,"Ticker
-^VIX    19.1
-Name: 2025-02-26 00:00:00, dtype: float64",,,,"Ticker
-^VIX    19.1
-Name: 2025-02-26 00:00:00, dtype: float64",,,,,,,,,,
+date,timestamp,VX=F_yahoo,/VXK5_yahoo,^VFTW1_yahoo,/VXM5_yahoo,^VFTW2_yahoo,^VXIND1_yahoo,^VXIND2_yahoo,/VXN5_yahoo,^VXIND3_yahoo,/VXM5,/VXK5,VX=F,/VXN5
 2025-02-27,202502270100,"Ticker
-^VIX    19.1
-Name: 2025-02-26 00:00:00, dtype: float64",,,"Ticker
-^VXIND1    18.133699
-Name: 2025-02-26 00:00:00, dtype: float64","Ticker
 ^VIX    19.1
 Name: 2025-02-26 00:00:00, dtype: float64","Ticker
 ^VXIND1    18.133699
@@ -29,6 +19,10 @@ Name: 2025-02-26 00:00:00, dtype: float64","Ticker
 ^VXIND3    18.852501
 Name: 2025-02-26 00:00:00, dtype: float64","Ticker
 ^VXIND2    18.603399
+Name: 2025-02-26 00:00:00, dtype: float64","Ticker
+^VXIND1    18.133699
+Name: 2025-02-26 00:00:00, dtype: float64","Ticker
+^VIX    19.1
 Name: 2025-02-26 00:00:00, dtype: float64","Ticker
 ^VXIND3    18.852501
 Name: 2025-02-26 00:00:00, dtype: float64"
