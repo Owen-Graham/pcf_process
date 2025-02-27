@@ -5,6 +5,7 @@ import re
 import traceback
 import time
 from datetime import datetime
+import pandas as pd
 from common import setup_logging, SAVE_DIR, format_vix_data
 
 # Set up logging
@@ -268,7 +269,6 @@ def save_cboe_data(futures_data, save_dir=SAVE_DIR):
         records = format_vix_data(futures_data, "CBOE")
         
         # Create DataFrame
-        import pandas as pd
         df = pd.DataFrame(records)
         
         # Save to CSV
