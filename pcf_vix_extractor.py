@@ -713,7 +713,7 @@ def extract_vix_patterns_from_all_cells(df):
                 
                 try:
                     # Try to convert to float - likely a price if between 10-50
-                    val = float(str(row[col]).replace(', '').replace(',', ''))
+                    val = float(str(row[col]).replace(',', ''))
                     if 10 <= val <= 50:  # Typical VIX futures price range
                         price = val
                         break
