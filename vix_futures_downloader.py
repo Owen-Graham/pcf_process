@@ -9,11 +9,12 @@ import logging
 from datetime import datetime, timedelta
 import glob
 import re
+import time
 
-# Set up logging
+# Set up logging with more detailed format
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
         logging.FileHandler(os.path.join("data", "vix_downloader.log"))
@@ -25,25 +26,39 @@ logger = logging.getLogger('vix_futures_downloader')
 SAVE_DIR = "data"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
+def log_response_details(response, source_name):
+    """Log detailed information about HTTP responses"""
+    logger.debug(f"{source_name} response: status={response.status_code}, content-type={response.headers.get('content-type')}, length={len(response.content)}")
+
 def read_latest_simplex_etf():
     """Read the latest Simplex ETF 318A data and extract VIX futures prices."""
     try:
-        logger.info("Attempting to read latest Simplex ETF 318A data")
+        start_time = time.time()
+        logger.info("Reading latest Simplex ETF 318A data")
         
-        # Find the most recent 318A file
+        # Find the most recent 318A file from the download_etf_csv.py output
         file_pattern = os.path.join(SAVE_DIR, "318A-*.csv")
         files = glob.glob(file_pattern)
         
         if not files:
-            logger.warning("No Simplex ETF 318A files found")
+            logger.warning("No Simplex ETF 318A files found. Make sure download_etf_csv.py has been run.")
             return None
         
         # Get the most recent file based on the timestamp in the filename
         latest_file = max(files, key=os.path.getmtime)
-        logger.info(f"Found latest Simplex ETF file: {latest_file}")
+        logger.info(f"Found latest Simplex ETF file: {latest_file} (modified: {datetime.fromtimestamp(os.path.getmtime(latest_file))})")
         
         # Read the CSV file
-        df = pd.read_csv(latest_file)
+        try:
+            df = pd.read_csv(latest_file)
+            logger.debug(f"Simplex ETF file shape: {df.shape}, columns: {df.columns.tolist()}")
+        except Exception as e:
+            logger.error(f"Error reading Simplex ETF CSV: {str(e)}")
+            logger.debug(f"File content preview: {open(latest_file, 'r').read(500)}")
+            return None
+        
+        # Log the columns to help with debugging
+        logger.debug(f"Columns in Simplex ETF file: {', '.join(df.columns)}")
         
         # Look for VIX futures in the holdings
         vix_data = {}
@@ -57,10 +72,11 @@ def read_latest_simplex_etf():
         for col in desc_columns:
             if col in df.columns:
                 desc_col = col
+                logger.debug(f"Using '{col}' as description column in Simplex ETF file")
                 break
         
         if not desc_col:
-            logger.warning("Could not find description column in Simplex ETF file")
+            logger.warning(f"Could not find description column in Simplex ETF file. Available columns: {', '.join(df.columns)}")
             return None
         
         # Map month codes to letters
@@ -76,10 +92,11 @@ def read_latest_simplex_etf():
         for col in price_columns:
             if col in df.columns:
                 price_col = col
+                logger.debug(f"Using '{col}' as price column in Simplex ETF file")
                 break
         
         if not price_col:
-            logger.warning("Could not find price column in Simplex ETF file")
+            logger.warning(f"Could not find price column in Simplex ETF file. Available columns: {', '.join(df.columns)}")
             return None
         
         # Get current date
@@ -92,6 +109,7 @@ def read_latest_simplex_etf():
         }
         
         # Extract VIX futures data
+        futures_found = 0
         for _, row in df.iterrows():
             if pd.isna(row[desc_col]):
                 continue
@@ -106,14 +124,22 @@ def read_latest_simplex_etf():
                 if month in month_map:
                     # Format ticker like /VXH5
                     ticker = f"/VX{month_map[month]}{year[-1]}"
-                    price = float(row[price_col])
-                    futures_data[ticker] = price
-                    logger.info(f"Extracted from Simplex ETF: {ticker} = {price}")
+                    try:
+                        price = float(row[price_col])
+                        futures_data[ticker] = price
+                        futures_found += 1
+                        logger.info(f"Extracted from Simplex ETF: {ticker} = {price} (from {desc})")
+                    except (ValueError, TypeError) as e:
+                        logger.warning(f"Could not convert price '{row[price_col]}' to float for {ticker}: {str(e)}")
         
-        if len(futures_data) > 2:  # More than just date and timestamp
+        if futures_found > 0:
+            logger.info(f"Successfully extracted {futures_found} VIX futures from Simplex ETF (processing took {time.time() - start_time:.2f}s)")
             return futures_data
         else:
-            logger.warning("No VIX futures found in Simplex ETF file")
+            logger.warning(f"No VIX futures found in Simplex ETF file. Check if the pattern matching is correct.")
+            # Log a few sample descriptions to help with debugging
+            sample_descriptions = df[desc_col].dropna().head(5).tolist()
+            logger.debug(f"Sample descriptions from file: {sample_descriptions}")
             return None
             
     except Exception as e:
@@ -122,51 +148,118 @@ def read_latest_simplex_etf():
         return None
 
 def download_vix_futures_from_cboe():
-    """Download VIX futures data directly from CBOE website"""
+    """Download VIX futures data directly from CBOE website using the new URL"""
+    start_time = time.time()
     try:
         logger.info("Downloading VIX futures data from CBOE...")
         
-        # CBOE VIX futures page
-        url = "https://www.cboe.com/delayed_quotes/vx/quote_table"
+        # CBOE VIX futures page (new URL)
+        url = "https://www.cboe.com/tradable_products/vix/vix_futures/"
         
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
+        try:
+            response = requests.get(url, headers=headers, timeout=30)
+            response.raise_for_status()
+            log_response_details(response, "CBOE")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to retrieve CBOE page: {str(e)}")
+            return None
         
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Find the futures table
-        table = soup.find('table', class_='table-quotes')
+        # Logging the document structure to help with debugging
+        logger.debug(f"CBOE HTML title: {soup.title.string if soup.title else 'No title'}")
         
-        if not table:
-            logger.warning("Could not find VIX futures table on CBOE website")
-            return None
-        
+        # Looking for the futures table on the new page
+        # First try the standard table element
         futures_data = {}
         # Get current date
         futures_data['date'] = datetime.now().strftime("%Y-%m-%d")
         futures_data['timestamp'] = datetime.now().strftime("%Y%m%d%H%M")
         
-        # Get rows from table
-        rows = table.find_all('tr')
+        # Try to find the futures table
+        # The table might be in various elements, so we'll try multiple approaches
+        tables = soup.find_all('table')
+        logger.debug(f"Found {len(tables)} tables on CBOE page")
         
-        for row in rows[1:5]:  # Get first 4 contracts (skip header row)
-            cells = row.find_all('td')
-            if len(cells) >= 7:
-                # Extract contract name and settlement price
-                contract_name = cells[0].text.strip()
-                settlement_price = cells[3].text.strip().replace('$', '').replace(',', '')
-                
-                # Format to match yfinance tickers
-                if "VX" in contract_name and "/" in contract_name:
-                    ticker = contract_name.replace(" ", "")
-                    futures_data[ticker] = float(settlement_price)
-                    logger.info(f"CBOE: {ticker} = {settlement_price}")
+        # Also look for div elements that might contain the data
+        data_divs = soup.find_all('div', class_=lambda c: c and ('table' in c.lower() or 'grid' in c.lower() or 'data' in c.lower()))
+        logger.debug(f"Found {len(data_divs)} potential data divs on CBOE page")
         
-        return futures_data
+        # Check for iframe elements that might contain the data
+        iframes = soup.find_all('iframe')
+        if iframes:
+            logger.debug(f"Found {len(iframes)} iframes on CBOE page. The data might be in an iframe.")
+            for i, iframe in enumerate(iframes):
+                logger.debug(f"Iframe {i+1} src: {iframe.get('src', 'No src attribute')}")
+        
+        # Look for script tags that might contain the futures data in JSON
+        scripts = soup.find_all('script', type='application/json') + soup.find_all('script', type='text/javascript')
+        data_scripts = []
+        for script in scripts:
+            script_text = script.string if script.string else ""
+            if script_text and ('VIX' in script_text or 'futures' in script_text.lower() or 'vx' in script_text.lower()):
+                data_scripts.append(script)
+        
+        logger.debug(f"Found {len(data_scripts)} script tags that might contain futures data")
+        
+        # If we found a script with potential data, try to extract it
+        # This is a simplified example - actual extraction would depend on the structure
+        futures_found = False
+        for script in data_scripts:
+            script_text = script.string if script.string else ""
+            # Log a snippet to help with debugging
+            logger.debug(f"Script content snippet (first 200 chars): {script_text[:200]}")
+            
+            # Very simplified example - look for patterns like "VX" followed by month code and price
+            vix_pattern = re.compile(r'VX([A-Z])([\d]{1}).*?[":]*([\d\.]+)', re.IGNORECASE)
+            matches = vix_pattern.findall(script_text)
+            
+            for match in matches:
+                try:
+                    month_code, year, price = match
+                    ticker = f"/VX{month_code}{year}"
+                    price = float(price)
+                    futures_data[ticker] = price
+                    futures_found = True
+                    logger.info(f"CBOE: {ticker} = {price}")
+                except (ValueError, IndexError) as e:
+                    logger.warning(f"Error parsing potential futures data: {str(e)}")
+        
+        # If the above methods didn't work, try to find settlements in the page text
+        if not futures_found:
+            logger.debug("Didn't find structured futures data. Looking for text patterns...")
+            
+            # Look for text patterns like "VXH25: 19.325" or similar
+            page_text = soup.get_text()
+            vix_text_pattern = re.compile(r'VX([A-Z])(\d{2})[:\s]+(\d+\.\d+)', re.IGNORECASE)
+            matches = vix_text_pattern.findall(page_text)
+            
+            for match in matches:
+                try:
+                    month_code, year, price = match
+                    ticker = f"/VX{month_code}{year[-1]}"
+                    price = float(price)
+                    futures_data[ticker] = price
+                    futures_found = True
+                    logger.info(f"CBOE (text): {ticker} = {price}")
+                except (ValueError, IndexError) as e:
+                    logger.warning(f"Error parsing potential text futures data: {str(e)}")
+        
+        if len(futures_data) > 2:  # More than just date and timestamp
+            logger.info(f"Successfully extracted futures data from CBOE (processing took {time.time() - start_time:.2f}s)")
+            return futures_data
+        else:
+            logger.warning("Could not extract VIX futures data from CBOE website")
+            # Save HTML for debugging
+            debug_html_path = os.path.join(SAVE_DIR, "cboe_debug.html")
+            with open(debug_html_path, "w", encoding="utf-8") as f:
+                f.write(response.text)
+            logger.debug(f"Saved CBOE HTML to {debug_html_path} for debugging")
+            return None
     
     except Exception as e:
         logger.error(f"Error downloading from CBOE: {str(e)}")
@@ -174,7 +267,8 @@ def download_vix_futures_from_cboe():
         return None
 
 def download_vix_futures_from_yfinance():
-    """Download VIX futures data from Yahoo Finance"""
+    """Download VIX futures data from Yahoo Finance using updated ticker patterns"""
+    start_time = time.time()
     try:
         logger.info("Downloading VIX futures data from Yahoo Finance...")
         
@@ -187,31 +281,116 @@ def download_vix_futures_from_yfinance():
         }
         
         # Get the VIX index price as a fallback for the front month
-        vix_data = yf.download("^VIX", period="1d", progress=False)
-        if not vix_data.empty:
-            futures_data['VX=F'] = vix_data['Close'].iloc[-1]
-            logger.info(f"Yahoo: VX=F = {futures_data['VX=F']}")
+        try:
+            vix_data = yf.download("^VIX", period="1d", progress=False)
+            if not vix_data.empty and 'Close' in vix_data.columns:
+                futures_data['VX=F'] = vix_data['Close'].iloc[-1]
+                logger.info(f"Yahoo: ^VIX = {futures_data['VX=F']}")
+            else:
+                logger.warning("Could not download ^VIX data from Yahoo Finance")
+        except Exception as e:
+            logger.error(f"Error downloading ^VIX: {str(e)}")
+        
+        # Try different ticker patterns for VIX futures
+        # VIX futures patterns to try:
+        # 1. ^VFTW1, ^VFTW2, etc.
+        # 2. ^VXIND1, ^VXIND2, etc.
+        vix_patterns = [
+            ['^VFTW1', '^VFTW2', '^VFTW3'],
+            ['^VXIND1', '^VXIND2', '^VXIND3']
+        ]
+        
+        # Map the positions to VIX ticker format
+        month_map = {1: 'H', 2: 'J', 3: 'K', 4: 'M', 5: 'N', 6: 'Q', 7: 'U', 8: 'V', 9: 'X', 10: 'Z', 11: 'F', 12: 'G'}
+        current_month = current_date.month
+        year_suffix = str(current_date.year)[-1]
+        
+        # Try to map the positions to actual contract months
+        position_to_contract = {}
+        for i in range(1, 4):
+            month_idx = (current_month + i - 1) % 12 + 1  # 1-indexed month
+            if month_idx <= current_month:
+                next_year_suffix = str(current_date.year + 1)[-1]
+                position_to_contract[i] = f"/VX{month_map[month_idx]}{next_year_suffix}"
+            else:
+                position_to_contract[i] = f"/VX{month_map[month_idx]}{year_suffix}"
+        
+        logger.debug(f"Position to contract mapping: {position_to_contract}")
+        
+        futures_found = False
+        
+        # Try each of the ticker patterns
+        for pattern_group in vix_patterns:
+            logger.info(f"Trying ticker pattern group: {pattern_group}")
+            
+            for i, ticker in enumerate(pattern_group, 1):
+                try:
+                    logger.debug(f"Downloading {ticker} from Yahoo Finance")
+                    data = yf.download(ticker, period="1d", progress=False)
+                    
+                    if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                        settlement_price = data['Close'].iloc[-1]
+                        
+                        # Map to the corresponding VIX contract ticker format
+                        if i in position_to_contract:
+                            contract_ticker = position_to_contract[i]
+                            futures_data[contract_ticker] = settlement_price
+                            logger.info(f"Yahoo: {ticker} → {contract_ticker} = {settlement_price}")
+                            futures_found = True
+                        
+                        # Also store with the original Yahoo ticker
+                        futures_data[ticker] = settlement_price
+                    else:
+                        logger.warning(f"No data found for ticker {ticker}")
+                except Exception as e:
+                    logger.warning(f"Error downloading {ticker} from Yahoo: {str(e)}")
+                    # Try downloading with a different period or interval
+                    try:
+                        logger.debug(f"Retrying {ticker} with different parameters")
+                        data = yf.download(ticker, period="5d", interval="1d", progress=False)
+                        
+                        if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                            settlement_price = data['Close'].iloc[-1]
+                            
+                            # Map to the corresponding VIX contract ticker format
+                            if i in position_to_contract:
+                                contract_ticker = position_to_contract[i]
+                                futures_data[contract_ticker] = settlement_price
+                                logger.info(f"Yahoo (retry): {ticker} → {contract_ticker} = {settlement_price}")
+                                futures_found = True
+                            
+                            # Also store with the original Yahoo ticker
+                            futures_data[ticker] = settlement_price
+                    except Exception as retry_e:
+                        logger.warning(f"Retry for {ticker} also failed: {str(retry_e)}")
+        
+        if futures_found:
+            logger.info(f"Successfully retrieved VIX futures data from Yahoo Finance (processing took {time.time() - start_time:.2f}s)")
+            return futures_data
         else:
-            futures_data['VX=F'] = None
-        
-        # Fixed tickers for upcoming VIX futures contracts
-        futures_tickers = ['/VXH5', '/VXJ5', '/VXK5']  # H=Mar, J=Apr, K=May 2025
-        
-        for ticker in futures_tickers:
-            try:
-                data = yf.download(ticker, period="1d", progress=False)
-                
-                if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                    settlement_price = data['Close'].iloc[-1]
-                    futures_data[ticker] = settlement_price
-                    logger.info(f"Yahoo: {ticker} = {settlement_price}")
-                else:
-                    futures_data[ticker] = None
-            except Exception as e:
-                logger.warning(f"Error downloading {ticker} from Yahoo: {str(e)}")
-                futures_data[ticker] = None
-        
-        return futures_data
+            # As a fallback, try the original contract notation
+            logger.debug("Trying direct contract notation as a fallback")
+            
+            futures_tickers = [position_to_contract[i] for i in range(1, 4) if i in position_to_contract]
+            
+            for ticker in futures_tickers:
+                try:
+                    data = yf.download(ticker, period="1d", progress=False)
+                    
+                    if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                        settlement_price = data['Close'].iloc[-1]
+                        futures_data[ticker] = settlement_price
+                        logger.info(f"Yahoo (direct): {ticker} = {settlement_price}")
+                        futures_found = True
+                except Exception as e:
+                    logger.warning(f"Error downloading {ticker} directly: {str(e)}")
+            
+            if futures_found:
+                logger.info(f"Successfully retrieved some VIX futures using direct contract notation (processing took {time.time() - start_time:.2f}s)")
+                return futures_data
+            else:
+                logger.warning("Could not retrieve any VIX futures data from Yahoo Finance")
+                return futures_data  # Return with just the VIX index if available
     
     except Exception as e:
         logger.error(f"Error in Yahoo Finance download: {str(e)}")
@@ -220,11 +399,34 @@ def download_vix_futures_from_yfinance():
 
 def download_vix_futures():
     """Download VIX futures data from all sources and combine them"""
+    overall_start_time = time.time()
     
     # Download from all sources
     cboe_data = download_vix_futures_from_cboe()
     yfinance_data = download_vix_futures_from_yfinance()
     simplex_data = read_latest_simplex_etf()
+    
+    # Log summary of results from each source
+    logger.info("=== SOURCE SUMMARY ===")
+    if cboe_data:
+        cboe_contracts = [k for k in cboe_data.keys() if k not in ['date', 'timestamp']]
+        logger.info(f"CBOE: Found {len(cboe_contracts)} contracts: {', '.join(cboe_contracts)}")
+    else:
+        logger.info("CBOE: No data retrieved")
+    
+    if yfinance_data:
+        yf_contracts = [k for k in yfinance_data.keys() if k not in ['date', 'timestamp']]
+        logger.info(f"Yahoo Finance: Found {len(yf_contracts)} contracts/tickers: {', '.join(yf_contracts)}")
+    else:
+        logger.info("Yahoo Finance: No data retrieved")
+    
+    if simplex_data:
+        simplex_contracts = [k for k in simplex_data.keys() if k not in ['date', 'timestamp']]
+        logger.info(f"Simplex ETF: Found {len(simplex_contracts)} contracts: {', '.join(simplex_contracts)}")
+    else:
+        logger.info("Simplex ETF: No data retrieved")
+    
+    logger.info("=====================")
     
     # Create combined data structure
     if cboe_data or yfinance_data or simplex_data:
@@ -250,7 +452,9 @@ def download_vix_futures():
         if yfinance_data:
             for key in yfinance_data:
                 if key not in ['date', 'timestamp'] and yfinance_data[key] is not None:
-                    all_contracts.add(key)
+                    # Only add VIX futures contracts, not the Yahoo-specific tickers
+                    if key.startswith('/VX') or key == 'VX=F':
+                        all_contracts.add(key)
                     result[f"{key}_yahoo"] = yfinance_data[key]
         
         # Add data from Simplex ETF
@@ -286,17 +490,26 @@ def download_vix_futures():
             master_csv_path = os.path.join(SAVE_DIR, "vix_futures_master.csv")
             
             if os.path.exists(master_csv_path):
-                master_df = pd.read_csv(master_csv_path)
-                # Check if we already have data for this date
-                if not master_df.empty and 'date' in master_df.columns:
-                    if df['date'].iloc[0] in master_df['date'].values:
-                        logger.info(f"Data for {df['date'].iloc[0]} already exists in master file. Updating...")
-                        # Remove existing entry for this date
-                        master_df = master_df[master_df['date'] != df['date'].iloc[0]]
-                
-                combined_df = pd.concat([master_df, df], ignore_index=True)
-                combined_df.to_csv(master_csv_path, index=False)
-                logger.info(f"Updated master CSV file: {master_csv_path}")
+                try:
+                    master_df = pd.read_csv(master_csv_path)
+                    logger.debug(f"Read master CSV: {master_df.shape}")
+                    
+                    # Check if we already have data for this date
+                    if not master_df.empty and 'date' in master_df.columns:
+                        if df['date'].iloc[0] in master_df['date'].values:
+                            logger.info(f"Data for {df['date'].iloc[0]} already exists in master file. Updating...")
+                            # Remove existing entry for this date
+                            master_df = master_df[master_df['date'] != df['date'].iloc[0]]
+                    
+                    combined_df = pd.concat([master_df, df], ignore_index=True)
+                    combined_df.to_csv(master_csv_path, index=False)
+                    logger.info(f"Updated master CSV file: {master_csv_path}")
+                except Exception as e:
+                    logger.error(f"Error updating master CSV: {str(e)}")
+                    logger.error(traceback.format_exc())
+                    # Fall back to creating a new file
+                    df.to_csv(master_csv_path, index=False)
+                    logger.info(f"Created new master CSV file: {master_csv_path}")
             else:
                 df.to_csv(master_csv_path, index=False)
                 logger.info(f"Created master CSV file: {master_csv_path}")
@@ -331,7 +544,10 @@ def download_vix_futures():
                     if len(values) > 1:
                         max_diff = max(values) - min(values)
                         logger.info(f"{contract}: Max difference between sources: {max_diff:.4f}")
+                        if max_diff > 1.0:
+                            logger.warning(f"Large discrepancy (>{max_diff:.4f}) for {contract} across sources")
             
+            logger.info(f"Total processing time: {time.time() - overall_start_time:.2f}s")
             return True
         else:
             logger.warning("No valid price data collected. Not saving empty files.")
