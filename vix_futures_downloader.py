@@ -50,142 +50,108 @@ def format_vix_data_for_output(cboe_data, yfinance_data, simplex_data):
     
     # Process CBOE data
     if cboe_data:
+        # Get unique CBOE contracts (no duplicates)
+        cboe_contracts = {}
         for key, value in cboe_data.items():
-            # Skip non-price fields
-            if key in ['date', 'timestamp']:
+            # Skip non-price fields and null values
+            if key in ['date', 'timestamp'] or value is None:
                 continue
                 
-            # Skip null values
-            if value is None:
-                continue
-                
-            # Process standardized CBOE tickers (CBOE:VXH5)
+            # Process CBOE tickers
+            vix_future = None
             if key.startswith('CBOE:VX'):
                 vix_future = key.split(':')[1]  # Extract VXH5 from CBOE:VXH5
-                all_rows.append({
-                    'timestamp': timestamp,
-                    'price_date': price_date,
-                    'vix_future': vix_future,
-                    'source': 'CBOE',
-                    'symbol': key,
-                    'price': float(value)
-                })
-            # Process legacy CBOE tickers (/VXH5)
-            elif key.startswith('/VX') and not key.endswith('_cboe'):
+                # For CBOE, we prefer the /VX format if available
+                if f"/VX{vix_future[2:]}" in cboe_data:
+                    continue  # Skip CBOE:VX format if /VX format exists
+            elif key.startswith('/VX'):
                 vix_future = 'VX' + key[3:]  # Convert /VXH5 to VXH5
-                all_rows.append({
-                    'timestamp': timestamp,
-                    'price_date': price_date,
-                    'vix_future': vix_future,
-                    'source': 'CBOE',
-                    'symbol': key,
-                    'price': float(value)
-                })
+            else:
+                continue
+                
+            # Store the contract (prefer /VX format over CBOE:VX format)
+            if vix_future not in cboe_contracts or key.startswith('/VX'):
+                cboe_contracts[vix_future] = (key, float(value))
+        
+        # Add all unique CBOE contracts to rows
+        for vix_future, (symbol, price) in cboe_contracts.items():
+            all_rows.append({
+                'timestamp': timestamp,
+                'price_date': price_date,
+                'vix_future': vix_future,
+                'source': 'CBOE',
+                'symbol': symbol,  # Original symbol from source
+                'price': price
+            })
     
     # Process Yahoo Finance data
     if yfinance_data:
-        # Define mapping of Yahoo tickers to standardized VIX futures
-        yahoo_mapping = {
-            # VIX index
-            'VX=F': 'VIX',
-            'YAHOO:VIX': 'VIX',
-            
-            # Direct contracts
-            '/VXH5': 'VXH5',
-            '/VXJ5': 'VXJ5',
-            '/VXK5': 'VXK5',
-            '/VXM5': 'VXM5',
-            '/VXN5': 'VXN5',
-            
-            # Standard Yahoo patterns
-            'YAHOO:VXH5': 'VXH5',
-            'YAHOO:VXJ5': 'VXJ5',
-            'YAHOO:VXK5': 'VXK5',
-            'YAHOO:VXM5': 'VXM5',
-            'YAHOO:VXN5': 'VXN5',
-            
-            # VFTW series (1st, 2nd, 3rd month)
-            '^VFTW1': 'VXK5',  # Adjusted based on current contract months
-            '^VFTW2': 'VXM5', 
-            '^VFTW3': 'VXN5',
-            'YAHOO:^VFTW1': 'VXK5',
-            'YAHOO:^VFTW2': 'VXM5',
-            'YAHOO:^VFTW3': 'VXN5',
-            
-            # VXIND series (1st, 2nd, 3rd month)
-            '^VXIND1': 'VXK5',  # Adjusted based on current contract months
-            '^VXIND2': 'VXM5',
-            '^VXIND3': 'VXN5',
-            'YAHOO:^VXIND1': 'VXK5',
-            'YAHOO:^VXIND2': 'VXM5', 
-            'YAHOO:^VXIND3': 'VXN5'
-        }
-        
+        yahoo_contracts = {}
         for key, value in yfinance_data.items():
-            # Skip non-price fields
-            if key in ['date', 'timestamp']:
+            # Skip non-price fields and null values
+            if key in ['date', 'timestamp'] or value is None:
                 continue
                 
-            # Skip null values
-            if value is None:
-                continue
-            
-            # Get standardized future name if available
-            if key in yahoo_mapping:
-                vix_future = yahoo_mapping[key]
+            # Determine vix_future
+            vix_future = None
+            if key.startswith('YAHOO:VX'):
+                vix_future = key.split(':')[1]  # Extract VXH5 from YAHOO:VXH5
             elif key.startswith('/VX'):
-                # For direct /VX tickers, convert to VX format
-                vix_future = 'VX' + key[3:]
-            elif key.startswith('YAHOO:VX'):
-                # For YAHOO:VX format
-                vix_future = key.split(':')[1]
+                vix_future = 'VX' + key[3:]  # Convert /VXH5 to VXH5
+            elif key in ['VX=F', 'YAHOO:VIX', '^VIX']:
+                vix_future = 'VIX'
+            # Skip index variants
+            elif any(key.startswith(p) for p in ['^VFTW', 'YAHOO:^VFTW', '^VXIND', 'YAHOO:^VXIND']):
+                continue
             else:
-                # Skip unknown tickers
                 continue
                 
+            # Store the contract (we prefer YAHOO: format over /VX format for Yahoo)
+            if vix_future not in yahoo_contracts or key.startswith('YAHOO:'):
+                yahoo_contracts[vix_future] = (key, float(value))
+        
+        # Add all unique Yahoo contracts to rows
+        for vix_future, (symbol, price) in yahoo_contracts.items():
             all_rows.append({
                 'timestamp': timestamp,
                 'price_date': price_date,
                 'vix_future': vix_future,
                 'source': 'Yahoo',
-                'symbol': key,
-                'price': float(value)
+                'symbol': symbol,  # Original symbol from source
+                'price': price
             })
     
     # Process Simplex PCF data
     if simplex_data:
-        # Regular Simplex format
+        pcf_contracts = {}
         for key, value in simplex_data.items():
-            # Skip non-price fields
-            if key in ['date', 'timestamp']:
+            # Skip non-price fields and null values
+            if key in ['date', 'timestamp'] or value is None:
                 continue
                 
-            # Skip null values
-            if value is None:
-                continue
-                
-            # Process standardized Simplex tickers (SIMPLEX:VXH5)
-            if key.startswith('SIMPLEX:VX') or key.startswith('PCF:VX'):
-                vix_future = key.split(':')[1]  # Extract VXH5 from SIMPLEX:VXH5
-                all_rows.append({
-                    'timestamp': timestamp,
-                    'price_date': price_date,
-                    'vix_future': vix_future,
-                    'source': 'PCF',
-                    'symbol': key,
-                    'price': float(value)
-                })
-            # Process legacy Simplex tickers (/VXH5)
-            elif key.startswith('/VX') and not key.endswith(('_simplex', '_yahoo', '_cboe')):
+            # Determine vix_future
+            vix_future = None
+            if key.startswith('PCF:VX') or key.startswith('SIMPLEX:VX'):
+                vix_future = key.split(':')[1]  # Extract VXH5 from PCF:VXH5
+            elif key.startswith('/VX'):
                 vix_future = 'VX' + key[3:]  # Convert /VXH5 to VXH5
-                all_rows.append({
-                    'timestamp': timestamp,
-                    'price_date': price_date,
-                    'vix_future': vix_future,
-                    'source': 'PCF',
-                    'symbol': key,
-                    'price': float(value)
-                })
+            else:
+                continue
+                
+            # Store the contract (prefer PCF: format over /VX format for PCF)
+            if vix_future not in pcf_contracts or key.startswith('PCF:') or key.startswith('SIMPLEX:'):
+                pcf_contracts[vix_future] = (key, float(value))
+        
+        # Add all unique PCF contracts to rows
+        for vix_future, (symbol, price) in pcf_contracts.items():
+            all_rows.append({
+                'timestamp': timestamp,
+                'price_date': price_date,
+                'vix_future': vix_future,
+                'source': 'PCF',
+                'symbol': symbol,  # Original symbol from source
+                'price': price
+            })
     
     # Create DataFrame from collected rows
     df = pd.DataFrame(all_rows)
@@ -221,17 +187,18 @@ def save_vix_data(df, save_dir=SAVE_DIR):
             # Read existing master CSV
             master_df = pd.read_csv(master_csv_path)
             
-            # Check if current date's data already exists
-            price_date = df['price_date'].iloc[0]
-            timestamp_val = df['timestamp'].iloc[0]
+            # Get current timestamp
+            current_timestamp = df['timestamp'].iloc[0]
             
-            # Remove data with the same timestamp (exact same run)
-            master_df = master_df[master_df['timestamp'] != timestamp_val]
+            # Remove data with the same timestamp (to avoid duplicates from the same run)
+            # This is important because re-runs might happen in development/testing
+            master_df = master_df[master_df['timestamp'] != current_timestamp]
             
             # Append new data
             combined_df = pd.concat([master_df, df], ignore_index=True)
             combined_df.to_csv(master_csv_path, index=False)
         except Exception as e:
+            logger.error(f"Error updating master CSV: {str(e)}")
             # If error reading/updating master, just overwrite with new file
             df.to_csv(master_csv_path, index=False)
     else:
