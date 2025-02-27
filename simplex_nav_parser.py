@@ -56,50 +56,109 @@ def parse_simplex_nav_from_html(html_content):
         # Method 1: Find by div with id="code_318A"
         nav_div = soup.find('div', id='code_318A')
         
-        if nav_div is not None and nav_div.text.strip():
+        if nav_div is not None:
+            logger.debug(f"Found nav_div element: {nav_div}")
+            logger.debug(f"nav_div attributes: {nav_div.attrs}")
+            logger.debug(f"nav_div parent: {nav_div.parent}")
+            
             # Extract the NAV value and remove the yen symbol
             nav_text = nav_div.text.strip()
-            nav_value = nav_text.replace('円', '')
+            logger.debug(f"nav_div text content: '{nav_text}'")
             
-            # Try to convert to float
-            try:
-                nav_float = float(nav_value.replace(',', ''))
-                logger.info(f"Successfully parsed NAV for ETF 318A (method 1): {nav_float}")
-            except ValueError:
-                logger.warning(f"Could not convert NAV value '{nav_value}' to float (method 1)")
+            if nav_text:
+                nav_value = nav_text.replace('円', '')
+                logger.debug(f"Cleaned nav_value: '{nav_value}'")
+                
+                # Try to convert to float
+                try:
+                    nav_float = float(nav_value.replace(',', ''))
+                    logger.info(f"Successfully parsed NAV for ETF 318A (method 1): {nav_float}")
+                except ValueError as e:
+                    logger.warning(f"Could not convert NAV value '{nav_value}' to float (method 1): {str(e)}")
+            else:
+                logger.warning("nav_div element found but text content is empty")
         else:
-            logger.warning("Could not find NAV value for ETF 318A using method 1")
+            logger.warning("Could not find NAV value for ETF 318A using method 1 (div#code_318A not found)")
+            
+            # Debug other divs with similar IDs
+            similar_divs = soup.find_all('div', id=lambda x: x and 'code_' in x)
+            logger.debug(f"Found {len(similar_divs)} other divs with 'code_' in id")
+            for div in similar_divs[:5]:  # Show up to 5 examples
+                logger.debug(f"Similar div: id={div.get('id')}, text='{div.text.strip()}'")
+                
+            # Debug if 318A appears anywhere in the HTML
+            if '318A' in html_content:
+                logger.debug("String '318A' found in HTML content")
+                index = html_content.find('318A')
+                context = html_content[max(0, index-100):min(len(html_content), index+200)]
+                logger.debug(f"Context around '318A': {context}")
+            else:
+                logger.debug("String '318A' NOT found in HTML content")
             
         # Method 2: Try to find NAV by looking at the ETF row directly
         if nav_float is None:
-            logger.info("Trying alternative method to find NAV...")
+            logger.info("Trying alternative method to find NAV (method 2)...")
             
-            # Find the row that contains "318A"
+            # Find all table rows
             etf_rows = soup.find_all('tr')
-            for row in etf_rows:
-                cells = row.find_all('td')
-                if len(cells) >= 2 and "318A" in cells[1].text.strip():
-                    # ETF code is typically in the second column
-                    # NAV is typically in the fifth column (index 4)
-                    if len(cells) >= 5:
-                        nav_cell = cells[4]
-                        
-                        # Try to extract the NAV value
-                        nav_text = nav_cell.text.strip()
-                        if nav_text:
-                            # Remove any div tags if present
-                            if nav_cell.find('div'):
-                                nav_text = nav_cell.find('div').text.strip()
-                                
-                            # Remove the yen symbol and try to convert to float
-                            nav_value = nav_text.replace('円', '')
-                            try:
-                                nav_float = float(nav_value.replace(',', ''))
-                                logger.info(f"Successfully parsed NAV for ETF 318A (method 2): {nav_float}")
-                                break
-                            except ValueError:
-                                logger.warning(f"Could not convert NAV value '{nav_value}' to float (method 2)")
+            logger.debug(f"Found {len(etf_rows)} table rows in the HTML")
             
+            # Record rows with "318A" for debugging
+            matching_rows = []
+            
+            # Try to find the row that contains "318A"
+            found_row = False
+            for i, row in enumerate(etf_rows):
+                cells = row.find_all('td')
+                row_text = row.get_text()
+                
+                if "318A" in row_text:
+                    logger.debug(f"Found row {i} containing '318A': {row}")
+                    matching_rows.append(row)
+                    found_row = True
+                    
+                    # Check if we have enough cells
+                    logger.debug(f"Row has {len(cells)} cells")
+                    
+                    if len(cells) >= 2:
+                        # Get the value of the second cell (typical code cell)
+                        logger.debug(f"Second cell content: '{cells[1].text.strip()}'")
+                        
+                        if len(cells) >= 5:
+                            # NAV is typically in the fifth column (index 4)
+                            nav_cell = cells[4]
+                            logger.debug(f"Fifth cell (potential NAV): {nav_cell}")
+                            
+                            # Try to extract the NAV value
+                            nav_text = nav_cell.text.strip()
+                            logger.debug(f"NAV cell text content: '{nav_text}'")
+                            
+                            if nav_text:
+                                # Remove any div tags if present
+                                if nav_cell.find('div'):
+                                    div_elem = nav_cell.find('div')
+                                    logger.debug(f"Found div in NAV cell: {div_elem}")
+                                    nav_text = div_elem.text.strip()
+                                    logger.debug(f"Div text: '{nav_text}'")
+                                
+                                # Remove the yen symbol and try to convert to float
+                                nav_value = nav_text.replace('円', '')
+                                logger.debug(f"Cleaned NAV value: '{nav_value}'")
+                                
+                                try:
+                                    nav_float = float(nav_value.replace(',', ''))
+                                    logger.info(f"Successfully parsed NAV for ETF 318A (method 2): {nav_float}")
+                                    break
+                                except ValueError as e:
+                                    logger.warning(f"Could not convert NAV value '{nav_value}' to float (method 2): {str(e)}")
+                        else:
+                            logger.debug(f"Row doesn't have enough cells to find NAV (has {len(cells)}, need at least 5)")
+            
+            if not found_row:
+                logger.warning("Could not find any rows containing '318A'")
+            elif len(matching_rows) > 0:
+                logger.debug(f"Found {len(matching_rows)} rows containing '318A' but could not extract NAV")
+                
             if nav_float is None:
                 logger.warning("Could not find NAV value using method 2")
         
@@ -198,9 +257,15 @@ def parse_simplex_nav_data():
         # URL of the Simplex ETF page
         url = "https://www.simplexasset.com/etf/eng/etf.html"
         
-        # Get the HTML content
+        # Get the HTML content with more browser-like headers
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Cache-Control': 'max-age=0'
         }
         
         # Suppress SSL warnings
@@ -208,8 +273,44 @@ def parse_simplex_nav_data():
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         
         logger.info(f"Requesting URL: {url}")
-        response = requests.get(url, headers=headers, verify=False)
-        response.raise_for_status()
+        
+        # Try multiple times with different options
+        for attempt in range(1, 4):
+            try:
+                logger.info(f"Attempt {attempt} to fetch URL")
+                if attempt == 1:
+                    # First attempt: standard request
+                    response = requests.get(url, headers=headers, verify=False)
+                elif attempt == 2:
+                    # Second attempt: with session
+                    session = requests.Session()
+                    response = session.get(url, headers=headers, verify=False)
+                else:
+                    # Third attempt: with different timeout and no compression
+                    headers['Accept-Encoding'] = 'identity'
+                    response = requests.get(url, headers=headers, verify=False, timeout=30)
+                
+                response.raise_for_status()
+                
+                # If response is too small, it might be an error page
+                if len(response.text) < 1000:
+                    logger.warning(f"Response too small ({len(response.text)} bytes), might be an error page")
+                    continue
+                    
+                # Check if response contains the expected content
+                if '318A' not in response.text:
+                    logger.warning("Response does not contain '318A', might be redirected to a different page")
+                    continue
+                    
+                # If we get here, the response looks valid
+                logger.info(f"Successfully retrieved page with {len(response.text)} bytes")
+                break
+                
+            except Exception as e:
+                logger.warning(f"Attempt {attempt} failed: {str(e)}")
+                if attempt == 3:
+                    # Last attempt failed, raise the exception
+                    raise
         
         # Parse the HTML
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -442,8 +543,46 @@ if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Parse Simplex Asset Management NAV data")
     parser.add_argument("--local", action="store_true", help="Use local HTML file instead of fetching from website")
+    parser.add_argument("--debug", action="store_true", help="Enable extra debug logging")
+    parser.add_argument("--output-dir", help="Directory to save output files (default: data)")
+    args = parser.parse_args()
+        
+    # Configure extra debug logging if requested
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        for handler in logger.handlers:
+            handler.setLevel(logging.DEBUG)
+        
+    # Override save directory if specified
+    if args.output_dir:
+        SAVE_DIR = args.output_dir
+        os.makedirs(SAVE_DIR, exist_ok=True)
+        
+    # Process NAV data
+    success = process_simplex_nav(use_local_file=args.local)
+    
+    if success:
+        print(f"✅ Successfully processed Simplex NAV data")
+    else:
+        print("❌ Failed to process Simplex NAV data")
+        exit(1)d_argument("--output-dir", help="Directory to save output files (default: data)")
     args = parser.parse_args()
     
+    # Set environment variable for fallback if requested
+    if args.fallback:
+        os.environ['USE_HARDCODED_FALLBACK'] = 'true'
+        
+    # Configure extra debug logging if requested
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        for handler in logger.handlers:
+            handler.setLevel(logging.DEBUG)
+        
+    # Override save directory if specified
+    if args.output_dir:
+        SAVE_DIR = args.output_dir
+        os.makedirs(SAVE_DIR, exist_ok=True)
+        
     # Process NAV data
     success = process_simplex_nav(use_local_file=args.local)
     
