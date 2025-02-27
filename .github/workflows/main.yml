@@ -38,6 +38,9 @@ jobs:
 
     - name: Extract VIX futures from PCF
       run: python pcf_vix_extractor.py
+      
+    - name: Extract ETF Characteristics
+      run: python etf_characteristics_parser.py
 
     - name: Commit and Push ETF data
       run: |
@@ -79,6 +82,9 @@ jobs:
         echo "=== PCF VIX EXTRACTION LOG ==="
         cat data/pcf_vix_extractor.log || echo "Log file not found"
         echo "==============================="
+        echo "=== ETF CHARACTERISTICS LOG ==="
+        cat data/etf_characteristics.log || echo "Log file not found"
+        echo "================================="
 
   vix-futures:
     runs-on: ubuntu-latest
@@ -129,9 +135,11 @@ jobs:
         
         # Add and commit changes
         git add data/vix_futures_*.csv
+        git add data/etf_characteristics_*.csv
         git add data/vix_downloader.log
         git add data/cboe_vix_downloader.log
         git add data/yahoo_vix_downloader.log
+        git add data/etf_characteristics.log
         git add data/cboe_debug.html
         git commit -m "VIX futures update $(date +'%Y-%m-%d')" || echo "No changes to commit"
         
@@ -144,6 +152,7 @@ jobs:
         name: vix-futures-data
         path: |
           data/vix_futures_*.csv
+          data/etf_characteristics_*.csv
           data/*.log
           data/cboe_debug.html
         retention-days: 399  # Keep for 399 days
@@ -160,3 +169,6 @@ jobs:
         echo "=== VIX FUTURES DOWNLOADER LOG ==="
         cat data/vix_downloader.log || echo "Log file not found"
         echo "==================================="
+        echo "=== ETF CHARACTERISTICS LOG ==="
+        cat data/etf_characteristics.log || echo "Log file not found"
+        echo "================================="
