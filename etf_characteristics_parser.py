@@ -118,12 +118,21 @@ def parse_etf_characteristics(file_path=None):
                 code_col = full_df.columns[codes_section_start]
                 name_col = full_df.columns[codes_section_start+1]
                 
-                # Find the shares column
+                # Find the "Shares Amount" column specifically
                 shares_col = None
                 for col in full_df.columns:
-                    if 'shares' in col.lower() and 'amount' in col.lower():
+                    if col.lower() == 'shares amount' or col.lower() == 'shares_amount':
                         shares_col = col
+                        logger.info(f"Found Shares Amount column: {col}")
                         break
+                
+                # Fallback approaches if the exact column name isn't found
+                if shares_col is None:
+                    for col in full_df.columns:
+                        if 'shares' in col.lower() and 'amount' in col.lower():
+                            shares_col = col
+                            logger.info(f"Found column containing 'shares' and 'amount': {col}")
+                            break
                 
                 if shares_col is None:
                     # Try to find column with numeric values that could be shares
@@ -132,6 +141,7 @@ def parse_etf_characteristics(file_path=None):
                             # Check if values look like shares (positive integers)
                             if not full_df[col].isna().all() and (full_df[col] >= 0).all():
                                 shares_col = col
+                                logger.info(f"Using numeric column as shares: {col}")
                                 break
                 
                 if shares_col:
@@ -141,7 +151,9 @@ def parse_etf_characteristics(file_path=None):
                         if not pd.isna(row[name_col]):
                             name = str(row[name_col]).upper()
                             if 'CBOEVIX' in name or ('VIX' in name and 'FUTURE' in name):
-                                vix_futures_rows.append((row[code_col], row[name_col], row[shares_col]))
+                                # Use the Shares Amount column for the share count
+                                shares_value = row[shares_col] if not pd.isna(row[shares_col]) else 0
+                                vix_futures_rows.append((row[code_col], row[name_col], shares_value))
                     
                     # Sort VIX futures by contract date
                     def extract_contract_date(code_name_tuple):
