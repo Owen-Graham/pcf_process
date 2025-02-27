@@ -1,135 +1,115 @@
-name: VIX and ETF Data Collection
+import os
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+from datetime import datetime
+import traceback
+from common import setup_logging, SAVE_DIR
 
-on:
-  schedule:
-    # ETF data collection - daily at 5:15 AM UTC
-    - cron: "15 5 * * *"
-    # VIX futures data collection - Mon-Fri at 23:15 UTC (after market close)
-    - cron: "15 23 * * 1-5"
-  workflow_dispatch:  # Allow manual triggering
+# Set up logging
+logger = setup_logging('etf_downloader')
 
-permissions:
-  contents: write  # Need write permission to push files back to repo
-
-jobs:
-  etf-data:
-    runs-on: ubuntu-latest
-    # Only run ETF jobs during the morning schedule (5:15 AM)
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '15 5 * * *')
+def download_simplex_etf_data():
+    """
+    Download ETF data file for Simplex ETF 318A (CSV/PCF format)
     
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Full history for commits
-
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests beautifulsoup4 pandas
-
-    - name: R
-
-    - name: Extract VIX futures from PCF
-      run: python pcf_vix_extractor.py
-
-    - name: Commit and Push ETF data
-      run: |
-        git config --global user.name "GitHub Actions Bot"
-        git config --global user.email "actions@github.com"
-        git add data/*.csv
-        git add data/*.log
-        git commit -m "Daily ETF data update $(date +'%Y-%m-%d')" || echo "No changes to commit"
-        git push
-
-    - name: Upload ETF data as artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: etf-data
-        path: |
-          data/*.csv
-          data/*.log
-        retention-days: 399  # Keep for 399 days
-
-    - name: Display log file (for debugging)
-      if: always()  # Run even if previous steps fail
-      run: |
-        echo "=== ETF CSV DOWNLOAD LOG ==="
-        cat data/etf_csv_downloader.log || echo "Log file not found"
-        echo "==========================="
-        echo "=== ETF PCF DOWNLOAD LOG ==="
-        cat data/etf_pcf_downloader.log || echo "Log file not found"
-        echo "==========================="
-        echo "=== PCF VIX EXTRACTION LOG ==="
-        cat data/pcf_vix_extractor.log || echo "Log file not found"
-        echo "==============================="
-
-  vix-futures:
-    runs-on: ubuntu-latest
-    # Only run VIX jobs during the evening schedule (23:15 UTC) or manual trigger
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '15 23 * * 1-5')
+    Returns:
+        str: Path to downloaded file
+    """
+    try:
+        logger.info("Downloading Simplex ETF 318A data")
+        
+        # URL of the Simplex ETF page
+        url = "https://www.simplexasset.com/etf/eng/etf.html"
+        
+        # Get the HTML content while bypassing SSL verification
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        # Suppress SSL warnings
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        
+        logger.debug(f"Requesting URL: {url}")
+        response = requests.get(url, headers=headers, verify=False)
+        response.raise_for_status()
+        
+        # Parse the HTML
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Find download links for ETF 318A (either CSV or PCF)
+        links = []
+        for input_tag in soup.find_all("input", {"type": "image"}):
+            onclick = input_tag.get("onclick", "")
+            if "318A" in onclick:
+                file_link = onclick.split("'")[1]
+                links.append((file_link, "PCF" if ".pcf" in file_link.lower() else "CSV"))
+        
+        if not links:
+            logger.warning("No ETF 318A links found")
+            return None
+            
+        # Prioritize PCF format if available, otherwise use CSV
+        for link, format_type in links:
+            # Correct URL format
+            if link.startswith(".."):
+                file_url = f"https://www.simplexasset.com/etf/{link.lstrip('..')}"
+            else:
+                file_url = f"https://www.simplexasset.com/etf/{link}"
+                
+            logger.info(f"Downloading {format_type} from URL: {file_url}")
+            file_response = requests.get(file_url, headers=headers, verify=False)
+            file_response.raise_for_status()
+            
+            # Temporary save path
+            temp_path = os.path.join(SAVE_DIR, f"temp_318A.csv")
+            
+            with open(temp_path, "wb") as file:
+                file.write(file_response.content)
+            
+            # Try to read the file to extract Fund Date
+            try:
+                df = pd.read_csv(temp_path)
+                
+                # Extract Fund Date from column if available
+                if 'Fund Date' in df.columns and len(df) > 0:
+                    fund_date = str(df["Fund Date"].iloc[0]).replace("/", "")
+                    if fund_date.lower() == "nan":
+                        fund_date = "unknown"
+                else:
+                    fund_date = "unknown"
+            except Exception as e:
+                logger.warning(f"Could not extract Fund Date: {str(e)}")
+                fund_date = "unknown"
+            
+            # Get current date-time
+            current_datetime = datetime.now().strftime("%Y%m%d%H%M")
+            
+            # Define final file name
+            final_filename = f"318A-{format_type}-{fund_date}-{current_datetime}.csv"
+            final_path = os.path.join(SAVE_DIR, final_filename)
+            
+            # Rename file to final filename
+            os.rename(temp_path, final_path)
+            
+            logger.info(f"ETF {format_type} file saved successfully to: {final_path}")
+            return final_path
+        
+        logger.warning("Failed to download any ETF 318A data files")
+        return None
     
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Full history for commits
+    except Exception as e:
+        logger.error(f"Error downloading ETF data: {str(e)}")
+        logger.error(traceback.format_exc())
+        return None
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install yfinance pandas requests beautifulsoup4
-
-    - name: Run CBOE VIX Downloader
-      run: python cboe_vix_downloader.py
-
-    - name: Run Yahoo Finance VIX Downloader  
-      run: python yahoo_vix_downloader.py
-
-    - name: Run VIX Futures Master Downloader
-      run: python vix_futures_downloader.py
-
-    - name: Commit and Push VIX futures data
-      run: |
-        git config --global user.name "GitHub Actions Bot"
-        git config --global user.email "actions@github.com"
-        git add data/vix_futures_*.csv
-        git add data/vix_downloader.log
-        git add data/cboe_vix_downloader.log
-        git add data/yahoo_vix_downloader.log
-        git add data/cboe_debug.html
-        git commit -m "VIX futures update $(date +'%Y-%m-%d')" || echo "No changes to commit"
-        git push
-
-    - name: Upload VIX futures data as artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: vix-futures-data
-        path: |
-          data/vix_futures_*.csv
-          data/*.log
-          data/cboe_debug.html
-        retention-days: 399  # Keep for 399 days
-
-    - name: Display log files (for debugging)
-      if: always()  # Run even if previous steps fail
-      run: |
-        echo "=== CBOE VIX DOWNLOADER LOG ==="
-        cat data/cboe_vix_downloader.log || echo "Log file not found"
-        echo "================================"
-        echo "=== YAHOO VIX DOWNLOADER LOG ==="
-        cat data/yahoo_vix_downloader.log || echo "Log file not found"
-        echo "================================="
-        echo "=== VIX FUTURES DOWNLOADER LOG ==="
-        cat data/vix_downloader.log || echo "Log file not found"
-        echo "==================================="
+if __name__ == "__main__":
+    # Download the ETF data file
+    etf_path = download_simplex_etf_data()
+    
+    if etf_path:
+        print(f"✅ ETF data file saved successfully to: {etf_path}")
+    else:
+        print("❌ Failed to download ETF data file")
+        exit(1)
