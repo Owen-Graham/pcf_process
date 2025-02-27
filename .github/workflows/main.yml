@@ -33,11 +33,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests beautifulsoup4 pandas
 
-    - name: Run ETF CSV Downloader
-      run: python download_etf_csv.py
-
-    - name: Run ETF PCF Downloader
-      run: python download_etf_pcf.py
+    - name: Run ETF Data Downloader
+      run: python download_etf_data.py
 
     - name: Extract VIX futures from PCF
       run: python pcf_vix_extractor.py
@@ -63,12 +60,9 @@ jobs:
     - name: Display log file (for debugging)
       if: always()  # Run even if previous steps fail
       run: |
-        echo "=== ETF CSV DOWNLOAD LOG ==="
-        cat data/etf_csv_downloader.log || echo "Log file not found"
-        echo "==========================="
-        echo "=== ETF PCF DOWNLOAD LOG ==="
-        cat data/etf_pcf_downloader.log || echo "Log file not found"
-        echo "==========================="
+        echo "=== ETF DATA DOWNLOAD LOG ==="
+        cat data/etf_downloader.log || echo "Log file not found"
+        echo "=============================="
         echo "=== PCF VIX EXTRACTION LOG ==="
         cat data/pcf_vix_extractor.log || echo "Log file not found"
         echo "==============================="
