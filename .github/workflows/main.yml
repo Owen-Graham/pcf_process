@@ -41,6 +41,9 @@ jobs:
       
     - name: Extract ETF Characteristics
       run: python etf_characteristics_parser.py
+      
+    - name: Parse Simplex NAV Data
+      run: python simplex_nav_parser.py
 
     - name: Commit and Push ETF data
       run: |
@@ -84,6 +87,9 @@ jobs:
         echo "==============================="
         echo "=== ETF CHARACTERISTICS LOG ==="
         cat data/etf_characteristics.log || echo "Log file not found"
+        echo "================================="
+        echo "=== SIMPLEX NAV PARSER LOG ==="
+        cat data/simplex_nav_parser.log || echo "Log file not found"
         echo "================================="
 
   vix-futures:
@@ -136,10 +142,12 @@ jobs:
         # Add and commit changes
         git add data/vix_futures_*.csv
         git add data/etf_characteristics_*.csv
+        git add data/nav_data_*.csv
         git add data/vix_downloader.log
         git add data/cboe_vix_downloader.log
         git add data/yahoo_vix_downloader.log
         git add data/etf_characteristics.log
+        git add data/simplex_nav_parser.log
         git add data/cboe_debug.html
         git commit -m "VIX futures update $(date +'%Y-%m-%d')" || echo "No changes to commit"
         
@@ -153,6 +161,7 @@ jobs:
         path: |
           data/vix_futures_*.csv
           data/etf_characteristics_*.csv
+          data/nav_data_*.csv
           data/*.log
           data/cboe_debug.html
         retention-days: 399  # Keep for 399 days
@@ -171,4 +180,7 @@ jobs:
         echo "==================================="
         echo "=== ETF CHARACTERISTICS LOG ==="
         cat data/etf_characteristics.log || echo "Log file not found"
+        echo "================================="
+        echo "=== SIMPLEX NAV PARSER LOG ==="
+        cat data/simplex_nav_parser.log || echo "Log file not found"
         echo "================================="
