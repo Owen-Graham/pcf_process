@@ -30,6 +30,225 @@ def log_response_details(response, source_name):
     """Log detailed information about HTTP responses"""
     logger.debug(f"{source_name} response: status={response.status_code}, content-type={response.headers.get('content-type')}, length={len(response.content)}")
 
+def format_vix_data_for_output(cboe_data, yfinance_data, simplex_data):
+    """
+    Formats all VIX futures data into a standardized format for output
+    
+    Returns:
+    pandas.DataFrame: DataFrame with standardized columns:
+        - timestamp: Unix timestamp of data collection
+        - price_date: Date prices are for (YYYY-MM-DD)
+        - vix_future: Standardized VIX future code (e.g., VXH5, VXK5)
+        - source: Data source (Yahoo, CBOE, PCF)
+        - symbol: Original symbol/identifier from the source
+        - price: Price value
+    """
+    # Current timestamp in desired format
+    timestamp = datetime.now().strftime("%Y%m%d%H%M")
+    
+    # Current date used for pricing date (could be modified if needed)
+    price_date = datetime.now().strftime("%Y-%m-%d")
+    
+    # List to store all rows
+    all_rows = []
+    
+    # Process CBOE data
+    if cboe_data:
+        for key, value in cboe_data.items():
+            # Skip non-price fields
+            if key in ['date', 'timestamp']:
+                continue
+                
+            # Skip null values
+            if value is None:
+                continue
+                
+            # Process standardized CBOE tickers (CBOE:VXH5)
+            if key.startswith('CBOE:VX'):
+                vix_future = key.split(':')[1]  # Extract VXH5 from CBOE:VXH5
+                all_rows.append({
+                    'timestamp': timestamp,
+                    'price_date': price_date,
+                    'vix_future': vix_future,
+                    'source': 'CBOE',
+                    'symbol': key,
+                    'price': float(value)
+                })
+            # Process legacy CBOE tickers (/VXH5)
+            elif key.startswith('/VX') and not key.endswith('_cboe'):
+                vix_future = 'VX' + key[3:]  # Convert /VXH5 to VXH5
+                all_rows.append({
+                    'timestamp': timestamp,
+                    'price_date': price_date,
+                    'vix_future': vix_future,
+                    'source': 'CBOE',
+                    'symbol': key,
+                    'price': float(value)
+                })
+    
+    # Process Yahoo Finance data
+    if yfinance_data:
+        # Define mapping of Yahoo tickers to standardized VIX futures
+        yahoo_mapping = {
+            # VIX index
+            'VX=F': 'VIX',
+            'YAHOO:VIX': 'VIX',
+            
+            # Direct contracts
+            '/VXH5': 'VXH5',
+            '/VXJ5': 'VXJ5',
+            '/VXK5': 'VXK5',
+            '/VXM5': 'VXM5',
+            '/VXN5': 'VXN5',
+            
+            # Standard Yahoo patterns
+            'YAHOO:VXH5': 'VXH5',
+            'YAHOO:VXJ5': 'VXJ5',
+            'YAHOO:VXK5': 'VXK5',
+            'YAHOO:VXM5': 'VXM5',
+            'YAHOO:VXN5': 'VXN5',
+            
+            # VFTW series (1st, 2nd, 3rd month)
+            '^VFTW1': 'VXK5',  # Adjusted based on current contract months
+            '^VFTW2': 'VXM5', 
+            '^VFTW3': 'VXN5',
+            'YAHOO:^VFTW1': 'VXK5',
+            'YAHOO:^VFTW2': 'VXM5',
+            'YAHOO:^VFTW3': 'VXN5',
+            
+            # VXIND series (1st, 2nd, 3rd month)
+            '^VXIND1': 'VXK5',  # Adjusted based on current contract months
+            '^VXIND2': 'VXM5',
+            '^VXIND3': 'VXN5',
+            'YAHOO:^VXIND1': 'VXK5',
+            'YAHOO:^VXIND2': 'VXM5', 
+            'YAHOO:^VXIND3': 'VXN5'
+        }
+        
+        # Update mapping based on current month/year if needed
+        # This should be done dynamically based on the current date
+        # Note: In a full implementation, these mappings would be derived from 
+        # the position_to_contract logic in the download_vix_futures_from_yfinance function
+        
+        for key, value in yfinance_data.items():
+            # Skip non-price fields
+            if key in ['date', 'timestamp']:
+                continue
+                
+            # Skip null values
+            if value is None:
+                continue
+            
+            # Get standardized future name if available
+            if key in yahoo_mapping:
+                vix_future = yahoo_mapping[key]
+            elif key.startswith('/VX'):
+                # For direct /VX tickers, convert to VX format
+                vix_future = 'VX' + key[3:]
+            elif key.startswith('YAHOO:VX'):
+                # For YAHOO:VX format
+                vix_future = key.split(':')[1]
+            else:
+                # Skip unknown tickers
+                continue
+                
+            all_rows.append({
+                'timestamp': timestamp,
+                'price_date': price_date,
+                'vix_future': vix_future,
+                'source': 'Yahoo',
+                'symbol': key,
+                'price': float(value)
+            })
+    
+    # Process Simplex PCF data
+    if simplex_data:
+        # Regular Simplex format
+        for key, value in simplex_data.items():
+            # Skip non-price fields
+            if key in ['date', 'timestamp']:
+                continue
+                
+            # Skip null values
+            if value is None:
+                continue
+                
+            # Process standardized Simplex tickers (SIMPLEX:VXH5)
+            if key.startswith('SIMPLEX:VX'):
+                vix_future = key.split(':')[1]  # Extract VXH5 from SIMPLEX:VXH5
+                all_rows.append({
+                    'timestamp': timestamp,
+                    'price_date': price_date,
+                    'vix_future': vix_future,
+                    'source': 'PCF',
+                    'symbol': key,
+                    'price': float(value)
+                })
+            # Process legacy Simplex tickers (/VXH5)
+            elif key.startswith('/VX') and not key.endswith(('_simplex', '_yahoo', '_cboe')):
+                vix_future = 'VX' + key[3:]  # Convert /VXH5 to VXH5
+                all_rows.append({
+                    'timestamp': timestamp,
+                    'price_date': price_date,
+                    'vix_future': vix_future,
+                    'source': 'PCF',
+                    'symbol': key,
+                    'price': float(value)
+                })
+    
+    # Create DataFrame from collected rows
+    df = pd.DataFrame(all_rows)
+    
+    # Sort by VIX future and source
+    if not df.empty:
+        df = df.sort_values(['vix_future', 'source'])
+    
+    return df
+
+def save_vix_data(df, save_dir="data"):
+    """
+    Save the VIX futures data to CSV files
+    """
+    if df.empty:
+        return False
+        
+    timestamp = df['timestamp'].iloc[0]
+    
+    # Daily snapshot filename
+    csv_filename = f"vix_futures_{timestamp}.csv"
+    csv_path = os.path.join(save_dir, csv_filename)
+    
+    # Save daily snapshot
+    df.to_csv(csv_path, index=False)
+    
+    # Master CSV path - always append to this file
+    master_csv_path = os.path.join(save_dir, "vix_futures_master.csv")
+    
+    # Append to master CSV if it exists, otherwise create it
+    if os.path.exists(master_csv_path):
+        try:
+            # Read existing master CSV
+            master_df = pd.read_csv(master_csv_path)
+            
+            # Check if current date's data already exists
+            price_date = df['price_date'].iloc[0]
+            timestamp_val = df['timestamp'].iloc[0]
+            
+            # Remove data with the same timestamp (exact same run)
+            master_df = master_df[master_df['timestamp'] != timestamp_val]
+            
+            # Append new data
+            combined_df = pd.concat([master_df, df], ignore_index=True)
+            combined_df.to_csv(master_csv_path, index=False)
+        except Exception as e:
+            # If error reading/updating master, just overwrite with new file
+            df.to_csv(master_csv_path, index=False)
+    else:
+        # Create new master file
+        df.to_csv(master_csv_path, index=False)
+    
+    return True
+
 def read_latest_simplex_etf():
     """Read the latest Simplex ETF 318A data and extract VIX futures prices."""
     try:
@@ -65,8 +284,8 @@ def read_latest_simplex_etf():
                 if result.returncode == 0:
                     # Try to find the files again
                     for pattern in file_patterns:
-                        files.extend(glob.glob(pattern))
-                    files = list(set(files))  # Remove duplicates
+                        all_files.extend(glob.glob(pattern))
+                    files = list(set(all_files))  # Remove duplicates
                     
                     if not files:
                         logger.warning("Script ran successfully but no 318A files found")
@@ -89,434 +308,274 @@ def read_latest_simplex_etf():
         logger.info(f"Found latest Simplex ETF file: {latest_file} (modified: {datetime.fromtimestamp(os.path.getmtime(latest_file))})")
         
         # First, try to read the file structure to determine if it's a PCF or regular format
-        try:
-            # Read first few rows to analyze structure
-            with open(latest_file, 'r', encoding='utf-8') as f:
-                preview_lines = [line.strip() for line in f.readlines()[:20]]
-                
-            logger.debug(f"File preview (first 20 lines or less):")
-            for i, line in enumerate(preview_lines):
-                logger.debug(f"Line {i+1}: {line[:100]}..." if len(line) > 100 else f"Line {i+1}: {line}")
+        with open(latest_file, 'r', encoding='utf-8') as f:
+            preview_lines = [line.strip() for line in f.readlines()[:20]]
             
-            # Check if this is a PCF format file (header followed by holdings sections)
-            is_pcf_format = False
-            for line in preview_lines:
-                if "ETF Code" in line and "ETF Name" in line and "Fund Date" in line:
-                    is_pcf_format = True
-                    logger.info("Detected PCF format file with header information")
+        logger.debug(f"File preview (first 20 lines or less):")
+        for i, line in enumerate(preview_lines):
+            logger.debug(f"Line {i+1}: {line[:100]}..." if len(line) > 100 else f"Line {i+1}: {line}")
+        
+        # Check if this is a PCF format file (header followed by holdings sections)
+        is_pcf_format = False
+        for line in preview_lines:
+            if "ETF Code" in line and "ETF Name" in line:
+                is_pcf_format = True
+                logger.info("Detected PCF format file with header information")
+                break
+                
+        # Specific PCF parsing for the Simplex ETF 318A format
+        if is_pcf_format:
+            # Try to find the code/name/stock price line
+            header_row = None
+            data_start_row = None
+            
+            for i, line in enumerate(preview_lines):
+                if "Code,Name" in line or "Code,Name  " in line:
+                    header_row = i
+                    data_start_row = i + 1
+                    logger.info(f"Found holdings header at line {header_row+1}")
                     break
             
-            # Read the CSV file based on format
-            if is_pcf_format:
-                # For PCF format, we need to find the holdings section
-                # First, let's read the entire file as text
-                with open(latest_file, 'r', encoding='utf-8') as f:
-                    file_content = f.read()
-                
-                # Look for header and holdings sections
-                headers_df = pd.read_csv(latest_file, nrows=5)  # Read just the header section
-                logger.debug(f"PCF header section: {headers_df.shape}, columns: {headers_df.columns.tolist()}")
-                
-                # Try to find the holdings section (typically comes after some blank lines)
-                # This is a simplified approach - may need to be customized based on actual file format
-                holdings_section_found = False
-                
-                # Look for a CONSTITUENT section or similar in the file
-                holdings_markers = ["CONSTITUENT", "HOLDING", "POSITION", "COMPOSITION"]
-                for marker in holdings_markers:
-                    if marker in file_content.upper():
-                        holdings_section_found = True
-                        logger.info(f"Found holdings section marker: {marker}")
-                        break
-                
-                if holdings_section_found:
-                    # Try to read the holdings section
-                    # This might require skipping a certain number of rows
-                    # Let's try various skip patterns
-                    for skip_rows in [6, 7, 8, 9, 10]:
-                        try:
-                            holdings_df = pd.read_csv(latest_file, skiprows=skip_rows)
-                            if len(holdings_df) > 0 and len(holdings_df.columns) >= 3:
-                                logger.info(f"Successfully read holdings section with {len(holdings_df)} rows after skipping {skip_rows} rows")
-                                df = holdings_df
-                                break
-                        except Exception as e:
-                            logger.debug(f"Failed to read holdings with skiprows={skip_rows}: {str(e)}")
-                else:
-                    logger.warning("Could not find holdings section in PCF file")
-                    # Extract fund date from header for reporting
-                    try:
-                        fund_date = headers_df["Fund Date"].iloc[0] if "Fund Date" in headers_df.columns else "Unknown"
-                        logger.info(f"PCF Fund Date: {fund_date}")
-                    except Exception as e:
-                        logger.debug(f"Could not extract Fund Date: {str(e)}")
+            if header_row is not None:
+                try:
+                    # Read the PCF file starting at the header row
+                    holdings_df = pd.read_csv(latest_file, skiprows=header_row)
+                    logger.debug(f"Holdings dataframe: {holdings_df.shape}, columns: {holdings_df.columns.tolist()}")
                     
-                    # Try to read the whole file as a fallback
-                    df = pd.read_csv(latest_file)
+                    # Look for VIX futures in the data
+                    futures_data = {
+                        'date': datetime.now().strftime("%Y-%m-%d"),
+                        'timestamp': datetime.now().strftime("%Y%m%d%H%M")
+                    }
+                    
+                    # Find the name and price columns
+                    desc_col = None
+                    price_col = None
+                    
+                    # Expected column names in PCF format
+                    for col in holdings_df.columns:
+                        if col.lower() in ['name', 'name  ']:
+                            desc_col = col
+                        if col.lower() in ['stock price', 'price']:
+                            price_col = col
+                    
+                    # Check if we still need to find columns
+                    if desc_col is None:
+                        # Try the second column as name
+                        if len(holdings_df.columns) > 1:
+                            desc_col = holdings_df.columns[1]
+                    
+                    if price_col is None:
+                        # Try the last column as price
+                        if len(holdings_df.columns) > 2:
+                            price_col = holdings_df.columns[-1]
+                    
+                    logger.info(f"Using columns: Description='{desc_col}', Price='{price_col}'")
+                    
+                    if desc_col is not None and price_col is not None:
+                        # Process each row
+                        futures_found = 0
+                        vix_pattern = re.compile(r'CBOEVIX\s*(\d{4})', re.IGNORECASE)
+                        
+                        for _, row in holdings_df.iterrows():
+                            if pd.isna(row[desc_col]):
+                                continue
+                                
+                            desc = str(row[desc_col])
+                            match = vix_pattern.search(desc)
+                            
+                            if match:
+                                # Extract month/year from the code (e.g., 2503 -> 03/25)
+                                code = match.group(1)
+                                
+                                # If it's a 4-digit code, first two digits are year, second two are month
+                                if len(code) == 4:
+                                    year = int(code[:2])
+                                    month = int(code[2:])
+                                    
+                                    # Map month number to VIX futures month code
+                                    month_map = {
+                                        1: 'F', 2: 'G', 3: 'H', 4: 'J', 5: 'K', 6: 'M',
+                                        7: 'N', 8: 'Q', 9: 'U', 10: 'V', 11: 'X', 12: 'Z'
+                                    }
+                                    
+                                    if month in month_map:
+                                        month_letter = month_map[month]
+                                        vix_future = f"VX{month_letter}{year}"
+                                        
+                                        # Also store in SIMPLEX:VX format
+                                        simplex_ticker = f"SIMPLEX:{vix_future}"
+                                        
+                                        try:
+                                            price = float(row[price_col])
+                                            futures_data[simplex_ticker] = price
+                                            futures_data[f"/{vix_future}"] = price  # Also in /VX format for compatibility
+                                            futures_found += 1
+                                            logger.info(f"Extracted from PCF: {vix_future} = {price} (from {desc})")
+                                        except (ValueError, TypeError) as e:
+                                            logger.warning(f"Could not convert price '{row[price_col]}' to float: {str(e)}")
+                        
+                        if futures_found > 0:
+                            logger.info(f"Successfully extracted {futures_found} VIX futures from PCF file")
+                            return futures_data
+                    else:
+                        logger.warning("Could not identify name or price columns in PCF file")
+                except Exception as e:
+                    logger.error(f"Error processing PCF file: {str(e)}")
+                    logger.error(traceback.format_exc())
             else:
-                # Regular format - read normally
-                df = pd.read_csv(latest_file)
-                
-            logger.debug(f"Final dataframe shape: {df.shape}, columns: {df.columns.tolist()}")
-            
-        except Exception as e:
-            logger.error(f"Error reading Simplex ETF CSV: {str(e)}")
-            logger.debug(f"File content preview: {open(latest_file, 'r').read(500)}")
-            return None
+                logger.warning("Could not find holdings header in PCF file")
         
-        # Log the columns to help with debugging
-        logger.debug(f"Columns in Simplex ETF file: {', '.join(df.columns)}")
-        
-        # Attempt to detect if this is a standard CSV or needs special parsing
-        # Check if the file is empty or has no useful columns
-        if df.empty or len(df.columns) < 2:
-            logger.warning(f"File appears to be empty or has insufficient columns: {latest_file}")
+        # If PCF format failed or wasn't detected, try standard CSV parsing
+        try:
+            df = pd.read_csv(latest_file)
+            logger.debug(f"Standard CSV parse: {df.shape}, columns: {df.columns.tolist()}")
             
-            # Try an alternative approach - read the file as text and parse manually
-            logger.info("Attempting manual parsing of file content")
-            try:
-                with open(latest_file, 'r', encoding='utf-8') as f:
-                    file_content = f.readlines()
-                
-                # Look for VIX futures entries directly in the text
+            # If the file is empty, try alternative approaches
+            if df.empty or len(df.columns) < 2:
+                logger.warning(f"CSV file appears to be empty or inadequate: {latest_file}")
+                return None
+            
+            # Try to identify possible description and price columns
+            desc_columns = ['Description', 'Security Description', 'Name', 'Security Name', 
+                          'Asset', 'Asset Description', 'Holding', 'Holding Name', 'Security']
+            
+            price_columns = ['Price', 'Market Price', 'Close', 'Market Value', 'Value',
+                           'Last Price', 'Settlement Price', 'Settlement', 'Closing Price']
+            
+            # Find the description column
+            desc_col = None
+            for col in desc_columns:
+                if col in df.columns:
+                    desc_col = col
+                    break
+            
+            # Find the price column
+            price_col = None
+            for col in price_columns:
+                if col in df.columns:
+                    price_col = col
+                    break
+            
+            if desc_col and price_col:
+                # Process the standard CSV
                 futures_data = {
                     'date': datetime.now().strftime("%Y-%m-%d"),
                     'timestamp': datetime.now().strftime("%Y%m%d%H%M")
                 }
                 
-                # VIX futures patterns to search for in the raw text
-                vix_text_patterns = [
-                    re.compile(r'VX\s*(?:FUT|FUTURE)\s*(\w{3})[\s\-]*(\d{2}).*?(\d+\.\d+)', re.IGNORECASE),
-                    re.compile(r'VIX\s*(?:FUT|FUTURE)\s*(\w{3})[\s\-]*(\d{2}).*?(\d+\.\d+)', re.IGNORECASE),
-                    re.compile(r'VX([A-Z])(\d{2}).*?(\d+\.\d+)', re.IGNORECASE)
-                ]
-                
-                # Map month codes to letters
-                month_map = {
-                    'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
-                    'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
-                    'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
-                }
-                
-                # Also map full month names
-                full_month_map = {
-                    'JANUARY': 'F', 'FEBRUARY': 'G', 'MARCH': 'H', 'APRIL': 'J',
-                    'MAY': 'K', 'JUNE': 'M', 'JULY': 'N', 'AUGUST': 'Q',
-                    'SEPTEMBER': 'U', 'OCTOBER': 'V', 'NOVEMBER': 'X', 'DECEMBER': 'Z'
-                }
-                
+                # Look for VIX futures in the holdings
                 futures_found = 0
-                for line in file_content:
-                    for pattern in vix_text_patterns:
-                        matches = pattern.findall(line)
-                        for match in matches:
-                            try:
-                                if len(match) >= 3:
-                                    month_code, year_code, price_str = match
-                                    
-                                    # Process month code
-                                    if month_code.upper() in month_map:
-                                        month_letter = month_map[month_code.upper()]
-                                    elif month_code.upper() in full_month_map:
-                                        month_letter = full_month_map[month_code.upper()]
-                                    elif len(month_code) == 1 and month_code.upper() in "FGHJKMNQUVXZ":
-                                        month_letter = month_code.upper()
-                                    else:
-                                        logger.warning(f"Unknown month code: {month_code} in {line}")
-                                        continue
-                                    
-                                    year_digit = year_code[-1]
-                                    # Clean the price string safely
-                                    clean_price = price_str.strip()
-                                    clean_price = clean_price.replace("$", "")
-                                    clean_price = clean_price.replace(",", "")
-                                    price = float(clean_price)
-                                    
-                                    # Store with both formats
-                                    simplex_ticker = f"SIMPLEX:VX{month_letter}{year_digit}"
-                                    std_ticker = f"/VX{month_letter}{year_digit}"
-                                    
-                                    futures_data[simplex_ticker] = price
-                                    futures_data[std_ticker] = price
-                                    futures_found += 1
-                                    logger.info(f"Extracted from text: {simplex_ticker} = {price} (from {line.strip()})")
-                            except (ValueError, IndexError) as e:
-                                logger.warning(f"Error parsing potential match {match} in line: {line}: {str(e)}")
+                vix_pattern = re.compile(r'VX\s*(?:FUT|FUTURE)\s*(\w{3})[-\s]*(\d{2})', re.IGNORECASE)
                 
-                if futures_found > 0:
-                    logger.info(f"Successfully extracted {futures_found} VIX futures from text parsing")
-                    return futures_data
-                else:
-                    logger.warning("No VIX futures found in text parsing")
-                    return None
-            except Exception as e:
-                logger.error(f"Error in manual text parsing: {str(e)}")
-                logger.error(traceback.format_exc())
-                return None
-        
-        # Look for VIX futures in the holdings using more flexible patterns
-        vix_patterns = [
-            # Standard pattern: VX FUT MAR 25
-            re.compile(r'VX\s*(?:FUT|FUTURE)\s*(\w{3})[-\s]*(\d{2})', re.IGNORECASE),
-            # Alternative pattern: VIX FUTURE MAR25
-            re.compile(r'VIX\s*(?:FUT|FUTURE)\s*(\w{3})[-\s]*(\d{2})', re.IGNORECASE),
-            # Pattern with ticker: VXH25 or similar
-            re.compile(r'VX([A-Z])(\d{2})', re.IGNORECASE)
-        ]
-        
-        # Columns we might find the descriptions in - expand the possibilities
-        desc_columns = [
-            'Description', 'Security Description', 'Name', 'Security Name', 
-            'Asset', 'Asset Description', 'Holding', 'Holding Name', 'Security',
-            'ETF Name', 'Constituent Name', 'Component Name'
-        ]
-        
-        # Try to find any column that might contain descriptions
-        for col in df.columns:
-            if any(term in col.lower() for term in ['desc', 'name', 'security', 'asset', 'holding', 'constituent', 'component']):
-                if col not in desc_columns:
-                    desc_columns.append(col)
-        
-        # Find the description column
-        desc_col = None
-        for col in desc_columns:
-            if col in df.columns:
-                # Check if column has any VIX/VX mentions
-                if df[col].astype(str).str.contains('VIX|VX', case=False, regex=True).any():
-                    desc_col = col
-                    logger.debug(f"Using '{col}' as description column in Simplex ETF file")
-                    break
-        
-        # If we didn't find a column with VIX mentions, just use the first available description column
-        if not desc_col:
-            for col in desc_columns:
-                if col in df.columns:
-                    desc_col = col
-                    logger.debug(f"Using '{col}' as fallback description column")
-                    break
-        
-        if not desc_col:
-            logger.warning(f"Could not find description column in Simplex ETF file. Available columns: {', '.join(df.columns)}")
-            return None
-        
-        # Map month codes to letters
-        month_map = {
-            'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
-            'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
-            'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
-        }
-        
-        # Also map full month names
-        full_month_map = {
-            'JANUARY': 'F', 'FEBRUARY': 'G', 'MARCH': 'H', 'APRIL': 'J',
-            'MAY': 'K', 'JUNE': 'M', 'JULY': 'N', 'AUGUST': 'Q',
-            'SEPTEMBER': 'U', 'OCTOBER': 'V', 'NOVEMBER': 'X', 'DECEMBER': 'Z'
-        }
-        
-        # Columns we might find the price in - expand the possibilities
-        price_columns = [
-            'Price', 'Market Price', 'Close', 'Market Value', 'Value',
-            'Last Price', 'Settlement Price', 'Settlement', 'Closing Price',
-            'Net Asset Value', 'NAV', 'Unit Value'
-        ]
-        
-        # Try to find any column that might contain prices
-        for col in df.columns:
-            if any(term in col.lower() for term in ['price', 'value', 'close', 'settlement', 'nav']):
-                if col not in price_columns:
-                    price_columns.append(col)
-        
-        price_col = None
-        for col in price_columns:
-            if col in df.columns:
-                # Try to verify this column contains numeric values
-                try:
-                    # Check if at least some values can be converted to float
-                    if pd.to_numeric(df[col], errors='coerce').notna().any():
-                        price_col = col
-                        logger.debug(f"Using '{col}' as price column in Simplex ETF file")
-                        break
-                except Exception as e:
-                    logger.debug(f"Column '{col}' is not numeric: {str(e)}")
-        
-        if not price_col:
-            logger.warning(f"Could not find price column in Simplex ETF file. Available columns: {', '.join(df.columns)}")
-            # Print sample data for debugging
-            logger.debug("Sample data (first 5 rows):")
-            for i, row in df.head(5).iterrows():
-                logger.debug(f"Row {i}: {dict(row)}")
-                
-            # Try to find any column with numeric values as a fallback
-            for col in df.columns:
-                try:
-                    if pd.to_numeric(df[col], errors='coerce').notna().any():
-                        price_col = col
-                        logger.debug(f"Using '{col}' as fallback numeric column")
-                        break
-                except Exception:
-                    pass
-            
-            if not price_col:
-                return None
-        
-        # Extract VIX futures data
-        futures_data = {
-            'date': datetime.now().strftime("%Y-%m-%d"),
-            'timestamp': datetime.now().strftime("%Y%m%d%H%M")
-        }
-        
-        futures_found = 0
-        
-        # Try each row in the dataframe
-        for _, row in df.iterrows():
-            if pd.isna(row[desc_col]):
-                continue
-                
-            desc = str(row[desc_col])
-            
-            # Skip non-relevant rows to improve performance
-            if not ('VIX' in desc.upper() or 'VX' in desc.upper() or 'FUTURE' in desc.upper() or 'FUT' in desc.upper()):
-                continue
-            
-            # Try each pattern
-            future_match = None
-            month_code = None
-            year_code = None
-            
-            for pattern in vix_patterns:
-                match = pattern.search(desc)
-                if match:
-                    # Different patterns have different group structures
-                    if len(match.groups()) == 2:
-                        month_code, year_code = match.groups()
-                        future_match = match
-                        break
-            
-            if future_match:
-                # Process month code based on format
-                if month_code.upper() in month_map:
-                    month_letter = month_map[month_code.upper()]
-                elif month_code.upper() in full_month_map:
-                    month_letter = full_month_map[month_code.upper()]
-                elif len(month_code) == 1 and month_code.upper() in "FGHJKMNQUVXZ":
-                    # Already a month letter
-                    month_letter = month_code.upper()
-                else:
-                    logger.warning(f"Unknown month code: {month_code} in {desc}")
-                    continue
-                
-                # Process year code
-                year_digit = year_code[-1] if year_code else "?"
-                
-                # Format ticker using the standardized format
-                ticker = f"SIMPLEX:VX{month_letter}{year_digit}"
-                
-                # Also create the standard /VX format for compatibility
-                standard_ticker = f"/VX{month_letter}{year_digit}"
-                
-                try:
-                    if price_col is None:
-                        logger.warning(f"Found future {ticker} but no price column was identified")
+                for _, row in df.iterrows():
+                    if pd.isna(row[desc_col]):
                         continue
                         
-                    price_val = row[price_col]
-                    # Convert to float, handling various formats
-                    if isinstance(price_val, str):
-                        # Clean the price string safely
-                        clean_price = price_val.strip()
-                        clean_price = clean_price.replace("$", "")
-                        clean_price = clean_price.replace(",", "")
-                    else:
-                        clean_price = price_val
+                    desc = str(row[desc_col])
+                    match = vix_pattern.search(desc)
                     
-                    price = float(clean_price)
-                    futures_data[ticker] = price
-                    futures_data[standard_ticker] = price  # Also store with standard ticker
-                    futures_found += 1
-                    logger.info(f"Extracted from Simplex ETF: {ticker} = {price} (from {desc})")
-                except (ValueError, TypeError) as e:
-                    logger.warning(f"Could not convert price '{row[price_col]}' to float for {ticker}: {str(e)}")
-        
-        # If nothing found with pattern matching, try to search the entire file for VIX futures mentions
-        if futures_found == 0:
-            logger.info("No futures found with column parsing, trying whole file search")
-            try:
-                with open(latest_file, 'r', encoding='utf-8') as f:
-                    file_content = f.read()
-                
-                # Look for patterns like "VX H25" or "VIX MAR 25" followed by numbers
-                patterns = [
-                    re.compile(r'VX\s*([A-Z])\s*(\d{2}).*?(\d+\.\d+)', re.IGNORECASE),  # VX H25 ... 18.50
-                    re.compile(r'VIX\s+(?:FUT|FUTURE)?\s*([A-Za-z]{3})[^0-9]*(\d{2}).*?(\d+\.\d+)', re.IGNORECASE),  # VIX FUT MAR 25 ... 18.50
-                    re.compile(r'VX(?:FUT|FUTURE)?\s*([A-Za-z]{3})[^0-9]*(\d{2}).*?(\d+\.\d+)', re.IGNORECASE)  # VXFUT MAR 25 ... 18.50
-                ]
-                
-                for pattern in patterns:
-                    matches = pattern.findall(file_content)
-                    for match in matches:
-                        try:
-                            if len(match) >= 3:
-                                month_code, year_code, price_str = match
+                    if match:
+                        month = match.group(1).upper()
+                        year = match.group(2)
+                        
+                        # Map month codes to letters
+                        month_map = {
+                            'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
+                            'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
+                            'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
+                        }
+                        
+                        if month in month_map:
+                            # Format ticker like SIMPLEX:VXH5
+                            ticker = f"SIMPLEX:VX{month_map[month]}{year[-1]}"
+                            standard_ticker = f"/VX{month_map[month]}{year[-1]}"
+                            
+                            try:
+                                price_val = row[price_col]
+                                if isinstance(price_val, str):
+                                    price_val = price_val.strip()
+                                    price_val = price_val.replace("$", "")
+                                    price_val = price_val.replace(",", "")
                                 
-                                # Process month code
-                                if month_code.upper() in month_map:
-                                    month_letter = month_map[month_code.upper()]
-                                elif month_code.upper() in full_month_map:
-                                    month_letter = full_month_map[month_code.upper()]
-                                elif len(month_code) == 1 and month_code.upper() in "FGHJKMNQUVXZ":
-                                    month_letter = month_code.upper()
-                                else:
-                                    logger.warning(f"Unknown month code: {month_code}")
-                                    continue
-                                
-                                year_digit = year_code[-1]
-                                
-                                # Clean the price string safely
-                                clean_price = price_str.strip()
-                                clean_price = clean_price.replace("$", "")
-                                clean_price = clean_price.replace(",", "")
-                                price = float(clean_price)
-                                
-                                # Store with both formats
-                                simplex_ticker = f"SIMPLEX:VX{month_letter}{year_digit}"
-                                std_ticker = f"/VX{month_letter}{year_digit}"
-                                
-                                futures_data[simplex_ticker] = price
-                                futures_data[std_ticker] = price
+                                price = float(price_val)
+                                futures_data[ticker] = price
+                                futures_data[standard_ticker] = price
                                 futures_found += 1
-                                logger.info(f"Extracted from file content: {simplex_ticker} = {price}")
-                        except (ValueError, IndexError) as e:
-                            logger.warning(f"Error parsing potential match {match}: {str(e)}")
-            except Exception as e:
-                logger.error(f"Error in whole file search: {str(e)}")
-        
-        if futures_found > 0:
-            logger.info(f"Successfully extracted {futures_found} VIX futures from Simplex ETF (processing took {time.time() - start_time:.2f}s)")
-            return futures_data
-        else:
-            logger.warning(f"No VIX futures found in Simplex ETF file. Check if the pattern matching is correct.")
-            
-            # Log more details about the file for debugging
-            logger.debug(f"File columns: {df.columns.tolist()}")
-            logger.debug(f"File shape: {df.shape}")
-            
-            # Log a few sample descriptions to help with debugging
-            if desc_col:
-                sample_descriptions = df[desc_col].dropna().head(10).tolist()
-                logger.debug(f"Sample descriptions from file: {sample_descriptions}")
-            
-            # Save the file content for offline analysis
-            debug_file = os.path.join(SAVE_DIR, "simplex_debug.txt")
-            try:
-                with open(latest_file, 'r', encoding='utf-8') as f:
-                    file_content = f.read()
-                with open(debug_file, 'w', encoding='utf-8') as f:
-                    f.write(file_content)
-                logger.debug(f"Saved file content to {debug_file} for offline analysis")
-            except Exception as e:
-                logger.error(f"Could not save debug file: {str(e)}")
+                                logger.info(f"Extracted from standard CSV: {ticker} = {price} (from {desc})")
+                            except (ValueError, TypeError) as e:
+                                logger.warning(f"Could not convert price '{row[price_col]}' to float: {str(e)}")
                 
-            return None
+                if futures_found > 0:
+                    logger.info(f"Successfully extracted {futures_found} VIX futures from standard CSV")
+                    return futures_data
+            
+        except Exception as e:
+            logger.error(f"Error processing the file: {str(e)}")
+            logger.error(traceback.format_exc())
+        
+        # If all methods failed, try direct text parsing as last resort
+        logger.info("Attempting manual text parsing of file content")
+        try:
+            with open(latest_file, 'r', encoding='utf-8') as f:
+                file_content = f.readlines()
+            
+            futures_data = {
+                'date': datetime.now().strftime("%Y-%m-%d"),
+                'timestamp': datetime.now().strftime("%Y%m%d%H%M")
+            }
+            
+            # Look for patterns
+            futures_found = 0
+            
+            # Pattern for PCF format (CBOEVIX 2503)
+            cboevix_pattern = re.compile(r'(\d+),CBOEVIX\s*(\d+)[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,(\d+\.\d+)')
+            
+            for line in file_content:
+                match = cboevix_pattern.search(line)
+                if match:
+                    code = match.group(2)
+                    price_str = match.group(3)
+                    
+                    # Parse year/month from code
+                    if len(code) == 4:
+                        year = int(code[:2])
+                        month = int(code[2:])
+                        
+                        # Map month number to VIX futures month code
+                        month_map = {
+                            1: 'F', 2: 'G', 3: 'H', 4: 'J', 5: 'K', 6: 'M',
+                            7: 'N', 8: 'Q', 9: 'U', 10: 'V', 11: 'X', 12: 'Z'
+                        }
+                        
+                        if month in month_map:
+                            month_letter = month_map[month]
+                            vix_future = f"VX{month_letter}{year}"
+                            
+                            # Clean and convert price
+                            price_str = price_str.strip().replace("$", "").replace(",", "")
+                            price = float(price_str)
+                            
+                            # Store with both formats
+                            simplex_ticker = f"SIMPLEX:{vix_future}"
+                            std_ticker = f"/{vix_future}"
+                            
+                            futures_data[simplex_ticker] = price
+                            futures_data[std_ticker] = price
+                            futures_found += 1
+                            logger.info(f"Extracted via text parsing: {vix_future} = {price}")
+            
+            if futures_found > 0:
+                logger.info(f"Successfully extracted {futures_found} VIX futures via text parsing")
+                return futures_data
+            
+        except Exception as e:
+            logger.error(f"Error in manual text parsing: {str(e)}")
+            logger.error(traceback.format_exc())
+        
+        # If all methods failed
+        logger.warning("All parsing methods failed. No VIX futures extracted from Simplex file.")
+        return None
             
     except Exception as e:
         logger.error(f"Error reading Simplex ETF data: {str(e)}")
@@ -540,180 +599,279 @@ def download_vix_futures_from_cboe():
             response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
             log_response_details(response, "CBOE")
+            
+            # Save HTML for debugging
+            debug_html_path = os.path.join(SAVE_DIR, "cboe_debug.html")
+            with open(debug_html_path, "w", encoding="utf-8") as f:
+                f.write(response.text)
+            logger.debug(f"Saved CBOE HTML to {debug_html_path} for reference")
+            
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to retrieve CBOE page: {str(e)}")
             return None
         
         soup = BeautifulSoup(response.text, 'html.parser')
         
+        # Get current date
+        futures_data = {
+            'date': datetime.now().strftime("%Y-%m-%d"),
+            'timestamp': datetime.now().strftime("%Y%m%d%H%M")
+        }
+        
         # Logging the document structure to help with debugging
         logger.debug(f"CBOE HTML title: {soup.title.string if soup.title else 'No title'}")
         
-        # Looking for the futures table on the new page
-        # First try the standard table element
-        futures_data = {}
-        # Get current date
-        futures_data['date'] = datetime.now().strftime("%Y-%m-%d")
-        futures_data['timestamp'] = datetime.now().strftime("%Y%m%d%H%M")
-        
-        # Try to find the futures table
-        # The table might be in various elements, so we'll try multiple approaches
+        # Approach 1: Find tables that might contain futures data
         tables = soup.find_all('table')
         logger.debug(f"Found {len(tables)} tables on CBOE page")
         
-        # First pass: look for tables with VIX futures data
-        for table_idx, table in enumerate(tables):
-            logger.debug(f"Examining table {table_idx+1}:")
-            
-            # Log table structure
-            rows = table.find_all('tr')
-            if rows:
-                first_row = rows[0]
-                headers = [th.get_text().strip() for th in first_row.find_all(['th', 'td'])]
-                logger.debug(f"Table {table_idx+1} headers: {headers}")
+        # Analyze each table to identify potential futures data
+        for i, table in enumerate(tables):
+            try:
+                logger.debug(f"Analyzing table {i+1}")
+                rows = table.find_all('tr')
+                if not rows:
+                    continue
+                    
+                # Check headers for identifying words
+                headers = [th.get_text().strip() for th in rows[0].find_all(['th', 'td'])]
+                logger.debug(f"Table {i+1} headers: {headers}")
                 
-                # Check if this looks like a futures table
-                if any(term in ' '.join(headers).lower() for term in ['vix', 'future', 'settlement', 'expiration']):
-                    logger.debug(f"Table {table_idx+1} appears to be a VIX futures table")
+                # Look for keywords in headers
+                if any(keyword in ' '.join(headers).lower() for keyword in 
+                      ['vix', 'future', 'expiration', 'settlement', 'price']):
+                    logger.info(f"Table {i+1} appears to be a VIX futures table")
                     
-                    for row_idx, row in enumerate(rows[1:], 1):  # Skip header row
+                    # Process data rows
+                    for j, row in enumerate(rows[1:], 1):  # Skip header
                         cells = row.find_all('td')
-                        if len(cells) >= 2:
-                            # Try to extract contract and price
-                            try:
-                                # Extract contract name (could be in various formats)
-                                contract_text = cells[0].get_text().strip()
-                                # Extract price (likely settlement price)
-                                price_candidates = [cell.get_text().strip() for cell in cells[1:]]
-                                
-                                logger.debug(f"Row {row_idx}: Contract text = '{contract_text}', Price candidates = {price_candidates}")
-                                
-                                # Look for VIX contract code (e.g., VXH5, VIX MAR 25, etc.)
-                                contract_pattern = re.compile(r'VX([A-Z])(\d{1,2})|VIX\s+([A-Za-z]{3})[^0-9]*(\d{2})', re.IGNORECASE)
-                                contract_match = contract_pattern.search(contract_text)
-                                
-                                if contract_match:
-                                    # Format depends on which pattern matched
-                                    if contract_match.group(1) and contract_match.group(2):
-                                        # Format: VXH5
-                                        month_code = contract_match.group(1)
-                                        year_digit = contract_match.group(2)[-1]
-                                    else:
-                                        # Format: VIX MAR 25
-                                        month_str = contract_match.group(3).upper()
-                                        year_digit = contract_match.group(4)[-1]
-                                        
-                                        # Convert month name to code
-                                        month_map = {'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
-                                                    'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
-                                                    'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'}
-                                        month_code = month_map.get(month_str, '?')
+                        if len(cells) < 2:
+                            continue
+                            
+                        # Try to extract contract and price info
+                        contract_text = cells[0].get_text().strip()
+                        
+                        # Look for price in other cells
+                        prices = []
+                        for cell in cells[1:]:
+                            text = cell.get_text().strip()
+                            # Look for numeric values (potential prices)
+                            if re.match(r'\d+\.\d+', text):
+                                prices.append(text)
+                        
+                        if prices and (('VX' in contract_text) or ('VIX' in contract_text)):
+                            # Extract contract info using regex
+                            vx_pattern = re.compile(r'VX([A-Z])(\d{1,2})|VIX\s+([A-Za-z]{3})[^0-9]*(\d{2})', re.IGNORECASE)
+                            match = vx_pattern.search(contract_text)
+                            
+                            if match:
+                                # Determine which pattern matched and extract info
+                                if match.group(1) and match.group(2):  # VXH5 format
+                                    month_code = match.group(1)
+                                    year_digit = match.group(2)[-1]  # Last digit of year
+                                else:  # VIX MAR 25 format
+                                    month_str = match.group(3).upper()
+                                    year_digit = match.group(4)[-1]  # Last digit of year
                                     
-                                    # Find a numeric price in the cells
-                                    price = None
-                                    for price_text in price_candidates:
-                                        # Remove non-numeric characters except decimal point
-                                        price_text = re.sub(r'[^\d\.]', '', price_text)
-                                        if price_text and price_text != '.':
-                                            try:
-                                                price = float(price_text)
-                                                break
-                                            except ValueError:
-                                                continue
-                                    
-                                    if price is not None:
-                                        # Use standardized format and also store with /VX format
-                                        cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
-                                        std_ticker = f"/VX{month_code}{year_digit}"
-                                        
-                                        futures_data[cboe_ticker] = price
-                                        futures_data[std_ticker] = price
-                                        logger.info(f"CBOE table: {cboe_ticker} = {price}")
-                            except Exception as e:
-                                logger.warning(f"Error parsing row {row_idx} in table {table_idx+1}: {str(e)}")
+                                    # Convert month name to code
+                                    month_map = {
+                                        'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
+                                        'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
+                                        'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
+                                    }
+                                    month_code = month_map.get(month_str, '?')
+                                
+                                # Price will be the first numeric value found
+                                price_str = prices[0]
+                                price_str = price_str.replace('$', '').replace(',', '')
+                                price = float(price_str)
+                                
+                                # Store with both formats
+                                cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
+                                std_ticker = f"/VX{month_code}{year_digit}"
+                                
+                                futures_data[cboe_ticker] = price
+                                futures_data[std_ticker] = price
+                                logger.info(f"CBOE table: {cboe_ticker} = {price}")
+            except Exception as e:
+                logger.warning(f"Error processing table {i+1}: {str(e)}")
         
-        # Also look for div elements that might contain the data
-        data_divs = soup.find_all('div', class_=lambda c: c and ('table' in c.lower() or 'grid' in c.lower() or 'data' in c.lower()))
-        logger.debug(f"Found {len(data_divs)} potential data divs on CBOE page")
+        # Approach 2: Look for table-like data in divs
+        div_tables = soup.find_all('div', class_=lambda c: c and ('table' in c.lower() or 'grid' in c.lower()))
+        logger.debug(f"Found {len(div_tables)} div elements that might contain table data")
         
-        # Check for iframe elements that might contain the data
-        iframes = soup.find_all('iframe')
-        if iframes:
-            logger.debug(f"Found {len(iframes)} iframes on CBOE page. The data might be in an iframe.")
-            for i, iframe in enumerate(iframes):
-                logger.debug(f"Iframe {i+1} src: {iframe.get('src', 'No src attribute')}")
+        for i, div in enumerate(div_tables):
+            try:
+                logger.debug(f"Analyzing div table {i+1}")
+                
+                # Look for rows in the div
+                rows = div.find_all('div', class_=lambda c: c and ('row' in c.lower() or 'tr' in c.lower()))
+                if not rows:
+                    # Try to find direct child divs that might be rows
+                    rows = div.find_all('div', recursive=False)
+                
+                if not rows:
+                    continue
+                
+                logger.debug(f"Found {len(rows)} potential rows in div table {i+1}")
+                
+                # Check for VIX futures content
+                for j, row in enumerate(rows):
+                    text = row.get_text().strip()
+                    
+                    # Look for VIX futures pattern and price pattern in the same row
+                    vx_pattern = re.compile(r'VX([A-Z])(\d{1,2})|VIX\s+([A-Za-z]{3})[^0-9]*(\d{2})', re.IGNORECASE)
+                    price_pattern = re.compile(r'(\d+\.\d+)')
+                    
+                    vx_match = vx_pattern.search(text)
+                    price_matches = price_pattern.findall(text)
+                    
+                    if vx_match and price_matches:
+                        # Extract month and year info
+                        if vx_match.group(1) and vx_match.group(2):  # VXH5 format
+                            month_code = vx_match.group(1)
+                            year_digit = vx_match.group(2)[-1]
+                        else:  # VIX MAR 25 format
+                            month_str = vx_match.group(3).upper()
+                            year_digit = vx_match.group(4)[-1]
+                            
+                            # Convert month name to code
+                            month_map = {
+                                'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
+                                'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
+                                'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
+                            }
+                            month_code = month_map.get(month_str, '?')
+                        
+                        # Use the first price found
+                        price = float(price_matches[0])
+                        
+                        # Store with both formats
+                        cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
+                        std_ticker = f"/VX{month_code}{year_digit}"
+                        
+                        futures_data[cboe_ticker] = price
+                        futures_data[std_ticker] = price
+                        logger.info(f"CBOE div table: {cboe_ticker} = {price}")
+            except Exception as e:
+                logger.warning(f"Error processing div table {i+1}: {str(e)}")
         
-        # Look for script tags that might contain the futures data in JSON
-        scripts = soup.find_all('script', type='application/json') + soup.find_all('script', type='text/javascript')
-        data_scripts = []
-        for script in scripts:
-            script_text = script.string if script.string else ""
-            if script_text and ('VIX' in script_text or 'futures' in script_text.lower() or 'vx' in script_text.lower()):
-                data_scripts.append(script)
+        # Approach 3: Look for JSON data in script tags
+        scripts = soup.find_all('script')
+        logger.debug(f"Found {len(scripts)} script tags to analyze")
         
-        logger.debug(f"Found {len(data_scripts)} script tags that might contain futures data")
-        
-        # If we found a script with potential data, try to extract it
-        for script in data_scripts:
-            script_text = script.string if script.string else ""
-            # Log a snippet to help with debugging
-            logger.debug(f"Script content snippet (first 200 chars): {script_text[:200]}")
-            
-            # Look for patterns like "VX" followed by month code and price
-            vix_pattern = re.compile(r'VX([A-Z])([\d]{1,2}).*?[":]*([\d\.]+)', re.IGNORECASE)
-            matches = vix_pattern.findall(script_text)
-            
-            for match in matches:
-                try:
-                    month_code, year, price = match
+        for i, script in enumerate(scripts):
+            try:
+                script_text = script.string if script.string else ""
+                
+                # Skip empty scripts
+                if not script_text:
+                    continue
+                
+                # Look for potential JSON data
+                json_pattern = re.compile(r'({[^{]*?"(?:vx|future)"[^}]*?})', re.IGNORECASE)
+                
+                json_matches = json_pattern.findall(script_text)
+                if json_matches:
+                    logger.debug(f"Found potential JSON data in script {i+1}")
+                    
+                    for json_str in json_matches:
+                        try:
+                            # Try to parse as JSON
+                            from json import loads
+                            data = loads(json_str)
+                            
+                            # If successful, look for contract and price info
+                            if isinstance(data, dict):
+                                logger.debug(f"Successfully parsed JSON: {data}")
+                        except:
+                            # If not valid JSON, continue with regex
+                            pass
+                
+                # Fallback to regex for script content
+                vx_pattern = re.compile(r'VX([A-Z])(\d{1,2}).*?(\d+\.\d+)', re.IGNORECASE)
+                matches = vx_pattern.findall(script_text)
+                
+                for match in matches:
+                    month_code, year, price_str = match
                     year_digit = year[-1]
                     
-                    # Use standardized format and also store with /VX format
-                    cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
-                    std_ticker = f"/VX{month_code}{year_digit}"
-                    
-                    price = float(price)
-                    futures_data[cboe_ticker] = price
-                    futures_data[std_ticker] = price
-                    logger.info(f"CBOE script: {cboe_ticker} = {price}")
-                except (ValueError, IndexError) as e:
-                    logger.warning(f"Error parsing potential futures data: {str(e)}")
+                    # Try to parse price
+                    try:
+                        price = float(price_str)
+                        
+                        # Store with both formats
+                        cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
+                        std_ticker = f"/VX{month_code}{year_digit}"
+                        
+                        futures_data[cboe_ticker] = price
+                        futures_data[std_ticker] = price
+                        logger.info(f"CBOE script: {cboe_ticker} = {price}")
+                    except ValueError:
+                        logger.debug(f"Could not convert {price_str} to float in script {i+1}")
+            except Exception as e:
+                logger.warning(f"Error processing script {i+1}: {str(e)}")
         
-        # If the above methods didn't work, try to find settlements in the page text
+        # Approach 4: Fall back to whole page text parsing
         if len(futures_data) <= 2:  # Only has date and timestamp
-            logger.debug("Didn't find structured futures data. Looking for text patterns...")
+            logger.debug("Falling back to page text parsing")
             
-            # Look for text patterns like "VXH25: 19.325" or similar
+            # Get all text from the page
             page_text = soup.get_text()
-            vix_text_pattern = re.compile(r'VX([A-Z])(\d{2})[:\s]+(\d+\.\d+)', re.IGNORECASE)
-            matches = vix_text_pattern.findall(page_text)
             
-            for match in matches:
-                try:
-                    month_code, year, price = match
+            # Look for patterns like "VXH5" or "VIX MAR 25" followed by prices
+            patterns = [
+                # Pattern: VXH5 followed by price
+                re.compile(r'VX([A-Z])(\d{1,2})[^\d]*(\d+\.\d+)', re.IGNORECASE),
+                
+                # Pattern: VIX [month] [year] followed by price
+                re.compile(r'VIX\s+([A-Za-z]{3})[^0-9]*(\d{2})[^\d]*(\d+\.\d+)', re.IGNORECASE)
+            ]
+            
+            for pattern in patterns:
+                matches = pattern.findall(page_text)
+                
+                for match in matches:
+                    # Check which pattern matched
+                    if len(match[0]) == 1:  # Month code (H, J, etc.)
+                        month_code = match[0].upper()
+                        year = match[1]
+                        price_str = match[2]
+                    else:  # Month name (MAR, APR, etc.)
+                        month_str = match[0].upper()
+                        year = match[1]
+                        price_str = match[2]
+                        
+                        # Convert month name to code
+                        month_map = {
+                            'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
+                            'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
+                            'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
+                        }
+                        month_code = month_map.get(month_str, '?')
+                    
                     year_digit = year[-1]
                     
-                    # Use standardized format and also store with /VX format
-                    cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
-                    std_ticker = f"/VX{month_code}{year_digit}"
-                    
-                    price = float(price)
-                    futures_data[cboe_ticker] = price
-                    futures_data[std_ticker] = price
-                    logger.info(f"CBOE text: {cboe_ticker} = {price}")
-                except (ValueError, IndexError) as e:
-                    logger.warning(f"Error parsing potential text futures data: {str(e)}")
+                    # Try to parse price
+                    try:
+                        price = float(price_str)
+                        
+                        # Store with both formats
+                        cboe_ticker = f"CBOE:VX{month_code}{year_digit}"
+                        std_ticker = f"/VX{month_code}{year_digit}"
+                        
+                        futures_data[cboe_ticker] = price
+                        futures_data[std_ticker] = price
+                        logger.info(f"CBOE text: {cboe_ticker} = {price}")
+                    except ValueError:
+                        logger.debug(f"Could not convert {price_str} to float in text parsing")
         
+        # Check if we found any futures data
         if len(futures_data) > 2:  # More than just date and timestamp
-            logger.info(f"Successfully extracted futures data from CBOE (processing took {time.time() - start_time:.2f}s)")
+            logger.info(f"Successfully extracted {len(futures_data)-2} VIX futures from CBOE (processing took {time.time() - start_time:.2f}s)")
             return futures_data
         else:
             logger.warning("Could not extract VIX futures data from CBOE website")
-            # Save HTML for debugging
-            debug_html_path = os.path.join(SAVE_DIR, "cboe_debug.html")
-            with open(debug_html_path, "w", encoding="utf-8") as f:
-                f.write(response.text)
-            logger.debug(f"Saved CBOE HTML to {debug_html_path} for debugging")
             return None
     
     except Exception as e:
@@ -759,7 +917,7 @@ def download_vix_futures_from_yfinance():
         ]
         
         # Map the positions to VIX ticker format
-        month_map = {1: 'H', 2: 'J', 3: 'K', 4: 'M', 5: 'N', 6: 'Q', 7: 'U', 8: 'V', 9: 'X', 10: 'Z', 11: 'F', 12: 'G'}
+        month_map = {1: 'F', 2: 'G', 3: 'H', 4: 'J', 5: 'K', 6: 'M', 7: 'N', 8: 'Q', 9: 'U', 10: 'V', 11: 'X', 12: 'Z'}
         current_month = current_date.month
         year_suffix = str(current_date.year)[-1]
         
@@ -925,185 +1083,36 @@ def download_vix_futures():
     
     logger.info("=====================")
     
-    # Create combined data structure
     if cboe_data or yfinance_data or simplex_data:
-        # Use first available source for date/timestamp
-        result = {}
-        for source_data in [cboe_data, yfinance_data, simplex_data]:
-            if source_data:
-                result['date'] = source_data['date']
-                result['timestamp'] = source_data['timestamp']
-                break
+        # Format data into new structure
+        df = format_vix_data_for_output(cboe_data, yfinance_data, simplex_data)
         
-        # Add data from all sources, properly handling structured data
-        
-        # Keep track of all unique contract codes (like VXH5, VXJ5, etc.)
-        all_contract_codes = set()
-        
-        # Process CBOE data
-        if cboe_data:
-            for key in cboe_data:
-                if key not in ['date', 'timestamp'] and cboe_data[key] is not None:
-                    # Store the value with the source-prefixed key
-                    result[key] = cboe_data[key]
-                    
-                    # Extract contract code if it's in our standard format
-                    if key.startswith('CBOE:VX'):
-                        contract_code = key.split(':')[1]  # Get "VXH5" from "CBOE:VXH5"
-                        all_contract_codes.add(contract_code)
-                    elif key.startswith('/VX'):
-                        contract_code = 'VX' + key[3:]  # Get "VXH5" from "/VXH5"
-                        all_contract_codes.add(contract_code)
-        
-        # Process Yahoo Finance data
-        if yfinance_data:
-            for key in yfinance_data:
-                if key not in ['date', 'timestamp'] and yfinance_data[key] is not None:
-                    # Store the value with the key
-                    result[key] = yfinance_data[key]
-                    
-                    # Extract contract code if it's in our standard format
-                    if key.startswith('YAHOO:VX'):
-                        contract_code = key.split(':')[1]  # Get "VXH5" from "YAHOO:VXH5"
-                        all_contract_codes.add(contract_code)
-                    elif key.startswith('/VX'):
-                        contract_code = 'VX' + key[3:]  # Get "VXH5" from "/VXH5"
-                        all_contract_codes.add(contract_code)
-        
-        # Process Simplex ETF data
-        if simplex_data:
-            for key in simplex_data:
-                if key not in ['date', 'timestamp'] and simplex_data[key] is not None:
-                    # Store the value with the key
-                    result[key] = simplex_data[key]
-                    
-                    # Extract contract code if it's in our standard format
-                    if key.startswith('SIMPLEX:VX'):
-                        contract_code = key.split(':')[1]  # Get "VXH5" from "SIMPLEX:VXH5"
-                        all_contract_codes.add(contract_code)
-                    elif key.startswith('/VX'):
-                        contract_code = 'VX' + key[3:]  # Get "VXH5" from "/VXH5"
-                        all_contract_codes.add(contract_code)
-        
-        # Now create standardized contract fields with data from all sources, 
-        # using preference order: CBOE > Simplex > Yahoo
-        logger.debug(f"Found contract codes: {all_contract_codes}")
-        
-        for contract_code in all_contract_codes:
-            # Format with both VX and /VX prefix for compatibility
-            cboe_key = f"CBOE:{contract_code}"
-            simplex_key = f"SIMPLEX:{contract_code}"
-            yahoo_key = f"YAHOO:{contract_code}"
+        if not df.empty:
+            # Save the data
+            save_success = save_vix_data(df, SAVE_DIR)
             
-            slash_format = f"/{contract_code[0:2]}{contract_code[2:]}"  # Convert "VXH5" to "/VXH5"
-            
-            # Determine the value using the preference order
-            if cboe_key in result:
-                best_value = result[cboe_key]
-                best_source = "CBOE"
-            elif simplex_key in result:
-                best_value = result[simplex_key]
-                best_source = "Simplex"
-            elif yahoo_key in result:
-                best_value = result[yahoo_key]
-                best_source = "Yahoo"
-            elif slash_format in result:  # Check for the standard format as fallback
-                best_value = result[slash_format]
-                best_source = "Unknown"
+            if save_success:
+                # Log results
+                logger.info(f"Saved VIX futures data with {len(df)} price records")
+                logger.info("Data sample:")
+                logger.info(df.head(10).to_string())
+                
+                # Log any duplicate prices for the same future to highlight discrepancies
+                futures = df['vix_future'].unique()
+                for future in futures:
+                    future_df = df[df['vix_future'] == future]
+                    if len(future_df) > 1:
+                        prices = future_df['price'].tolist()
+                        max_diff = max(prices) - min(prices)
+                        if max_diff > 0.1:  # Threshold for significant difference
+                            logger.warning(f"Price discrepancy for {future}: max diff = {max_diff:.4f}")
+                            logger.warning(future_df[['source', 'symbol', 'price']].to_string())
+                
+                logger.info(f"Total processing time: {time.time() - overall_start_time:.2f}s")
+                return True
             else:
-                # Skip if no value found for this contract
-                continue
-            
-            # Store in the standardized format
-            result[contract_code] = best_value
-            result[slash_format] = best_value  # Also store in /VX format for backward compatibility
-            
-            logger.debug(f"Using {best_source} value ({best_value}) for {contract_code}")
-            
-        # Special handling for VIX spot (VX=F)
-        if 'YAHOO:VIX' in result:
-            result['VX=F'] = result['YAHOO:VIX']
-        
-        # Create DataFrame
-        df = pd.DataFrame([result])
-        
-        # Save daily snapshot
-        current_datetime = datetime.now().strftime("%Y%m%d%H%M")
-        csv_filename = f"vix_futures_{current_datetime}.csv"
-        csv_path = os.path.join(SAVE_DIR, csv_filename)
-        
-        # Check if we have any actual price data
-        price_columns = [col for col in df.columns if col not in ['date', 'timestamp'] 
-                         and not (col.startswith('CBOE:') or col.startswith('YAHOO:') or col.startswith('SIMPLEX:'))]
-        
-        if df[price_columns].notna().any(axis=1).iloc[0]:
-            # Update or create master CSV
-            master_csv_path = os.path.join(SAVE_DIR, "vix_futures_master.csv")
-            
-            if os.path.exists(master_csv_path):
-                try:
-                    master_df = pd.read_csv(master_csv_path)
-                    logger.debug(f"Read master CSV: {master_df.shape}")
-                    
-                    # Check if we already have data for this date
-                    if not master_df.empty and 'date' in master_df.columns:
-                        if df['date'].iloc[0] in master_df['date'].values:
-                            logger.info(f"Data for {df['date'].iloc[0]} already exists in master file. Updating...")
-                            # Remove existing entry for this date
-                            master_df = master_df[master_df['date'] != df['date'].iloc[0]]
-                    
-                    combined_df = pd.concat([master_df, df], ignore_index=True)
-                    combined_df.to_csv(master_csv_path, index=False)
-                    logger.info(f"Updated master CSV file: {master_csv_path}")
-                except Exception as e:
-                    logger.error(f"Error updating master CSV: {str(e)}")
-                    logger.error(traceback.format_exc())
-                    # Fall back to creating a new file
-                    df.to_csv(master_csv_path, index=False)
-                    logger.info(f"Created new master CSV file: {master_csv_path}")
-            else:
-                df.to_csv(master_csv_path, index=False)
-                logger.info(f"Created master CSV file: {master_csv_path}")
-            
-            # Save daily snapshot
-            df.to_csv(csv_path, index=False)
-            logger.info(f"Saved daily snapshot to: {csv_path}")
-            
-            # Log the data we collected
-            logger.info("Data collected:")
-            logger.info(df[['date', 'timestamp'] + price_columns].to_string())
-            
-            # Calculate and log differences between sources
-            if len(all_contract_codes) > 0:
-                logger.info("Source comparison:")
-                for contract_code in all_contract_codes:
-                    sources = []
-                    values = []
-                    
-                    cboe_key = f"CBOE:{contract_code}"
-                    simplex_key = f"SIMPLEX:{contract_code}"
-                    yahoo_key = f"YAHOO:{contract_code}"
-                    
-                    if cboe_key in result:
-                        sources.append("CBOE")
-                        values.append(result[cboe_key])
-                    
-                    if simplex_key in result:
-                        sources.append("Simplex")
-                        values.append(result[simplex_key])
-                    
-                    if yahoo_key in result:
-                        sources.append("Yahoo")
-                        values.append(result[yahoo_key])
-                    
-                    if len(values) > 1:
-                        max_diff = max(values) - min(values)
-                        logger.info(f"{contract_code}: Max difference between sources: {max_diff:.4f}")
-                        if max_diff > 1.0:
-                            logger.warning(f"Large discrepancy (>{max_diff:.4f}) for {contract_code} across sources")
-            
-            logger.info(f"Total processing time: {time.time() - overall_start_time:.2f}s")
-            return True
+                logger.warning("Failed to save VIX futures data")
+                return False
         else:
             logger.warning("No valid price data collected. Not saving empty files.")
             return False
