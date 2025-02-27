@@ -164,29 +164,79 @@ def parse_simplex_nav_from_html(html_content):
         
         # Method 3: Try using regular expression directly on the HTML
         if nav_float is None:
-            logger.info("Trying regex method to find NAV...")
+            logger.info("Trying regex method to find NAV (method 3)...")
             
-            # Pattern to match: id="code_318A">VALUE円</div>
+            # Log some statistics about the HTML content
+            logger.debug(f"HTML content length: {len(html_content)} characters")
+            logger.debug(f"HTML content contains '318A': {'318A' in html_content}")
+            logger.debug(f"HTML content contains 'code_318A': {'code_318A' in html_content}")
+            logger.debug(f"HTML content contains 'SIMPLEX VIX': {'SIMPLEX VIX' in html_content}")
+            
+            # Pattern to match various possible formats for the NAV
             import re
             patterns = [
+                # Standard div format
                 r'id="code_318A"[^>]*>(\d+[,.]?\d*)円?</div>',
                 r'id=code_318A[^>]*>(\d+[,.]?\d*)円?</div>',
-                r'>318A</td>\s*<td[^>]*>[^<]*</td>\s*<td[^>]*>[^<]*</td>\s*<td[^>]*>(\d+[,.]?\d*)円?</td>'
+                
+                # Table cell formats - try various positions
+                r'>318A</td>\s*<td[^>]*>[^<]*</td>\s*<td[^>]*>(\d+[,.]?\d*)円?</td>',
+                r'>318A</td>(?:.*?<td[^>]*>){3}(\d+[,.]?\d*)円?</td>',
+                r'<td[^>]*>318A</td>(?:.*?<td[^>]*>){3}(\d+[,.]?\d*)円?</td>',
+                
+                # Look for section with 318A and then find a number with yen
+                r'318A.*?(\d+[,.]?\d*)円',
+                
+                # Most generic - any div with NAV pattern near 318A
+                r'318A.*?<div[^>]*>(\d+[,.]?\d*)円?</div>',
+                
+                # Direct table cell containing the value
+                r'>318A<.*?<td[^>]*>(\d+[,.]?\d*)円?</td>',
+                
+                # Look for SIMPLEX VIX Short-Term Futures ETF
+                r'SIMPLEX VIX Short-Term Futures ETF.*?(\d+[,.]?\d*)円',
+                
+                # Extremely generic - just look for a numeric value with yen near 318A
+                r'318A.*?[\s>](\d{2,4}(?:,\d{3})?)円'
             ]
             
-            for pattern in patterns:
-                match = re.search(pattern, html_content)
-                if match:
-                    nav_value = match.group(1)
-                    try:
-                        nav_float = float(nav_value.replace(',', ''))
-                        logger.info(f"Successfully parsed NAV for ETF 318A (regex method): {nav_float}")
-                        break
-                    except ValueError:
-                        logger.warning(f"Could not convert regex-extracted NAV value '{nav_value}' to float")
+            for i, pattern in enumerate(patterns):
+                logger.debug(f"Trying regex pattern {i+1}: {pattern}")
+                
+                try:
+                    match = re.search(pattern, html_content)
+                    if match:
+                        nav_value = match.group(1)
+                        logger.debug(f"Pattern {i+1} matched: '{nav_value}'")
+                        logger.debug(f"Match groups: {match.groups()}")
+                        
+                        # Show some context around the match
+                        start, end = match.span()
+                        context_start = max(0, start - 50)
+                        context_end = min(len(html_content), end + 50)
+                        context = html_content[context_start:context_end]
+                        logger.debug(f"Match context: '{context}'")
+                        
+                        try:
+                            nav_float = float(nav_value.replace(',', ''))
+                            logger.info(f"Successfully parsed NAV for ETF 318A (regex method {i+1}): {nav_float}")
+                            break
+                        except ValueError as e:
+                            logger.warning(f"Could not convert regex-extracted NAV value '{nav_value}' to float: {str(e)}")
+                    else:
+                        logger.debug(f"Pattern {i+1} did not match")
+                except Exception as e:
+                    logger.warning(f"Error applying regex pattern {i+1}: {str(e)}")
+            
+            if nav_float is None:
+                logger.warning("All regex patterns failed to extract a valid NAV value")
         
+        # Save the HTML for debugging if we still couldn't extract the NAV
         if nav_float is None:
-            logger.error("Could not extract NAV for ETF 318A")
+            debug_html_path = os.path.join(SAVE_DIR, "simplex_debug.html")
+            with open(debug_html_path, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            logger.error(f"Could not extract NAV for ETF 318A. Saved HTML to {debug_html_path} for debugging")
             return None
             
         logger.info(f"Final NAV value for ETF 318A: {nav_float}")
@@ -292,13 +342,32 @@ def parse_simplex_nav_data():
                 
                 response.raise_for_status()
                 
+                # Log response details
+                logger.debug(f"Response status code: {response.status_code}")
+                logger.debug(f"Response content type: {response.headers.get('Content-Type')}")
+                logger.debug(f"Response content length: {len(response.text)} characters")
+                logger.debug(f"Response encoding: {response.encoding}")
+                
+                # Log the first and last 100 chars of the response text
+                if len(response.text) > 0:
+                    logger.debug(f"Response text start: '{response.text[:100]}'")
+                    logger.debug(f"Response text end: '{response.text[-100:]}'")
+                
                 # If response is too small, it might be an error page
                 if len(response.text) < 1000:
                     logger.warning(f"Response too small ({len(response.text)} bytes), might be an error page")
                     continue
                     
                 # Check if response contains the expected content
-                if '318A' not in response.text:
+                has_318a = '318A' in response.text
+                has_simplex_vix = 'SIMPLEX VIX' in response.text
+                has_etf_table = '<table' in response.text and '</table>' in response.text
+                
+                logger.debug(f"Response contains '318A': {has_318a}")
+                logger.debug(f"Response contains 'SIMPLEX VIX': {has_simplex_vix}")
+                logger.debug(f"Response contains table tags: {has_etf_table}")
+                
+                if not has_318a:
                     logger.warning("Response does not contain '318A', might be redirected to a different page")
                     continue
                     
@@ -312,133 +381,47 @@ def parse_simplex_nav_data():
                     # Last attempt failed, raise the exception
                     raise
         
-        # Parse the HTML
-        soup = BeautifulSoup(response.text, 'html.parser')
+        # Parse the HTML content
+        nav_data = parse_simplex_nav_from_html(response.text)
         
-        # Find the NAV value for 318A using multiple methods
-        nav_float = None
-        
-        # Method 1: Find by div with id="code_318A"
-        nav_div = soup.find('div', id='code_318A')
-        
-        if nav_div is not None and nav_div.text.strip():
-            # Extract the NAV value and remove the yen symbol
-            nav_text = nav_div.text.strip()
-            nav_value = nav_text.replace('円', '')
-            
-            # Try to convert to float
-            try:
-                nav_float = float(nav_value.replace(',', ''))
-                logger.info(f"Successfully parsed NAV for ETF 318A (method 1): {nav_float}")
-            except ValueError:
-                logger.warning(f"Could not convert NAV value '{nav_value}' to float (method 1)")
-        else:
-            logger.warning("Could not find NAV value for ETF 318A using method 1")
-            
-        # Method 2: Try to find NAV by looking at the ETF row directly
-        if nav_float is None:
-            logger.info("Trying alternative method to find NAV...")
-            
-            # Find the row that contains "318A"
-            etf_rows = soup.find_all('tr')
-            for row in etf_rows:
-                cells = row.find_all('td')
-                if len(cells) >= 2 and "318A" in cells[1].text.strip():
-                    # ETF code is typically in the second column
-                    # NAV is typically in the fifth column (index 4)
-                    if len(cells) >= 5:
-                        nav_cell = cells[4]
-                        
-                        # Try to extract the NAV value
-                        nav_text = nav_cell.text.strip()
-                        if nav_text:
-                            # Remove any div tags if present
-                            if nav_cell.find('div'):
-                                nav_text = nav_cell.find('div').text.strip()
-                                
-                            # Remove the yen symbol and try to convert to float
-                            nav_value = nav_text.replace('円', '')
-                            try:
-                                nav_float = float(nav_value.replace(',', ''))
-                                logger.info(f"Successfully parsed NAV for ETF 318A (method 2): {nav_float}")
-                                break
-                            except ValueError:
-                                logger.warning(f"Could not convert NAV value '{nav_value}' to float (method 2)")
-            
-            if nav_float is None:
-                logger.warning("Could not find NAV value using method 2")
-        
-        # Method 3: Try using regular expression directly on the HTML
-        if nav_float is None:
-            logger.info("Trying regex method to find NAV...")
-            
-            # Pattern to match: id="code_318A">VALUE円</div>
-            import re
-            patterns = [
-                r'id="code_318A"[^>]*>(\d+[,.]?\d*)円?</div>',
-                r'id=code_318A[^>]*>(\d+[,.]?\d*)円?</div>',
-                r'>318A</td>\s*<td[^>]*>[^<]*</td>\s*<td[^>]*>[^<]*</td>\s*<td[^>]*>(\d+[,.]?\d*)円?</td>'
-            ]
-            
-            for pattern in patterns:
-                match = re.search(pattern, response.text)
-                if match:
-                    nav_value = match.group(1)
-                    try:
-                        nav_float = float(nav_value.replace(',', ''))
-                        logger.info(f"Successfully parsed NAV for ETF 318A (regex method): {nav_float}")
-                        break
-                    except ValueError:
-                        logger.warning(f"Could not convert regex-extracted NAV value '{nav_value}' to float")
-        
-        # Save the HTML for debugging if we still couldn't extract the NAV
-        if nav_float is None:
+        # If parsing failed, save HTML for debugging
+        if nav_data is None:
             debug_html_path = os.path.join(SAVE_DIR, "simplex_debug.html")
             with open(debug_html_path, "w", encoding="utf-8") as f:
                 f.write(response.text)
-            logger.error(f"Could not extract NAV for ETF 318A. Saved HTML to {debug_html_path} for debugging")
-            return None
+            logger.error(f"Could not extract NAV data. Saved HTML to {debug_html_path} for debugging")
             
-        logger.info(f"Final NAV value for ETF 318A: {nav_float}")
+            # Try to find the local HTML file as a fallback
+            local_html = "Lists of all ETFs _ Simplex Asset management.html"
+            if os.path.exists(local_html):
+                logger.info(f"Trying to parse from local HTML file: {local_html}")
+                nav_data = parse_simplex_nav_from_file(local_html)
+                if nav_data:
+                    logger.info("Successfully parsed NAV data from local HTML file")
+                    # Update the source to indicate it's from the local file
+                    nav_data['source'] = f"{url} (local fallback)"
+        
+        # Update URL in the data if we have valid results
+        if nav_data is not None:
+            nav_data['source'] = url
             
-        # Get current timestamp
-        timestamp = datetime.now().strftime("%Y%m%d%H%M")
-        
-        # Find the update date (if available)
-        update_elem = soup.find('span', id='bDate')
-        fund_date = None
-        
-        if update_elem is not None:
-            # Parse the date in the format "YYYY.MM.DD"
-            date_str = update_elem.text.strip()
-            try:
-                # Convert to YYYYMMDD format
-                date_parts = date_str.split('.')
-                if len(date_parts) == 3:
-                    fund_date = f"{date_parts[0]}{date_parts[1].zfill(2)}{date_parts[2].zfill(2)}"
-                    logger.info(f"Found fund date: {fund_date}")
-            except Exception as e:
-                logger.warning(f"Could not parse fund date: {str(e)}")
-        
-        # If fund_date wasn't found, use current date
-        if fund_date is None:
-            fund_date = datetime.now().strftime("%Y%m%d")
-            logger.info(f"Using current date as fund date: {fund_date}")
-            
-        # Create the NAV data dictionary
-        nav_data = {
-            'timestamp': timestamp,
-            'source': url,
-            'fund_date': fund_date,
-            'nav': nav_float,
-            'fund_code': '318A'
-        }
-        
         return nav_data
         
     except Exception as e:
         logger.error(f"Error parsing NAV data: {str(e)}")
         logger.error(traceback.format_exc())
+        
+        # Try to find the local HTML file as a fallback
+        local_html = "Lists of all ETFs _ Simplex Asset management.html"
+        if os.path.exists(local_html):
+            logger.info(f"Trying to parse from local HTML file: {local_html}")
+            nav_data = parse_simplex_nav_from_file(local_html)
+            if nav_data:
+                logger.info("Successfully parsed NAV data from local HTML file")
+                # Update the source to indicate it's from the local file
+                nav_data['source'] = "https://www.simplexasset.com/etf/eng/etf.html (local fallback)"
+                return nav_data
+        
         return None
 
 def save_nav_data(nav_data, save_dir=SAVE_DIR):
@@ -546,31 +529,6 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true", help="Enable extra debug logging")
     parser.add_argument("--output-dir", help="Directory to save output files (default: data)")
     args = parser.parse_args()
-        
-    # Configure extra debug logging if requested
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-        for handler in logger.handlers:
-            handler.setLevel(logging.DEBUG)
-        
-    # Override save directory if specified
-    if args.output_dir:
-        SAVE_DIR = args.output_dir
-        os.makedirs(SAVE_DIR, exist_ok=True)
-        
-    # Process NAV data
-    success = process_simplex_nav(use_local_file=args.local)
-    
-    if success:
-        print(f"✅ Successfully processed Simplex NAV data")
-    else:
-        print("❌ Failed to process Simplex NAV data")
-        exit(1)d_argument("--output-dir", help="Directory to save output files (default: data)")
-    args = parser.parse_args()
-    
-    # Set environment variable for fallback if requested
-    if args.fallback:
-        os.environ['USE_HARDCODED_FALLBACK'] = 'true'
         
     # Configure extra debug logging if requested
     if args.debug:
