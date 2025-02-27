@@ -43,6 +43,7 @@ jobs:
         git add data/vix_futures_master.csv
         git add data/vix_futures_*.csv
         git add data/vix_downloader.log
+        git add data/cboe_debug.html
         git commit -m "Daily VIX futures update $(date +'%Y-%m-%d')" || echo "No changes to commit"
         git push
 
