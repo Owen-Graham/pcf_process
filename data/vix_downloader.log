@@ -1,0 +1,28 @@
+2025-02-27 00:06:46,633 - INFO - Starting VIX futures download process
+2025-02-27 00:06:46,633 - INFO - Downloading VIX futures data from CBOE...
+2025-02-27 00:06:48,316 - WARNING - Could not find VIX futures table on CBOE website
+2025-02-27 00:06:48,317 - INFO - Downloading VIX futures data from Yahoo Finance...
+2025-02-27 00:06:49,135 - INFO - Yahoo: VX=F = Ticker
+^VIX    19.1
+Name: 2025-02-26 00:00:00, dtype: float64
+2025-02-27 00:06:51,551 - ERROR - 
+1 Failed download:
+2025-02-27 00:06:51,551 - ERROR - ['/VXH5']: YFPricesMissingError('possibly delisted; no price data found  (period=1d) (Yahoo error = "No data found, symbol may be delisted")')
+2025-02-27 00:06:53,353 - ERROR - 
+1 Failed download:
+2025-02-27 00:06:53,353 - ERROR - ['/VXJ5']: YFPricesMissingError('possibly delisted; no price data found  (period=1d) (Yahoo error = "No data found, symbol may be delisted")')
+2025-02-27 00:06:55,600 - ERROR - 
+1 Failed download:
+2025-02-27 00:06:55,600 - ERROR - ['/VXK5']: YFPricesMissingError('possibly delisted; no price data found  (period=1d) (Yahoo error = "No data found, symbol may be delisted")')
+2025-02-27 00:06:55,602 - INFO - Attempting to read latest Simplex ETF 318A data
+2025-02-27 00:06:55,603 - WARNING - No Simplex ETF 318A files found
+2025-02-27 00:06:55,606 - INFO - Data for 2025-02-27 already exists in master file. Updating...
+2025-02-27 00:06:55,609 - INFO - Updated master CSV file: data/vix_futures_master.csv
+2025-02-27 00:06:55,610 - INFO - Saved daily snapshot to: data/vix_futures_202502270006.csv
+2025-02-27 00:06:55,610 - INFO - Data collected:
+2025-02-27 00:06:55,612 - INFO -          date     timestamp                                                           VX=F
+0  2025-02-27  202502270006  Ticker
+^VIX    19.1
+Name: 2025-02-26 00:00:00, dtype: float64
+2025-02-27 00:06:55,612 - INFO - Source comparison:
+2025-02-27 00:06:55,612 - INFO - Script completed successfully.
