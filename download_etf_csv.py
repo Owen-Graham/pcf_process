@@ -3,60 +3,89 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
+import traceback
+from common import setup_logging, SAVE_DIR
 
-# Define local storage directory
-SAVE_DIR = "data"
-os.makedirs(SAVE_DIR, exist_ok=True)
+# Set up logging
+logger = setup_logging('etf_pcf_downloader')
 
-# URL of the Simplex ETF page
-url = "https://www.simplexasset.com/etf/eng/etf.html"
-
-# Get the HTML content while bypassing SSL verification
-response = requests.get(url, verify=False)
-response.raise_for_status()
-
-# Parse the HTML
-soup = BeautifulSoup(response.text, 'html.parser')
-
-# Find the CSV link for ETF 318A
-csv_link = None
-for input_tag in soup.find_all("input", {"type": "image"}):
-    if "318A.csv" in input_tag["onclick"]:
-        csv_link = input_tag["onclick"].split("'")[1]
-        break
-
-# If the CSV link is found, download it
-if csv_link:
-    csv_url = f"https://www.simplexasset.com/etf/{csv_link.lstrip('..')}"  # Corrected URL format
-    csv_response = requests.get(csv_url, verify=False)
-    csv_response.raise_for_status()
-
-    # Temporary save path
-    temp_csv_path = os.path.join(SAVE_DIR, "temp_318A.csv")
+def download_simplex_etf_pcf():
+    """
+    Download PCF file for Simplex ETF 318A
     
-    with open(temp_csv_path, "wb") as file:
-        file.write(csv_response.content)
-    
-    # Read the CSV to extract Fund Date
-    df = pd.read_csv(temp_csv_path)
-
+    Returns:
+        str: Path to downloaded PCF file
+    """
     try:
-        fund_date = str(df["Fund Date"].iloc[0]).replace("/", "")  # Extracting Fund Date from column
-        if fund_date.lower() == "nan":  # Handle cases where fund_date is not available
-            fund_date = "unknown"
+        logger.info("Downloading Simplex ETF 318A PCF file")
+        
+        # URL of the Simplex ETF page
+        url = "https://www.simplexasset.com/etf/eng/etf.html"
+        
+        # Get the HTML content while bypassing SSL verification
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        response = requests.get(url, headers=headers, verify=False)
+        response.raise_for_status()
+        
+        # Parse the HTML
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Find the PCF link for ETF 318A
+        pcf_link = None
+        for input_tag in soup.find_all("input", {"type": "image"}):
+            onclick = input_tag.get("onclick", "")
+            if "318A" in onclick and ".pcf" in onclick.lower():
+                pcf_link = onclick.split("'")[1]
+                break
+            elif "318A.csv" in onclick:
+                # If PCF not found, fall back to CSV format
+                pcf_link = onclick.split("'")[1]
+                break
+        
+        # If the PCF link is found, download it
+        if pcf_link:
+            # Correct URL format
+            if pcf_link.startswith(".."):
+                pcf_url = f"https://www.simplexasset.com/etf/{pcf_link.lstrip('..')}"
+            else:
+                pcf_url = f"https://www.simplexasset.com/etf/{pcf_link}"
+                
+            logger.info(f"Downloading PCF from URL: {pcf_url}")
+            pcf_response = requests.get(pcf_url, headers=headers, verify=False)
+            pcf_response.raise_for_status()
+            
+            # Create filename with timestamp
+            current_datetime = datetime.now().strftime("%Y%m%d%H%M")
+            if ".pcf" in pcf_link.lower():
+                final_filename = f"318A-PCF-{current_datetime}.csv"
+            else:
+                final_filename = f"318A-{current_datetime}.csv"
+            
+            final_path = os.path.join(SAVE_DIR, final_filename)
+            
+            with open(final_path, "wb") as file:
+                file.write(pcf_response.content)
+            
+            logger.info(f"PCF file saved successfully to: {final_path}")
+            return final_path
+        else:
+            logger.warning("PCF link for ETF 318A not found")
+            return None
+    
     except Exception as e:
-        fund_date = "unknown"
+        logger.error(f"Error downloading PCF file: {str(e)}")
+        logger.error(traceback.format_exc())
+        return None
+
+if __name__ == "__main__":
+    # Download the ETF PCF file
+    pcf_path = download_simplex_etf_pcf()
     
-    # Get current date-time
-    current_datetime = datetime.now().strftime("%Y%m%d%H%M")
-    
-    # Define final file name
-    final_filename = f"318A-{fund_date}-{current_datetime}.csv"
-    final_csv_path = os.path.join(SAVE_DIR, final_filename)
-    
-    # Rename file to final filename
-    os.rename(temp_csv_path, final_csv_path)
-    
-    print(f"✅ CSV file saved successfully to: {final_csv_path}")
-else:
-    print("❌ CSV link for ETF 318A not found.")
+    if pcf_path:
+        print(f"✅ ETF PCF file saved successfully to: {pcf_path}")
+    else:
+        print("❌ Failed to download ETF PCF file")
+        exit(1)
