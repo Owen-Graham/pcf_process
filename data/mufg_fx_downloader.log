@@ -6,3 +6,15 @@
 2025-02-28 05:48:27,729 - INFO - Saved daily FX data to data/fx_data_202502280548.csv
 2025-02-28 05:48:27,729 - INFO - Created new master FX data file data/fx_data_master.csv
 2025-02-28 05:48:27,730 - INFO - Successfully saved FX rate data to data/fx_data_202502280548.csv and data/fx_data_master.csv
+2025-02-28 06:07:21,411 - INFO - Starting FX rate data processing
+2025-02-28 06:07:21,411 - INFO - Downloading FX rates from: https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv
+2025-02-28 06:07:22,083 - INFO - Successfully decoded CSV with shift_jis encoding
+2025-02-28 06:07:22,084 - INFO - Saved raw CSV to: data/mufg_fx_raw.csv
+2025-02-28 06:07:22,084 - INFO - Extracted date from CSV: 2025-02-28
+2025-02-28 06:07:22,084 - INFO - Using standard rate labels: ['T.T.S.', 'ACC.', 'CASH S.', 'T.T.B.', 'A/S', 'D/PED/A', 'CASH B.']
+2025-02-28 06:07:22,084 - INFO - Found USD line: "001","USD (米ドル)","   150.67","   151.10","   152.47","   148.67","   148.24","   147.94","   146.67"
+2025-02-28 06:07:22,084 - INFO - Extracted numeric values: [1.0, 150.67, 151.1, 152.47, 148.67, 148.24, 147.94, 146.67]
+2025-02-28 06:07:22,085 - INFO - Created 7 FX rate entries with date 2025-02-28
+2025-02-28 06:07:22,088 - INFO - Saved daily FX data to data/fx_data_202502280607.csv
+2025-02-28 06:07:22,092 - INFO - Updated master FX data file data/fx_data_master.csv
+2025-02-28 06:07:22,092 - INFO - Successfully saved FX rate data to data/fx_data_202502280607.csv and data/fx_data_master.csv

@@ -1,5 +1,4 @@
 timestamp,date,source,pair,label,rate
-202502280548,2025-02-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,,,
 202502280607,2025-02-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,T.T.S.,1.0
 202502280607,2025-02-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,ACC.,150.67
 202502280607,2025-02-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,CASH S.,151.1
