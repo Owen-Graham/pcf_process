@@ -1,4 +1,5 @@
 import os
+import glob
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -21,6 +22,42 @@ logging.basicConfig(
 )
 logger = logging.getLogger("estimated_navs_calculator")
 
+def find_latest_file(pattern):
+    """
+    Find the latest file matching a pattern
+    
+    Args:
+        pattern: File pattern to match (e.g., "vix_futures_*.csv")
+    
+    Returns:
+        str: Path to the latest file or None if no files found
+    """
+    try:
+        # Get full pattern path
+        full_pattern = os.path.join(DATA_DIR, pattern)
+        logger.info(f"Looking for files matching: {full_pattern}")
+        
+        # Use glob to find all matching files
+        matching_files = glob.glob(full_pattern)
+        
+        # Log what was found
+        if matching_files:
+            logger.info(f"Found {len(matching_files)} matching files: {matching_files}")
+        else:
+            logger.warning(f"No files found matching pattern: {pattern}")
+            return None
+        
+        # Sort by modification time (newest first)
+        matching_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+        
+        # Return the latest file
+        return matching_files[0]
+    
+    except Exception as e:
+        logger.error(f"Error finding files with pattern {pattern}: {str(e)}")
+        logger.error(traceback.format_exc())
+        return None
+
 def read_latest_file(pattern, default_cols=None):
     """
     Read the latest file matching the pattern
@@ -32,29 +69,35 @@ def read_latest_file(pattern, default_cols=None):
     Returns:
         pandas.DataFrame: DataFrame with the file contents or empty DataFrame
     """
-    try:
-        # Get all files matching the pattern
-        files = [f for f in os.listdir(DATA_DIR) if f.startswith(pattern.replace("*", ""))]
-        
-        if not files:
-            logger.warning(f"No files found matching pattern: {pattern}")
-            return pd.DataFrame(columns=default_cols if default_cols else [])
-        
-        # Sort by modification time (newest first)
-        files.sort(key=lambda x: os.path.getmtime(os.path.join(DATA_DIR, x)), reverse=True)
-        
-        # Get the latest file
-        latest_file = os.path.join(DATA_DIR, files[0])
-        logger.info(f"Reading latest file: {latest_file}")
-        
-        # Read the file
-        df = pd.read_csv(latest_file)
-        return df
+    latest_file = find_latest_file(pattern)
     
+    if latest_file:
+        try:
+            logger.info(f"Reading file: {latest_file}")
+            df = pd.read_csv(latest_file)
+            return df
+        except Exception as e:
+            logger.error(f"Error reading file {latest_file}: {str(e)}")
+            logger.error(traceback.format_exc())
+    
+    return pd.DataFrame(columns=default_cols if default_cols else [])
+
+def list_all_data_files():
+    """List all files in the data directory to help with debugging"""
+    try:
+        logger.info("Listing all files in data directory:")
+        all_files = os.listdir(DATA_DIR)
+        for file in all_files:
+            file_path = os.path.join(DATA_DIR, file)
+            file_size = os.path.getsize(file_path)
+            file_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+            logger.info(f"  {file} - Size: {file_size} bytes, Modified: {file_time}")
+        
+        logger.info(f"Total files found: {len(all_files)}")
+        return len(all_files)
     except Exception as e:
-        logger.error(f"Error reading file with pattern {pattern}: {str(e)}")
-        logger.error(traceback.format_exc())
-        return pd.DataFrame(columns=default_cols if default_cols else [])
+        logger.error(f"Error listing files: {str(e)}")
+        return 0
 
 def calculate_estimated_nav():
     """
@@ -65,6 +108,12 @@ def calculate_estimated_nav():
     """
     try:
         logger.info("Starting NAV calculations")
+        
+        # First, list all available files for debugging
+        file_count = list_all_data_files()
+        if file_count == 0:
+            logger.error("No files found in the data directory")
+            return None
         
         # Read the latest data files
         vix_futures_df = read_latest_file("vix_futures_*.csv", 
@@ -81,13 +130,17 @@ def calculate_estimated_nav():
         fx_data_df = read_latest_file("fx_data_*.csv",
                                      ["timestamp", "date", "source", "pair", "label", "rate"])
         
-        # Check if we have all required data
+        # Check if we have REQUIRED data (VIX futures and ETF characteristics)
+        missing_data = []
+        
         if vix_futures_df.empty:
-            logger.error("No VIX futures data available")
-            return None
+            missing_data.append("VIX futures data")
             
         if etf_char_df.empty:
-            logger.error("No ETF characteristics data available")
+            missing_data.append("ETF characteristics data")
+        
+        if missing_data:
+            logger.error(f"Missing required data: {', '.join(missing_data)}")
             return None
         
         # Get current timestamp
@@ -117,7 +170,7 @@ def calculate_estimated_nav():
             logger.error(f"Error extracting ETF characteristics: {str(e)}")
             return None
         
-        # Extract latest published NAV if available
+        # Extract latest published NAV if available (this is optional)
         if not nav_data_df.empty:
             try:
                 latest_published_nav = nav_data_df["nav"].iloc[0]
@@ -125,6 +178,8 @@ def calculate_estimated_nav():
                 logger.info(f"Latest published NAV: {latest_published_nav}")
             except Exception as e:
                 logger.warning(f"Error extracting published NAV: {str(e)}")
+        else:
+            logger.warning("No published NAV data available (this is optional)")
         
         # Extract USD/JPY exchange rate if available
         usd_jpy_rate = None
@@ -150,6 +205,8 @@ def calculate_estimated_nav():
                     logger.info(f"USD/JPY rate: {usd_jpy_rate}")
             except Exception as e:
                 logger.warning(f"Error extracting USD/JPY rate: {str(e)}")
+        else:
+            logger.warning("No FX rate data available, using default")
         
         # If no FX rate found, use a default
         if usd_jpy_rate is None:
@@ -158,15 +215,13 @@ def calculate_estimated_nav():
             logger.warning(f"Using default USD/JPY rate: {usd_jpy_rate}")
         
         # Calculate NAV estimates based on VIX futures data
-        # Group by futures and average prices across sources
-        vix_futures_grouped = vix_futures_df.groupby('vix_future')['price'].mean().reset_index()
-        
-        # Get near and far month futures
-        # Typically, these would be the first two VIX futures contracts
-        vix_futures_sorted = vix_futures_grouped.sort_values('vix_future').reset_index(drop=True)
-        
-        # Calculate the total futures value
         try:
+            # Group by futures and average prices across sources
+            vix_futures_grouped = vix_futures_df.groupby('vix_future')['price'].mean().reset_index()
+            
+            # Get near and far month futures
+            vix_futures_sorted = vix_futures_grouped.sort_values('vix_future').reset_index(drop=True)
+            
             near_future = vix_futures_sorted['vix_future'].iloc[0] if len(vix_futures_sorted) > 0 else None
             near_price = vix_futures_sorted['price'].iloc[0] if len(vix_futures_sorted) > 0 else 0
             
