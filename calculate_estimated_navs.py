@@ -2,6 +2,7 @@ import os
 import glob
 import pandas as pd
 import numpy as np
+import re
 from datetime import datetime
 import logging
 import sys
@@ -21,6 +22,28 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger("estimated_navs_calculator")
+
+def normalize_vix_ticker(ticker):
+    """
+    Normalize VIX futures ticker to standard format (VXH5 instead of VXH25)
+    
+    Args:
+        ticker: VIX futures ticker (e.g., VXH25, VXH5)
+    
+    Returns:
+        Normalized ticker (e.g., VXH5)
+    """
+    if not ticker or not isinstance(ticker, str):
+        return ticker
+        
+    # If ticker is in format VX<letter><2-digit-year>
+    match = re.match(r'(VX[A-Z])(\d{2})$', ticker)
+    if match:
+        prefix = match.group(1)
+        year = match.group(2)
+        # Take only the last digit of the year
+        return f"{prefix}{year[-1]}"
+    return ticker
 
 def find_latest_file(pattern):
     """
@@ -122,7 +145,7 @@ def calculate_estimated_nav():
         etf_char_df = read_latest_file("etf_characteristics_*.csv",
                                       ["timestamp", "fund_date", "shares_outstanding", 
                                        "fund_cash_component", "shares_amount_near_future", 
-                                       "shares_amount_far_future"])
+                                       "shares_amount_far_future", "near_future_code", "far_future_code"])
         
         nav_data_df = read_latest_file("nav_data_*.csv",
                                       ["timestamp", "source", "fund_date", "nav"])
@@ -159,13 +182,27 @@ def calculate_estimated_nav():
             shares_far = etf_char_df["shares_amount_far_future"].iloc[0]
             fund_cash = etf_char_df["fund_cash_component"].iloc[0] if "fund_cash_component" in etf_char_df.columns else 0
             
+            # Extract future codes if available
+            near_future_code = None
+            far_future_code = None
+            
+            if "near_future_code" in etf_char_df.columns and not pd.isna(etf_char_df["near_future_code"].iloc[0]):
+                near_future_code = etf_char_df["near_future_code"].iloc[0]
+            
+            if "far_future_code" in etf_char_df.columns and not pd.isna(etf_char_df["far_future_code"].iloc[0]):
+                far_future_code = etf_char_df["far_future_code"].iloc[0]
+            
             nav_results['shares_outstanding'] = shares_outstanding
             nav_results['shares_near_future'] = shares_near
             nav_results['shares_far_future'] = shares_far
             nav_results['fund_cash_component'] = fund_cash
+            nav_results['near_future_code'] = near_future_code
+            nav_results['far_future_code'] = far_future_code
             
             logger.info(f"ETF Characteristics: shares_outstanding={shares_outstanding}, "
-                       f"near_shares={shares_near}, far_shares={shares_far}, cash={fund_cash}")
+                       f"near_shares={shares_near} ({near_future_code}), "
+                       f"far_shares={shares_far} ({far_future_code}), "
+                       f"cash={fund_cash}")
         except Exception as e:
             logger.error(f"Error extracting ETF characteristics: {str(e)}")
             return None
@@ -181,141 +218,17 @@ def calculate_estimated_nav():
         else:
             logger.warning("No published NAV data available (this is optional)")
         
-        # Extract USD/JPY exchange rate if available
-        usd_jpy_rate = None
+        # Extract ALL USD/JPY exchange rates
+        fx_rates = {}
         if not fx_data_df.empty:
             try:
-                # Look for TTM (middle rate) or any available rate
-                if 'label' in fx_data_df.columns and 'rate' in fx_data_df.columns:
-                    if 'pair' in fx_data_df.columns:
-                        usdjpy_df = fx_data_df[fx_data_df['pair'] == 'USDJPY']
-                    else:
-                        usdjpy_df = fx_data_df  # Assume all rows are USDJPY
-                    
-                    # Try to find TTM rate first
-                    ttm_rows = usdjpy_df[usdjpy_df['label'].str.contains('TTM|ACC.|A/S', case=False, na=False)]
-                    
-                    if not ttm_rows.empty:
-                        usd_jpy_rate = ttm_rows['rate'].iloc[0]
-                    else:
-                        # Take any rate as fallback
-                        usd_jpy_rate = usdjpy_df['rate'].iloc[0]
-                    
-                    nav_results['usd_jpy_rate'] = usd_jpy_rate
-                    logger.info(f"USD/JPY rate: {usd_jpy_rate}")
-            except Exception as e:
-                logger.warning(f"Error extracting USD/JPY rate: {str(e)}")
-        else:
-            logger.warning("No FX rate data available, using default")
-        
-        # If no FX rate found, use a default
-        if usd_jpy_rate is None:
-            usd_jpy_rate = 150.0  # Default fallback rate
-            nav_results['usd_jpy_rate'] = usd_jpy_rate
-            logger.warning(f"Using default USD/JPY rate: {usd_jpy_rate}")
-        
-        # Calculate NAV estimates based on VIX futures data
-        try:
-            # Group by futures and average prices across sources
-            vix_futures_grouped = vix_futures_df.groupby('vix_future')['price'].mean().reset_index()
-            
-            # Get near and far month futures
-            vix_futures_sorted = vix_futures_grouped.sort_values('vix_future').reset_index(drop=True)
-            
-            near_future = vix_futures_sorted['vix_future'].iloc[0] if len(vix_futures_sorted) > 0 else None
-            near_price = vix_futures_sorted['price'].iloc[0] if len(vix_futures_sorted) > 0 else 0
-            
-            far_future = vix_futures_sorted['vix_future'].iloc[1] if len(vix_futures_sorted) > 1 else None
-            far_price = vix_futures_sorted['price'].iloc[1] if len(vix_futures_sorted) > 1 else 0
-            
-            nav_results['near_future'] = near_future
-            nav_results['near_future_price'] = near_price
-            nav_results['far_future'] = far_future
-            nav_results['far_future_price'] = far_price
-            
-            logger.info(f"Futures: {near_future}={near_price}, {far_future}={far_price}")
-            
-            # Calculate futures value in USD
-            futures_value_usd = (shares_near * near_price * 1000) + (shares_far * far_price * 1000)
-            nav_results['futures_value_usd'] = futures_value_usd
-            
-            # Calculate NAV in JPY
-            # NAV = (Futures Value in USD * FX Rate + Cash) / Shares Outstanding
-            estimated_nav_jpy = (futures_value_usd * usd_jpy_rate + fund_cash) / shares_outstanding
-            nav_results['estimated_nav_jpy'] = estimated_nav_jpy
-            
-            logger.info(f"Estimated NAV (JPY): {estimated_nav_jpy}")
-            
-            # If we have published NAV, calculate the difference
-            if 'published_nav' in nav_results:
-                nav_diff = estimated_nav_jpy - nav_results['published_nav']
-                nav_diff_pct = (nav_diff / nav_results['published_nav']) * 100
+                # Filter to only USDJPY rates if pair column exists
+                if 'pair' in fx_data_df.columns:
+                    usdjpy_df = fx_data_df[fx_data_df['pair'] == 'USDJPY']
+                else:
+                    usdjpy_df = fx_data_df  # Assume all rows are USDJPY
                 
-                nav_results['nav_difference'] = nav_diff
-                nav_results['nav_difference_pct'] = nav_diff_pct
-                
-                logger.info(f"NAV difference: {nav_diff} JPY ({nav_diff_pct:.2f}%)")
-        
-        except Exception as e:
-            logger.error(f"Error calculating NAV: {str(e)}")
-            logger.error(traceback.format_exc())
-            return None
-        
-        return nav_results
-    
-    except Exception as e:
-        logger.error(f"Error in NAV calculations: {str(e)}")
-        logger.error(traceback.format_exc())
-        return None
-
-def save_nav_results(nav_results, save_dir=DATA_DIR):
-    """
-    Save NAV calculation results to CSV file
-    
-    Args:
-        nav_results: Dictionary with NAV calculation results
-        save_dir: Directory to save the file
-    
-    Returns:
-        str: Path to saved file
-    """
-    if not nav_results:
-        logger.warning("No NAV results to save")
-        return None
-    
-    try:
-        # Create DataFrame
-        df = pd.DataFrame([nav_results])
-        
-        # Save to CSV
-        csv_path = os.path.join(save_dir, "estimated_navs.csv")
-        df.to_csv(csv_path, index=False)
-        
-        logger.info(f"Saved NAV results to {csv_path}")
-        return csv_path
-    
-    except Exception as e:
-        logger.error(f"Error saving NAV results: {str(e)}")
-        logger.error(traceback.format_exc())
-        return None
-
-if __name__ == "__main__":
-    logger.info("Starting estimated NAV calculator")
-    
-    # Calculate NAV estimates
-    nav_results = calculate_estimated_nav()
-    
-    if nav_results:
-        # Save results
-        csv_path = save_nav_results(nav_results)
-        
-        if csv_path:
-            print(f"✅ NAV calculations completed and saved to: {csv_path}")
-        else:
-            print("❌ Failed to save NAV calculations")
-            sys.exit(1)
-    else:
-        print("❌ NAV calculations failed")
-        sys.exit(1)
-    
-    logger.info("NAV calculator completed successfully")
+                # Get all distinct rates with their labels
+                if 'label' in usdjpy_df.columns and 'rate' in usdjpy_df.columns:
+                    for _, row in usdjpy_df.iterrows():
+                        label = row['label'] if not p
