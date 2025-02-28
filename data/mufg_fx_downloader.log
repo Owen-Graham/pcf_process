@@ -1,0 +1,8 @@
+2025-02-28 05:48:27,181 - INFO - Starting FX rate data processing
+2025-02-28 05:48:27,181 - INFO - Downloading FX rates from: https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv
+2025-02-28 05:48:27,726 - INFO - Saved raw CSV to: data/mufg_fx_raw.csv
+2025-02-28 05:48:27,727 - INFO - Found USD row: "001","USD (米ドル)","   150.67","   151.10","   152.47","   148.67","   148.24","   147.94","   146.67"
+2025-02-28 05:48:27,727 - WARNING - No numeric rates found in USD row
+2025-02-28 05:48:27,729 - INFO - Saved daily FX data to data/fx_data_202502280548.csv
+2025-02-28 05:48:27,729 - INFO - Created new master FX data file data/fx_data_master.csv
+2025-02-28 05:48:27,730 - INFO - Successfully saved FX rate data to data/fx_data_202502280548.csv and data/fx_data_master.csv
