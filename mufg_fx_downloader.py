@@ -128,10 +128,6 @@ def download_mufg_fx_rates():
         # Get current timestamp
         timestamp = datetime.now().strftime("%Y%m%d%H%M")
         
-        # Based on the screenshot and description, we'll use the standard rate labels
-        rate_labels = STANDARD_LABELS
-        logger.info(f"Using standard rate labels: {rate_labels}")
-        
         # Look for USD data pattern in each line
         usd_line = None
         numeric_values = []
@@ -158,36 +154,38 @@ def download_mufg_fx_rates():
                     
                     logger.info(f"Extracted numeric values: {numeric_values}")
                     
-                    # If we found enough values that match our expected count of rate labels,
-                    # or at least some values that are likely to be rates (in the USD row)
-                    if len(numeric_values) >= 4:  # Expecting at least 4 rates
+                    # If we found enough values that look like exchange rates
+                    if len(numeric_values) >= 4 and any(100 <= val <= 200 for val in numeric_values):
                         break
         
         # Process the data if we found USD line and numeric values
         if usd_line and numeric_values:
-            # Validate numeric values look like exchange rates
-            # USD/JPY typically ranges between 100-200 yen per dollar in recent history
-            if not any(100 <= rate <= 200 for rate in numeric_values):
-                logger.error("Extracted values do not appear to be valid exchange rates")
-                return None
-            
             # Create a list of dictionaries for each rate
             fx_data_list = []
             
-            # Match rate labels with numeric values
-            # Only use as many values as we have labels, or vice versa
-            n_rates = min(len(rate_labels), len(numeric_values))
+            # Based on the screenshot, we need to align values correctly with labels
+            # Extract values that look like exchange rates (typically between 100-200 for USD/JPY)
+            exchange_rates = [val for val in numeric_values if 100 <= val <= 200]
             
-            for i in range(n_rates):
-                fx_data = {
-                    'timestamp': timestamp,
-                    'date': csv_date,
-                    'source': url,
-                    'pair': 'USDJPY',
-                    'label': rate_labels[i],
-                    'rate': numeric_values[i]
-                }
-                fx_data_list.append(fx_data)
+            logger.info(f"Filtered exchange rates: {exchange_rates}")
+            
+            if len(exchange_rates) < len(STANDARD_LABELS):
+                logger.error(f"Not enough valid exchange rates found. Expected at least {len(STANDARD_LABELS)}, got {len(exchange_rates)}")
+                return None
+            
+            # Match standard labels with the exchange rates
+            for i, label in enumerate(STANDARD_LABELS):
+                if i < len(exchange_rates):
+                    fx_data = {
+                        'timestamp': timestamp,
+                        'date': csv_date,
+                        'source': url,
+                        'pair': 'USDJPY',
+                        'label': label,
+                        'rate': exchange_rates[i]
+                    }
+                    fx_data_list.append(fx_data)
+                    logger.info(f"Mapped {label} to rate {exchange_rates[i]}")
             
             logger.info(f"Created {len(fx_data_list)} FX rate entries with date {csv_date}")
             return fx_data_list
