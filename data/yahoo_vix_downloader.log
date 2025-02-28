@@ -5752,3 +5752,414 @@ yfinance.exceptions.YFPricesMissingError: possibly delisted; no price data found
 2025-02-28 07:05:06,692 - INFO - [yahoo_vix_downloader.py:99] - Yahoo: ^VXIND3 → YAHOO:VXK5 = 19.501100540161133
 2025-02-28 07:05:06,692 - INFO - [yahoo_vix_downloader.py:141] - Successfully retrieved VIX futures data from Yahoo Finance (processing took 2.35s)
 2025-02-28 07:05:06,694 - INFO - [yahoo_vix_downloader.py:204] - Saved Yahoo futures data to data/vix_futures_yahoo_202502280705.csv
+2025-02-28 07:17:11,149 - INFO - [yahoo_vix_downloader.py:21] - Downloading VIX futures data from Yahoo Finance...
+2025-02-28 07:17:11,149 - DEBUG - [utils.py:101] - Entering download()
+2025-02-28 07:17:11,149 - DEBUG - [multi.py:106] - Disabling multithreading because DEBUG logging enabled
+2025-02-28 07:17:11,150 - DEBUG - [utils.py:101] -  Entering history()
+2025-02-28 07:17:11,274 - DEBUG - [peewee.py:3319] - ('CREATE TABLE IF NOT EXISTS "_kv" ("key" VARCHAR(255) NOT NULL PRIMARY KEY, "value" VARCHAR(255)) WITHOUT ROWID', [])
+2025-02-28 07:17:11,369 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."key", "t1"."value" FROM "_kv" AS "t1" WHERE ("t1"."key" = ?) LIMIT ? OFFSET ?', ['^VIX', 1, 0])
+2025-02-28 07:17:11,370 - DEBUG - [utils.py:101] -   Entering _fetch_ticker_tz()
+2025-02-28 07:17:11,370 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:11,370 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:11,370 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VIX
+2025-02-28 07:17:11,370 - DEBUG - [data.py:361] - params=frozendict.frozendict({'range': '1d', 'interval': '1d'})
+2025-02-28 07:17:11,370 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:11,370 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:11,370 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:11,537 - DEBUG - [peewee.py:3319] - ('CREATE TABLE IF NOT EXISTS "_cookieschema" ("strategy" VARCHAR(255) NOT NULL PRIMARY KEY, "fetch_date" DATETIME NOT NULL, "cookie_bytes" BLOB NOT NULL) WITHOUT ROWID', [])
+2025-02-28 07:17:11,673 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."strategy", "t1"."fetch_date", "t1"."cookie_bytes" FROM "_cookieschema" AS "t1" WHERE ("t1"."strategy" = ?) LIMIT ? OFFSET ?', ['basic', 1, 0])
+2025-02-28 07:17:11,676 - DEBUG - [connectionpool.py:1049] - Starting new HTTPS connection (1): fc.yahoo.com:443
+2025-02-28 07:17:11,694 - DEBUG - [connectionpool.py:544] - https://fc.yahoo.com:443 "GET / HTTP/1.1" 404 4742
+2025-02-28 07:17:11,695 - DEBUG - [peewee.py:3319] - ('DELETE FROM "_cookieschema" WHERE ("_cookieschema"."strategy" = ?)', ['basic'])
+2025-02-28 07:17:11,695 - DEBUG - [peewee.py:3319] - ('BEGIN', None)
+2025-02-28 07:17:11,695 - DEBUG - [peewee.py:3319] - ('INSERT INTO "_cookieschema" ("strategy", "fetch_date", "cookie_bytes") VALUES (?, ?, ?)', ['basic', '2025-02-28T07:17:11.695789', <memory at 0x7fae90cfec80>])
+2025-02-28 07:17:12,076 - DEBUG - [data.py:181] - fetched basic cookie = <Cookie A3=d=AQABBPdiwWcCELtmLZZTlrXM2LeykdMrOmMFEgEBAQG0wmfLZ9wr0iMA_eMAAA&S=AQAAAgTkvgapMfocN3knb9xReFM for .yahoo.com/>
+2025-02-28 07:17:12,076 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:12,077 - DEBUG - [connectionpool.py:1049] - Starting new HTTPS connection (1): query1.finance.yahoo.com:443
+2025-02-28 07:17:12,171 - DEBUG - [connectionpool.py:544] - https://query1.finance.yahoo.com:443 "GET /v1/test/getcrumb HTTP/1.1" 200 11
+2025-02-28 07:17:12,171 - DEBUG - [data.py:212] - crumb = 'wXIVyEjR4.x'
+2025-02-28 07:17:12,171 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,171 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:12,172 - DEBUG - [connectionpool.py:1049] - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2025-02-28 07:17:12,323 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVIX?range=1d&interval=1d&crumb=wXIVyEjR4.x HTTP/1.1" 200 1175
+2025-02-28 07:17:12,323 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:12,323 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:12,323 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:12,323 - DEBUG - [utils.py:106] -   Exiting _fetch_ticker_tz()
+2025-02-28 07:17:12,335 - DEBUG - [peewee.py:3319] - ('BEGIN', None)
+2025-02-28 07:17:12,335 - DEBUG - [peewee.py:3319] - ('INSERT INTO "_kv" ("key", "value") VALUES (?, ?)', ['^VIX', 'America/Chicago'])
+2025-02-28 07:17:12,337 - DEBUG - [utils.py:101] -   Entering history()
+2025-02-28 07:17:12,337 - DEBUG - [history.py:161] - ^VIX: Yahoo GET parameters: {'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:12,337 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:12,337 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:12,337 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VIX
+2025-02-28 07:17:12,337 - DEBUG - [data.py:361] - params={'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:12,337 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:12,337 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:12,337 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,337 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:12,337 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:12,337 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,337 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:12,376 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVIX?range=1d&interval=1d&includePrePost=False&events=div%2Csplits%2CcapitalGains&crumb=wXIVyEjR4.x HTTP/1.1" 200 1175
+2025-02-28 07:17:12,377 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:12,377 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:12,377 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:12,378 - DEBUG - [history.py:272] - ^VIX: yfinance received OHLC data: 2025-02-27 08:00:00 only
+2025-02-28 07:17:12,380 - DEBUG - [history.py:315] - ^VIX: OHLC after cleaning: 2025-02-27 02:00:00-06:00 only
+2025-02-28 07:17:12,383 - DEBUG - [history.py:384] - ^VIX: OHLC after combining events: 2025-02-27 00:00:00-06:00 only
+2025-02-28 07:17:12,388 - DEBUG - [history.py:462] - ^VIX: yfinance returning OHLC: 2025-02-27 00:00:00-06:00 only
+2025-02-28 07:17:12,388 - DEBUG - [utils.py:106] -   Exiting history()
+2025-02-28 07:17:12,388 - DEBUG - [utils.py:106] -  Exiting history()
+2025-02-28 07:17:12,391 - DEBUG - [utils.py:106] - Exiting download()
+2025-02-28 07:17:12,392 - INFO - [yahoo_vix_downloader.py:39] - Yahoo: ^VIX = 21.1299991607666
+2025-02-28 07:17:12,392 - DEBUG - [yahoo_vix_downloader.py:67] - Position to contract mapping: {1: '/VXH5', 2: '/VXJ5', 3: '/VXK5'}
+2025-02-28 07:17:12,392 - INFO - [yahoo_vix_downloader.py:73] - Trying ticker pattern group: ['^VFTW1', '^VFTW2', '^VFTW3']
+2025-02-28 07:17:12,392 - DEBUG - [yahoo_vix_downloader.py:77] - Downloading ^VFTW1 from Yahoo Finance
+2025-02-28 07:17:12,392 - DEBUG - [utils.py:101] - Entering download()
+2025-02-28 07:17:12,392 - DEBUG - [multi.py:106] - Disabling multithreading because DEBUG logging enabled
+2025-02-28 07:17:12,392 - DEBUG - [utils.py:101] -  Entering history()
+2025-02-28 07:17:12,392 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."key", "t1"."value" FROM "_kv" AS "t1" WHERE ("t1"."key" = ?) LIMIT ? OFFSET ?', ['^VFTW1', 1, 0])
+2025-02-28 07:17:12,393 - DEBUG - [utils.py:101] -   Entering _fetch_ticker_tz()
+2025-02-28 07:17:12,393 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:12,393 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:12,393 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VFTW1
+2025-02-28 07:17:12,393 - DEBUG - [data.py:361] - params=frozendict.frozendict({'range': '1d', 'interval': '1d'})
+2025-02-28 07:17:12,393 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:12,393 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:12,393 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,393 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:12,394 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:12,394 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,394 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:12,434 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVFTW1?range=1d&interval=1d&crumb=wXIVyEjR4.x HTTP/1.1" 200 1066
+2025-02-28 07:17:12,435 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:12,435 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:12,435 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:12,435 - DEBUG - [utils.py:106] -   Exiting _fetch_ticker_tz()
+2025-02-28 07:17:12,436 - DEBUG - [peewee.py:3319] - ('BEGIN', None)
+2025-02-28 07:17:12,436 - DEBUG - [peewee.py:3319] - ('INSERT INTO "_kv" ("key", "value") VALUES (?, ?)', ['^VFTW1', 'America/New_York'])
+2025-02-28 07:17:12,438 - DEBUG - [utils.py:101] -   Entering history()
+2025-02-28 07:17:12,438 - DEBUG - [history.py:161] - ^VFTW1: Yahoo GET parameters: {'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:12,438 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:12,438 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:12,438 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VFTW1
+2025-02-28 07:17:12,438 - DEBUG - [data.py:361] - params={'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:12,438 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:12,438 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:12,438 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,438 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:12,438 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:12,438 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,439 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:12,476 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVFTW1?range=1d&interval=1d&includePrePost=False&events=div%2Csplits%2CcapitalGains&crumb=wXIVyEjR4.x HTTP/1.1" 200 1066
+2025-02-28 07:17:12,476 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:12,476 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:12,476 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:12,477 - DEBUG - [history.py:272] - ^VFTW1: yfinance received OHLC data: 2025-02-27 21:03:45 only
+2025-02-28 07:17:12,478 - DEBUG - [history.py:315] - ^VFTW1: OHLC after cleaning: 2025-02-27 16:03:45-05:00 only
+2025-02-28 07:17:12,481 - DEBUG - [history.py:384] - ^VFTW1: OHLC after combining events: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:12,485 - DEBUG - [history.py:462] - ^VFTW1: yfinance returning OHLC: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:12,486 - DEBUG - [utils.py:106] -   Exiting history()
+2025-02-28 07:17:12,486 - DEBUG - [utils.py:106] -  Exiting history()
+2025-02-28 07:17:12,488 - DEBUG - [utils.py:106] - Exiting download()
+2025-02-28 07:17:12,489 - INFO - [yahoo_vix_downloader.py:99] - Yahoo: ^VFTW1 → YAHOO:VXH5 = 19.25
+2025-02-28 07:17:12,489 - DEBUG - [yahoo_vix_downloader.py:77] - Downloading ^VFTW2 from Yahoo Finance
+2025-02-28 07:17:12,489 - DEBUG - [utils.py:101] - Entering download()
+2025-02-28 07:17:12,489 - DEBUG - [multi.py:106] - Disabling multithreading because DEBUG logging enabled
+2025-02-28 07:17:12,489 - DEBUG - [utils.py:101] -  Entering history()
+2025-02-28 07:17:12,489 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."key", "t1"."value" FROM "_kv" AS "t1" WHERE ("t1"."key" = ?) LIMIT ? OFFSET ?', ['^VFTW2', 1, 0])
+2025-02-28 07:17:12,490 - DEBUG - [utils.py:101] -   Entering _fetch_ticker_tz()
+2025-02-28 07:17:12,490 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:12,490 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:12,490 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VFTW2
+2025-02-28 07:17:12,490 - DEBUG - [data.py:361] - params=frozendict.frozendict({'range': '1d', 'interval': '1d'})
+2025-02-28 07:17:12,490 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:12,490 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:12,490 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,490 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:12,490 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:12,491 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,491 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:12,530 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVFTW2?range=1d&interval=1d&crumb=wXIVyEjR4.x HTTP/1.1" 200 1091
+2025-02-28 07:17:12,530 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:12,530 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:12,531 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:12,531 - DEBUG - [utils.py:106] -   Exiting _fetch_ticker_tz()
+2025-02-28 07:17:12,531 - DEBUG - [peewee.py:3319] - ('BEGIN', None)
+2025-02-28 07:17:12,531 - DEBUG - [peewee.py:3319] - ('INSERT INTO "_kv" ("key", "value") VALUES (?, ?)', ['^VFTW2', 'America/New_York'])
+2025-02-28 07:17:12,533 - DEBUG - [utils.py:101] -   Entering history()
+2025-02-28 07:17:12,533 - DEBUG - [history.py:161] - ^VFTW2: Yahoo GET parameters: {'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:12,533 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:12,533 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:12,533 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VFTW2
+2025-02-28 07:17:12,533 - DEBUG - [data.py:361] - params={'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:12,533 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:12,533 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:12,534 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,534 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:12,534 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:12,534 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,534 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:12,572 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVFTW2?range=1d&interval=1d&includePrePost=False&events=div%2Csplits%2CcapitalGains&crumb=wXIVyEjR4.x HTTP/1.1" 200 1091
+2025-02-28 07:17:12,572 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:12,573 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:12,573 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:12,574 - DEBUG - [history.py:272] - ^VFTW2: yfinance received OHLC data: 2025-02-27 21:03:46 only
+2025-02-28 07:17:12,574 - DEBUG - [history.py:315] - ^VFTW2: OHLC after cleaning: 2025-02-27 16:03:46-05:00 only
+2025-02-28 07:17:12,577 - DEBUG - [history.py:384] - ^VFTW2: OHLC after combining events: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:12,581 - DEBUG - [history.py:462] - ^VFTW2: yfinance returning OHLC: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:12,582 - DEBUG - [utils.py:106] -   Exiting history()
+2025-02-28 07:17:12,582 - DEBUG - [utils.py:106] -  Exiting history()
+2025-02-28 07:17:12,584 - DEBUG - [utils.py:106] - Exiting download()
+2025-02-28 07:17:12,585 - INFO - [yahoo_vix_downloader.py:99] - Yahoo: ^VFTW2 → YAHOO:VXJ5 = 19.399999618530273
+2025-02-28 07:17:12,585 - DEBUG - [yahoo_vix_downloader.py:77] - Downloading ^VFTW3 from Yahoo Finance
+2025-02-28 07:17:12,585 - DEBUG - [utils.py:101] - Entering download()
+2025-02-28 07:17:12,585 - DEBUG - [multi.py:106] - Disabling multithreading because DEBUG logging enabled
+2025-02-28 07:17:12,585 - DEBUG - [utils.py:101] -  Entering history()
+2025-02-28 07:17:12,586 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."key", "t1"."value" FROM "_kv" AS "t1" WHERE ("t1"."key" = ?) LIMIT ? OFFSET ?', ['^VFTW3', 1, 0])
+2025-02-28 07:17:12,586 - DEBUG - [utils.py:101] -   Entering _fetch_ticker_tz()
+2025-02-28 07:17:12,586 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:12,586 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:12,586 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VFTW3
+2025-02-28 07:17:12,586 - DEBUG - [data.py:361] - params=frozendict.frozendict({'range': '1d', 'interval': '1d'})
+2025-02-28 07:17:12,586 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:12,587 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:12,587 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,587 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:12,587 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:12,587 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:12,587 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:12,625 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVFTW3?range=1d&interval=1d&crumb=wXIVyEjR4.x HTTP/1.1" 404 108
+2025-02-28 07:17:12,625 - DEBUG - [data.py:393] - response code=404
+2025-02-28 07:17:12,625 - DEBUG - [data.py:111] - toggling cookie strategy basic -> csrf
+2025-02-28 07:17:12,625 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:12,625 - DEBUG - [data.py:326] - cookie_mode = 'csrf'
+2025-02-28 07:17:12,625 - DEBUG - [utils.py:101] -       Entering _get_crumb_csrf()
+2025-02-28 07:17:12,626 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."strategy", "t1"."fetch_date", "t1"."cookie_bytes" FROM "_cookieschema" AS "t1" WHERE ("t1"."strategy" = ?) LIMIT ? OFFSET ?', ['csrf', 1, 0])
+2025-02-28 07:17:12,627 - DEBUG - [connectionpool.py:1049] - Starting new HTTPS connection (1): guce.yahoo.com:443
+2025-02-28 07:17:12,853 - DEBUG - [connectionpool.py:544] - https://guce.yahoo.com:443 "GET /consent HTTP/1.1" 302 0
+2025-02-28 07:17:12,855 - DEBUG - [connectionpool.py:1049] - Starting new HTTPS connection (1): www.yahoo.com:443
+2025-02-28 07:17:13,140 - DEBUG - [connectionpool.py:544] - https://www.yahoo.com:443 "GET /?guccounter=1 HTTP/1.1" 200 None
+2025-02-28 07:17:13,210 - DEBUG - [data.py:251] - Failed to find "csrfToken" in response
+2025-02-28 07:17:13,210 - DEBUG - [utils.py:106] -       Exiting _get_crumb_csrf()
+2025-02-28 07:17:13,210 - DEBUG - [data.py:107] - toggling cookie strategy csrf -> basic
+2025-02-28 07:17:13,210 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:13,211 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."strategy", "t1"."fetch_date", "t1"."cookie_bytes" FROM "_cookieschema" AS "t1" WHERE ("t1"."strategy" = ?) LIMIT ? OFFSET ?', ['basic', 1, 0])
+2025-02-28 07:17:13,211 - DEBUG - [data.py:152] - loaded persistent cookie
+2025-02-28 07:17:13,211 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:13,251 - DEBUG - [connectionpool.py:544] - https://query1.finance.yahoo.com:443 "GET /v1/test/getcrumb HTTP/1.1" 200 11
+2025-02-28 07:17:13,252 - DEBUG - [data.py:212] - crumb = 'wXIVyEjR4.x'
+2025-02-28 07:17:13,252 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:13,252 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:13,289 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVFTW3?range=1d&interval=1d&crumb=wXIVyEjR4.x HTTP/1.1" 404 108
+2025-02-28 07:17:13,290 - DEBUG - [data.py:405] - response code=404
+2025-02-28 07:17:13,290 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:13,290 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:13,290 - DEBUG - [base.py:137] - Got error from yahoo api for ticker ^VFTW3, Error: {'code': 'Not Found', 'description': 'No data found, symbol may be delisted'}
+2025-02-28 07:17:13,290 - DEBUG - [utils.py:106] -   Exiting _fetch_ticker_tz()
+2025-02-28 07:17:13,290 - DEBUG - [utils.py:101] -   Entering history()
+2025-02-28 07:17:13,290 - DEBUG - [history.py:161] - ^VFTW3: Yahoo GET parameters: {'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:13,291 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:13,291 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:13,291 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VFTW3
+2025-02-28 07:17:13,291 - DEBUG - [data.py:361] - params={'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:13,291 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:13,291 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:13,291 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:13,291 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:13,291 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:13,291 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:13,291 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:13,335 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVFTW3?range=1d&interval=1d&includePrePost=False&events=div%2Csplits%2CcapitalGains&crumb=wXIVyEjR4.x HTTP/1.1" 404 108
+2025-02-28 07:17:13,335 - DEBUG - [data.py:393] - response code=404
+2025-02-28 07:17:13,336 - DEBUG - [data.py:111] - toggling cookie strategy basic -> csrf
+2025-02-28 07:17:13,336 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:13,336 - DEBUG - [data.py:326] - cookie_mode = 'csrf'
+2025-02-28 07:17:13,336 - DEBUG - [utils.py:101] -       Entering _get_crumb_csrf()
+2025-02-28 07:17:13,336 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."strategy", "t1"."fetch_date", "t1"."cookie_bytes" FROM "_cookieschema" AS "t1" WHERE ("t1"."strategy" = ?) LIMIT ? OFFSET ?', ['csrf', 1, 0])
+2025-02-28 07:17:13,421 - DEBUG - [connectionpool.py:544] - https://guce.yahoo.com:443 "GET /consent HTTP/1.1" 302 0
+2025-02-28 07:17:14,270 - DEBUG - [connectionpool.py:544] - https://www.yahoo.com:443 "GET /?guccounter=1 HTTP/1.1" 200 None
+2025-02-28 07:17:14,329 - DEBUG - [data.py:251] - Failed to find "csrfToken" in response
+2025-02-28 07:17:14,329 - DEBUG - [utils.py:106] -       Exiting _get_crumb_csrf()
+2025-02-28 07:17:14,329 - DEBUG - [data.py:107] - toggling cookie strategy csrf -> basic
+2025-02-28 07:17:14,329 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,329 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."strategy", "t1"."fetch_date", "t1"."cookie_bytes" FROM "_cookieschema" AS "t1" WHERE ("t1"."strategy" = ?) LIMIT ? OFFSET ?', ['basic', 1, 0])
+2025-02-28 07:17:14,330 - DEBUG - [data.py:152] - loaded persistent cookie
+2025-02-28 07:17:14,330 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:14,369 - DEBUG - [connectionpool.py:544] - https://query1.finance.yahoo.com:443 "GET /v1/test/getcrumb HTTP/1.1" 200 11
+2025-02-28 07:17:14,369 - DEBUG - [data.py:212] - crumb = 'wXIVyEjR4.x'
+2025-02-28 07:17:14,369 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,369 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:14,406 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVFTW3?range=1d&interval=1d&includePrePost=False&events=div%2Csplits%2CcapitalGains&crumb=wXIVyEjR4.x HTTP/1.1" 404 108
+2025-02-28 07:17:14,407 - DEBUG - [data.py:405] - response code=404
+2025-02-28 07:17:14,407 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:14,407 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:14,408 - ERROR - [multi.py:181] - 
+1 Failed download:
+2025-02-28 07:17:14,409 - ERROR - [multi.py:194] - ['^VFTW3']: YFPricesMissingError('possibly delisted; no price data found  (period=1d) (Yahoo error = "No data found, symbol may be delisted")')
+2025-02-28 07:17:14,409 - DEBUG - [multi.py:206] - ['^VFTW3']: Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/yfinance/multi.py", line 277, in _download_one
+    data = Ticker(ticker).history(
+  File "/opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/yfinance/utils.py", line 104, in wrapper
+    result = func(*args, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/yfinance/base.py", line 80, in history
+    return self._lazy_load_price_history().history(*args, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/yfinance/utils.py", line 104, in wrapper
+    result = func(*args, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/yfinance/scrapers/history.py", line 245, in history
+    raise _exception
+yfinance.exceptions.YFPricesMissingError: possibly delisted; no price data found  (period=1d) (Yahoo error = "No data found, symbol may be delisted")
+
+2025-02-28 07:17:14,412 - DEBUG - [utils.py:106] - Exiting download()
+2025-02-28 07:17:14,412 - WARNING - [yahoo_vix_downloader.py:105] - No data found for ticker ^VFTW3
+2025-02-28 07:17:14,412 - INFO - [yahoo_vix_downloader.py:73] - Trying ticker pattern group: ['^VXIND1', '^VXIND2', '^VXIND3']
+2025-02-28 07:17:14,412 - DEBUG - [yahoo_vix_downloader.py:77] - Downloading ^VXIND1 from Yahoo Finance
+2025-02-28 07:17:14,412 - DEBUG - [utils.py:101] - Entering download()
+2025-02-28 07:17:14,412 - DEBUG - [multi.py:106] - Disabling multithreading because DEBUG logging enabled
+2025-02-28 07:17:14,412 - DEBUG - [utils.py:101] -  Entering history()
+2025-02-28 07:17:14,412 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."key", "t1"."value" FROM "_kv" AS "t1" WHERE ("t1"."key" = ?) LIMIT ? OFFSET ?', ['^VXIND1', 1, 0])
+2025-02-28 07:17:14,413 - DEBUG - [utils.py:101] -   Entering _fetch_ticker_tz()
+2025-02-28 07:17:14,413 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:14,413 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:14,413 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VXIND1
+2025-02-28 07:17:14,413 - DEBUG - [data.py:361] - params=frozendict.frozendict({'range': '1d', 'interval': '1d'})
+2025-02-28 07:17:14,413 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:14,413 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:14,413 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,413 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:14,414 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:14,414 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,414 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:14,452 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVXIND1?range=1d&interval=1d&crumb=wXIVyEjR4.x HTTP/1.1" 200 1097
+2025-02-28 07:17:14,452 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:14,452 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:14,452 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:14,452 - DEBUG - [utils.py:106] -   Exiting _fetch_ticker_tz()
+2025-02-28 07:17:14,452 - DEBUG - [peewee.py:3319] - ('BEGIN', None)
+2025-02-28 07:17:14,453 - DEBUG - [peewee.py:3319] - ('INSERT INTO "_kv" ("key", "value") VALUES (?, ?)', ['^VXIND1', 'America/New_York'])
+2025-02-28 07:17:14,454 - DEBUG - [utils.py:101] -   Entering history()
+2025-02-28 07:17:14,454 - DEBUG - [history.py:161] - ^VXIND1: Yahoo GET parameters: {'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:14,454 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:14,454 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:14,454 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VXIND1
+2025-02-28 07:17:14,454 - DEBUG - [data.py:361] - params={'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:14,455 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:14,455 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:14,455 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,455 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:14,455 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:14,455 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,455 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:14,494 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVXIND1?range=1d&interval=1d&includePrePost=False&events=div%2Csplits%2CcapitalGains&crumb=wXIVyEjR4.x HTTP/1.1" 200 1097
+2025-02-28 07:17:14,494 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:14,494 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:14,494 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:14,495 - DEBUG - [history.py:272] - ^VXIND1: yfinance received OHLC data: 2025-02-27 21:00:00 only
+2025-02-28 07:17:14,496 - DEBUG - [history.py:315] - ^VXIND1: OHLC after cleaning: 2025-02-27 16:00:00-05:00 only
+2025-02-28 07:17:14,498 - DEBUG - [history.py:384] - ^VXIND1: OHLC after combining events: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:14,503 - DEBUG - [history.py:462] - ^VXIND1: yfinance returning OHLC: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:14,503 - DEBUG - [utils.py:106] -   Exiting history()
+2025-02-28 07:17:14,503 - DEBUG - [utils.py:106] -  Exiting history()
+2025-02-28 07:17:14,505 - DEBUG - [utils.py:106] - Exiting download()
+2025-02-28 07:17:14,506 - INFO - [yahoo_vix_downloader.py:99] - Yahoo: ^VXIND1 → YAHOO:VXH5 = 19.306299209594727
+2025-02-28 07:17:14,506 - DEBUG - [yahoo_vix_downloader.py:77] - Downloading ^VXIND2 from Yahoo Finance
+2025-02-28 07:17:14,506 - DEBUG - [utils.py:101] - Entering download()
+2025-02-28 07:17:14,507 - DEBUG - [multi.py:106] - Disabling multithreading because DEBUG logging enabled
+2025-02-28 07:17:14,507 - DEBUG - [utils.py:101] -  Entering history()
+2025-02-28 07:17:14,507 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."key", "t1"."value" FROM "_kv" AS "t1" WHERE ("t1"."key" = ?) LIMIT ? OFFSET ?', ['^VXIND2', 1, 0])
+2025-02-28 07:17:14,508 - DEBUG - [utils.py:101] -   Entering _fetch_ticker_tz()
+2025-02-28 07:17:14,508 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:14,508 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:14,508 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VXIND2
+2025-02-28 07:17:14,508 - DEBUG - [data.py:361] - params=frozendict.frozendict({'range': '1d', 'interval': '1d'})
+2025-02-28 07:17:14,508 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:14,508 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:14,508 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,508 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:14,508 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:14,508 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,508 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:14,546 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVXIND2?range=1d&interval=1d&crumb=wXIVyEjR4.x HTTP/1.1" 200 1097
+2025-02-28 07:17:14,547 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:14,547 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:14,547 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:14,547 - DEBUG - [utils.py:106] -   Exiting _fetch_ticker_tz()
+2025-02-28 07:17:14,547 - DEBUG - [peewee.py:3319] - ('BEGIN', None)
+2025-02-28 07:17:14,547 - DEBUG - [peewee.py:3319] - ('INSERT INTO "_kv" ("key", "value") VALUES (?, ?)', ['^VXIND2', 'America/New_York'])
+2025-02-28 07:17:14,548 - DEBUG - [utils.py:101] -   Entering history()
+2025-02-28 07:17:14,548 - DEBUG - [history.py:161] - ^VXIND2: Yahoo GET parameters: {'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:14,549 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:14,549 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:14,549 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VXIND2
+2025-02-28 07:17:14,549 - DEBUG - [data.py:361] - params={'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:14,549 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:14,549 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:14,549 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,549 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:14,549 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:14,549 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,549 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:14,586 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVXIND2?range=1d&interval=1d&includePrePost=False&events=div%2Csplits%2CcapitalGains&crumb=wXIVyEjR4.x HTTP/1.1" 200 1097
+2025-02-28 07:17:14,586 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:14,587 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:14,587 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:14,588 - DEBUG - [history.py:272] - ^VXIND2: yfinance received OHLC data: 2025-02-27 21:00:00 only
+2025-02-28 07:17:14,588 - DEBUG - [history.py:315] - ^VXIND2: OHLC after cleaning: 2025-02-27 16:00:00-05:00 only
+2025-02-28 07:17:14,591 - DEBUG - [history.py:384] - ^VXIND2: OHLC after combining events: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:14,595 - DEBUG - [history.py:462] - ^VXIND2: yfinance returning OHLC: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:14,596 - DEBUG - [utils.py:106] -   Exiting history()
+2025-02-28 07:17:14,596 - DEBUG - [utils.py:106] -  Exiting history()
+2025-02-28 07:17:14,598 - DEBUG - [utils.py:106] - Exiting download()
+2025-02-28 07:17:14,599 - INFO - [yahoo_vix_downloader.py:99] - Yahoo: ^VXIND2 → YAHOO:VXJ5 = 19.427600860595703
+2025-02-28 07:17:14,599 - DEBUG - [yahoo_vix_downloader.py:77] - Downloading ^VXIND3 from Yahoo Finance
+2025-02-28 07:17:14,599 - DEBUG - [utils.py:101] - Entering download()
+2025-02-28 07:17:14,599 - DEBUG - [multi.py:106] - Disabling multithreading because DEBUG logging enabled
+2025-02-28 07:17:14,599 - DEBUG - [utils.py:101] -  Entering history()
+2025-02-28 07:17:14,600 - DEBUG - [peewee.py:3319] - ('SELECT "t1"."key", "t1"."value" FROM "_kv" AS "t1" WHERE ("t1"."key" = ?) LIMIT ? OFFSET ?', ['^VXIND3', 1, 0])
+2025-02-28 07:17:14,600 - DEBUG - [utils.py:101] -   Entering _fetch_ticker_tz()
+2025-02-28 07:17:14,600 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:14,600 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:14,600 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VXIND3
+2025-02-28 07:17:14,600 - DEBUG - [data.py:361] - params=frozendict.frozendict({'range': '1d', 'interval': '1d'})
+2025-02-28 07:17:14,600 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:14,600 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:14,601 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,601 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:14,601 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:14,601 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,601 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:14,639 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVXIND3?range=1d&interval=1d&crumb=wXIVyEjR4.x HTTP/1.1" 200 1097
+2025-02-28 07:17:14,639 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:14,639 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:14,640 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:14,640 - DEBUG - [utils.py:106] -   Exiting _fetch_ticker_tz()
+2025-02-28 07:17:14,640 - DEBUG - [peewee.py:3319] - ('BEGIN', None)
+2025-02-28 07:17:14,640 - DEBUG - [peewee.py:3319] - ('INSERT INTO "_kv" ("key", "value") VALUES (?, ?)', ['^VXIND3', 'America/New_York'])
+2025-02-28 07:17:14,641 - DEBUG - [utils.py:101] -   Entering history()
+2025-02-28 07:17:14,641 - DEBUG - [history.py:161] - ^VXIND3: Yahoo GET parameters: {'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:14,641 - DEBUG - [utils.py:101] -    Entering get()
+2025-02-28 07:17:14,641 - DEBUG - [utils.py:101] -     Entering _make_request()
+2025-02-28 07:17:14,642 - DEBUG - [data.py:360] - url=https://query2.finance.yahoo.com/v8/finance/chart/^VXIND3
+2025-02-28 07:17:14,642 - DEBUG - [data.py:361] - params={'range': '1d', 'interval': '1d', 'includePrePost': False, 'events': 'div,splits,capitalGains'}
+2025-02-28 07:17:14,642 - DEBUG - [utils.py:101] -      Entering _get_cookie_and_crumb()
+2025-02-28 07:17:14,642 - DEBUG - [data.py:326] - cookie_mode = 'basic'
+2025-02-28 07:17:14,642 - DEBUG - [utils.py:101] -       Entering _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,642 - DEBUG - [data.py:157] - reusing cookie
+2025-02-28 07:17:14,642 - DEBUG - [data.py:186] - reusing crumb
+2025-02-28 07:17:14,642 - DEBUG - [utils.py:106] -       Exiting _get_cookie_and_crumb_basic()
+2025-02-28 07:17:14,642 - DEBUG - [utils.py:106] -      Exiting _get_cookie_and_crumb()
+2025-02-28 07:17:14,679 - DEBUG - [connectionpool.py:544] - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/%5EVXIND3?range=1d&interval=1d&includePrePost=False&events=div%2Csplits%2CcapitalGains&crumb=wXIVyEjR4.x HTTP/1.1" 200 1097
+2025-02-28 07:17:14,680 - DEBUG - [data.py:393] - response code=200
+2025-02-28 07:17:14,680 - DEBUG - [utils.py:106] -     Exiting _make_request()
+2025-02-28 07:17:14,680 - DEBUG - [utils.py:106] -    Exiting get()
+2025-02-28 07:17:14,681 - DEBUG - [history.py:272] - ^VXIND3: yfinance received OHLC data: 2025-02-27 21:00:00 only
+2025-02-28 07:17:14,682 - DEBUG - [history.py:315] - ^VXIND3: OHLC after cleaning: 2025-02-27 16:00:00-05:00 only
+2025-02-28 07:17:14,684 - DEBUG - [history.py:384] - ^VXIND3: OHLC after combining events: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:14,689 - DEBUG - [history.py:462] - ^VXIND3: yfinance returning OHLC: 2025-02-27 00:00:00-05:00 only
+2025-02-28 07:17:14,689 - DEBUG - [utils.py:106] -   Exiting history()
+2025-02-28 07:17:14,689 - DEBUG - [utils.py:106] -  Exiting history()
+2025-02-28 07:17:14,691 - DEBUG - [utils.py:106] - Exiting download()
+2025-02-28 07:17:14,692 - INFO - [yahoo_vix_downloader.py:99] - Yahoo: ^VXIND3 → YAHOO:VXK5 = 19.501100540161133
+2025-02-28 07:17:14,692 - INFO - [yahoo_vix_downloader.py:141] - Successfully retrieved VIX futures data from Yahoo Finance (processing took 3.54s)
+2025-02-28 07:17:14,694 - INFO - [yahoo_vix_downloader.py:204] - Saved Yahoo futures data to data/vix_futures_yahoo_202502280717.csv
