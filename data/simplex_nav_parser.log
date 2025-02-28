@@ -446,3 +446,67 @@
 2025-02-28 06:51:20,287 - INFO - [simplex_nav_parser.py:266] - Saved daily NAV data to data/nav_data_202502280651.csv
 2025-02-28 06:51:20,290 - INFO - [simplex_nav_parser.py:288] - Updated master NAV data file data/nav_data_master.csv
 2025-02-28 06:51:20,290 - INFO - [simplex_nav_parser.py:312] - Successfully saved NAV data to data/nav_data_202502280651.csv and data/nav_data_master.csv
+2025-02-28 07:01:48,674 - INFO - [simplex_nav_parser.py:303] - Starting Simplex NAV data processing
+2025-02-28 07:01:48,675 - INFO - [simplex_nav_parser.py:27] - Parsing NAV data using headless browser
+2025-02-28 07:01:48,675 - INFO - [simplex_nav_parser.py:42] - Initializing Chrome WebDriver
+2025-02-28 07:01:48,675 - DEBUG - [selenium_manager.py:101] - Selenium Manager binary found at: /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/selenium/webdriver/common/linux/selenium-manager
+2025-02-28 07:01:48,675 - DEBUG - [selenium_manager.py:114] - Executing process: /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/selenium/webdriver/common/linux/selenium-manager --browser chrome --debug --language-binding python --output json
+2025-02-28 07:01:50,402 - DEBUG - [selenium_manager.py:140] - Sending stats to Plausible: Props { browser: "chrome", browser_version: "", os: "linux", arch: "x86_64", lang: "python", selenium_version: "4.29" }
+2025-02-28 07:01:50,402 - DEBUG - [selenium_manager.py:140] - Found chromedriver 133.0.6943.126 in PATH: /usr/bin/chromedriver
+2025-02-28 07:01:50,402 - DEBUG - [selenium_manager.py:140] - chrome detected at /usr/bin/google-chrome
+2025-02-28 07:01:50,402 - DEBUG - [selenium_manager.py:140] - Running command: /usr/bin/google-chrome --version
+2025-02-28 07:01:50,402 - DEBUG - [selenium_manager.py:140] - Output: "Google Chrome 133.0.6943.126 "
+2025-02-28 07:01:50,402 - DEBUG - [selenium_manager.py:140] - Detected browser: chrome 133.0.6943.126
+2025-02-28 07:01:50,402 - DEBUG - [selenium_manager.py:140] - Discovering versions from https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json
+2025-02-28 07:01:50,402 - DEBUG - [selenium_manager.py:140] - Required driver: chromedriver 133.0.6943.141
+2025-02-28 07:01:50,403 - DEBUG - [selenium_manager.py:140] - Driver path: /usr/bin/chromedriver
+2025-02-28 07:01:50,403 - DEBUG - [selenium_manager.py:140] - Browser path: /usr/bin/google-chrome
+2025-02-28 07:01:50,404 - DEBUG - [service.py:230] - Started executable: `/usr/bin/chromedriver` in a child process with pid: 1982 using 0 to output -3
+2025-02-28 07:01:50,959 - DEBUG - [remote_connection.py:403] - POST http://localhost:38499/session {'capabilities': {'firstMatch': [{}], 'alwaysMatch': {'browserName': 'chrome', 'pageLoadStrategy': <PageLoadStrategy.normal: 'normal'>, 'browserVersion': None, 'goog:chromeOptions': {'extensions': [], 'binary': '/usr/bin/google-chrome', 'args': ['--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--window-size=1920,1080', '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36']}}}}
+2025-02-28 07:01:50,960 - DEBUG - [connectionpool.py:241] - Starting new HTTP connection (1): localhost:38499
+2025-02-28 07:01:57,159 - DEBUG - [connectionpool.py:544] - http://localhost:38499 "POST /session HTTP/1.1" 200 0
+2025-02-28 07:01:57,160 - DEBUG - [remote_connection.py:436] - Remote response: status=200 | data={"value":{"capabilities":{"acceptInsecureCerts":false,"browserName":"chrome","browserVersion":"133.0.6943.126","chrome":{"chromedriverVersion":"133.0.6943.126 (cffa127ce7b6be72885391527c15b452056a2e81-refs/branch-heads/6943@{#1570})","userDataDir":"/tmp/.org.chromium.Chromium.VorqSF"},"fedcm:accounts":true,"goog:chromeOptions":{"debuggerAddress":"localhost:41483"},"networkConnectionEnabled":false,"pageLoadStrategy":"normal","platformName":"linux","proxy":{},"setWindowRect":true,"strictFileInteractability":false,"timeouts":{"implicit":0,"pageLoad":300000,"script":30000},"unhandledPromptBehavior":"dismiss and notify","webauthn:extension:credBlob":true,"webauthn:extension:largeBlob":true,"webauthn:extension:minPinLength":true,"webauthn:extension:prf":true,"webauthn:virtualAuthenticators":true},"sessionId":"a622f38b004f84bac712d69982a6a8f2"}} | headers=HTTPHeaderDict({'Content-Length': '850', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2025-02-28 07:01:57,160 - DEBUG - [remote_connection.py:465] - Finished Request
+2025-02-28 07:01:57,160 - DEBUG - [remote_connection.py:403] - POST http://localhost:38499/session/a622f38b004f84bac712d69982a6a8f2/timeouts {'pageLoad': 30000}
+2025-02-28 07:01:57,161 - DEBUG - [connectionpool.py:544] - http://localhost:38499 "POST /session/a622f38b004f84bac712d69982a6a8f2/timeouts HTTP/1.1" 200 0
+2025-02-28 07:01:57,161 - DEBUG - [remote_connection.py:436] - Remote response: status=200 | data={"value":null} | headers=HTTPHeaderDict({'Content-Length': '14', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2025-02-28 07:01:57,161 - DEBUG - [remote_connection.py:465] - Finished Request
+2025-02-28 07:01:57,161 - INFO - [simplex_nav_parser.py:50] - Loading URL: https://www.simplexasset.com/etf/eng/etf.html
+2025-02-28 07:01:57,161 - DEBUG - [remote_connection.py:403] - POST http://localhost:38499/session/a622f38b004f84bac712d69982a6a8f2/url {'url': 'https://www.simplexasset.com/etf/eng/etf.html'}
+2025-02-28 07:02:00,649 - DEBUG - [connectionpool.py:544] - http://localhost:38499 "POST /session/a622f38b004f84bac712d69982a6a8f2/url HTTP/1.1" 200 0
+2025-02-28 07:02:00,649 - DEBUG - [remote_connection.py:436] - Remote response: status=200 | data={"value":null} | headers=HTTPHeaderDict({'Content-Length': '14', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2025-02-28 07:02:00,650 - DEBUG - [remote_connection.py:465] - Finished Request
+2025-02-28 07:02:00,650 - INFO - [simplex_nav_parser.py:54] - Waiting for page to load...
+2025-02-28 07:02:05,655 - DEBUG - [remote_connection.py:403] - POST http://localhost:38499/session/a622f38b004f84bac712d69982a6a8f2/element {'using': 'css selector', 'value': '.list-table'}
+2025-02-28 07:02:05,664 - DEBUG - [connectionpool.py:544] - http://localhost:38499 "POST /session/a622f38b004f84bac712d69982a6a8f2/element HTTP/1.1" 200 0
+2025-02-28 07:02:05,665 - DEBUG - [remote_connection.py:436] - Remote response: status=200 | data={"value":{"element-6066-11e4-a52e-4f735466cecf":"f.E628906C1B8513D195FAB5AE586674D6.d.F65638976C771B53A8C5BC3F9987C0EB.e.45"}} | headers=HTTPHeaderDict({'Content-Length': '126', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2025-02-28 07:02:05,665 - DEBUG - [remote_connection.py:465] - Finished Request
+2025-02-28 07:02:05,665 - INFO - [simplex_nav_parser.py:62] - Page loaded successfully
+2025-02-28 07:02:05,665 - DEBUG - [remote_connection.py:403] - POST http://localhost:38499/session/a622f38b004f84bac712d69982a6a8f2/element {'using': 'css selector', 'value': '[id="bDate"]'}
+2025-02-28 07:02:05,712 - DEBUG - [connectionpool.py:544] - http://localhost:38499 "POST /session/a622f38b004f84bac712d69982a6a8f2/element HTTP/1.1" 200 0
+2025-02-28 07:02:05,713 - DEBUG - [remote_connection.py:436] - Remote response: status=200 | data={"value":{"element-6066-11e4-a52e-4f735466cecf":"f.E628906C1B8513D195FAB5AE586674D6.d.F65638976C771B53A8C5BC3F9987C0EB.e.46"}} | headers=HTTPHeaderDict({'Content-Length': '126', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2025-02-28 07:02:05,713 - DEBUG - [remote_connection.py:465] - Finished Request
+2025-02-28 07:02:05,713 - DEBUG - [remote_connection.py:403] - GET http://localhost:38499/session/a622f38b004f84bac712d69982a6a8f2/element/f.E628906C1B8513D195FAB5AE586674D6.d.F65638976C771B53A8C5BC3F9987C0EB.e.46/text {}
+2025-02-28 07:02:05,757 - DEBUG - [connectionpool.py:544] - http://localhost:38499 "GET /session/a622f38b004f84bac712d69982a6a8f2/element/f.E628906C1B8513D195FAB5AE586674D6.d.F65638976C771B53A8C5BC3F9987C0EB.e.46/text HTTP/1.1" 200 0
+2025-02-28 07:02:05,757 - DEBUG - [remote_connection.py:436] - Remote response: status=200 | data={"value":"2025.2.27"} | headers=HTTPHeaderDict({'Content-Length': '21', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2025-02-28 07:02:05,757 - DEBUG - [remote_connection.py:465] - Finished Request
+2025-02-28 07:02:05,757 - INFO - [simplex_nav_parser.py:77] - Found fund date: 20250227
+2025-02-28 07:02:05,757 - DEBUG - [remote_connection.py:403] - POST http://localhost:38499/session/a622f38b004f84bac712d69982a6a8f2/element {'using': 'css selector', 'value': '[id="code_318A"]'}
+2025-02-28 07:02:05,765 - DEBUG - [connectionpool.py:544] - http://localhost:38499 "POST /session/a622f38b004f84bac712d69982a6a8f2/element HTTP/1.1" 200 0
+2025-02-28 07:02:05,765 - DEBUG - [remote_connection.py:436] - Remote response: status=200 | data={"value":{"element-6066-11e4-a52e-4f735466cecf":"f.E628906C1B8513D195FAB5AE586674D6.d.F65638976C771B53A8C5BC3F9987C0EB.e.47"}} | headers=HTTPHeaderDict({'Content-Length': '126', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2025-02-28 07:02:05,765 - DEBUG - [remote_connection.py:465] - Finished Request
+2025-02-28 07:02:05,766 - DEBUG - [remote_connection.py:403] - GET http://localhost:38499/session/a622f38b004f84bac712d69982a6a8f2/element/f.E628906C1B8513D195FAB5AE586674D6.d.F65638976C771B53A8C5BC3F9987C0EB.e.47/text {}
+2025-02-28 07:02:05,772 - DEBUG - [connectionpool.py:544] - http://localhost:38499 "GET /session/a622f38b004f84bac712d69982a6a8f2/element/f.E628906C1B8513D195FAB5AE586674D6.d.F65638976C771B53A8C5BC3F9987C0EB.e.47/text HTTP/1.1" 200 0
+2025-02-28 07:02:05,772 - DEBUG - [remote_connection.py:436] - Remote response: status=200 | data={"value":"872円"} | headers=HTTPHeaderDict({'Content-Length': '18', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2025-02-28 07:02:05,772 - DEBUG - [remote_connection.py:465] - Finished Request
+2025-02-28 07:02:05,772 - INFO - [simplex_nav_parser.py:95] - Found NAV element with text: '872円'
+2025-02-28 07:02:05,772 - INFO - [simplex_nav_parser.py:102] - Extracted NAV value: 872.0
+2025-02-28 07:02:05,772 - INFO - [simplex_nav_parser.py:224] - Final NAV data: {'timestamp': '202502280702', 'source': 'https://www.simplexasset.com/etf/eng/etf.html (browser rendered)', 'fund_date': '20250227', 'nav': 872.0, 'fund_code': '318A'}
+2025-02-28 07:02:05,772 - DEBUG - [remote_connection.py:403] - DELETE http://localhost:38499/session/a622f38b004f84bac712d69982a6a8f2 {}
+2025-02-28 07:02:05,824 - DEBUG - [connectionpool.py:544] - http://localhost:38499 "DELETE /session/a622f38b004f84bac712d69982a6a8f2 HTTP/1.1" 200 0
+2025-02-28 07:02:05,824 - DEBUG - [remote_connection.py:436] - Remote response: status=200 | data={"value":null} | headers=HTTPHeaderDict({'Content-Length': '14', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+2025-02-28 07:02:05,824 - DEBUG - [remote_connection.py:465] - Finished Request
+2025-02-28 07:02:05,840 - INFO - [simplex_nav_parser.py:231] - WebDriver closed successfully
+2025-02-28 07:02:05,842 - INFO - [simplex_nav_parser.py:266] - Saved daily NAV data to data/nav_data_202502280702.csv
+2025-02-28 07:02:05,845 - INFO - [simplex_nav_parser.py:288] - Updated master NAV data file data/nav_data_master.csv
+2025-02-28 07:02:05,845 - INFO - [simplex_nav_parser.py:312] - Successfully saved NAV data to data/nav_data_202502280702.csv and data/nav_data_master.csv
