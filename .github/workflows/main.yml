@@ -253,7 +253,8 @@ jobs:
         cat data/mufg_fx_downloader.log || echo "Log file not found"
         echo "=============================="
 
-    nav-calculations:
+  nav-calculations:
+    runs-on: ubuntu-latest
     needs: [etf-data, vix-futures, fx-rates]
     # Only run after the other jobs have completed or manually triggered
     if: github.event_name == 'workflow_dispatch' || success()
