@@ -1,0 +1,2 @@
+timestamp,calculation_date,shares_outstanding,shares_near_future,shares_far_future,fund_cash_component,published_nav,usd_jpy_rate,near_future,near_future_price,far_future,far_future_price,futures_value_usd,estimated_nav_jpy,nav_difference,nav_difference_pct
+202502280725,2025-02-28,720000,123,44,628124809.0,872.0,151.1,VIX,19.450285611833845,VXH25,18.4836,3205663.530255563,1545.139678363355,673.139678363355,77.19491724350401
