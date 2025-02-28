@@ -29,6 +29,105 @@ def find_latest_etf_file():
     logger.info(f"Found latest Simplex ETF file: {latest_file}")
     return latest_file
 
+def normalize_vix_ticker(ticker):
+    """
+    Normalize VIX futures ticker to standard format (VXH5 instead of VXH25)
+    
+    Args:
+        ticker: VIX futures ticker (e.g., VXH25, VXH5)
+    
+    Returns:
+        Normalized ticker (e.g., VXH5)
+    """
+    if not ticker or not isinstance(ticker, str):
+        return None
+        
+    # If ticker is in format VX<letter><2-digit-year>
+    match = re.match(r'(VX[A-Z])(\d{2})$', ticker)
+    if match:
+        prefix = match.group(1)
+        year = match.group(2)
+        # Take only the last digit of the year
+        return f"{prefix}{year[-1]}"
+    return ticker
+
+def extract_vix_future_code(code, name):
+    """
+    Extract VIX future code from PCF Code and Name fields
+    
+    Args:
+        code: Code field from PCF
+        name: Name field from PCF
+    
+    Returns:
+        str: Normalized VIX future code (e.g., VXH5) or None if not found
+    """
+    if pd.isna(code) and pd.isna(name):
+        return None
+        
+    code_str = str(code) if not pd.isna(code) else ""
+    name_str = str(name) if not pd.isna(name) else ""
+    
+    # Define patterns to match VIX futures
+    patterns = [
+        # Pattern for direct VX codes like VXH5 or VXH25
+        re.compile(r'VX([A-Z])(\d{1,2})', re.IGNORECASE),
+        
+        # Pattern for CBOEVIX YYMM format (e.g., CBOEVIX 2503 for March 2025)
+        re.compile(r'CBOEVIX\s*(\d{4})', re.IGNORECASE),
+        
+        # Pattern for VIX FUTURE MMM-YY format (e.g., VIX FUTURE MAR-25)
+        re.compile(r'VIX\s*(?:FUT|FUTURE)\s*(\w{3})[-\s]*(\d{2})', re.IGNORECASE)
+    ]
+    
+    # Check both code and name for matches
+    for text in [code_str, name_str]:
+        for pattern in patterns:
+            match = pattern.search(text)
+            if match:
+                # Process based on which pattern matched
+                if pattern == patterns[0]:  # VXH5/VXH25 pattern
+                    month_letter = match.group(1)
+                    year_digits = match.group(2)
+                    
+                    # Normalize to use only last digit of year
+                    year_digit = year_digits[-1] if len(year_digits) > 0 else year_digits
+                    return f"VX{month_letter}{year_digit}"
+                    
+                elif pattern == patterns[1]:  # CBOEVIX 2503 format
+                    yymm = match.group(1)
+                    if len(yymm) == 4:
+                        year = yymm[:2]
+                        month = int(yymm[2:])
+                        
+                        # Map month number to VIX futures month code
+                        month_map = {
+                            1: 'F', 2: 'G', 3: 'H', 4: 'J', 5: 'K', 6: 'M',
+                            7: 'N', 8: 'Q', 9: 'U', 10: 'V', 11: 'X', 12: 'Z'
+                        }
+                        
+                        if month in month_map:
+                            # Use only last digit of year
+                            return f"VX{month_map[month]}{year[-1]}"
+                            
+                elif pattern == patterns[2]:  # VIX FUTURE MAR-25 format
+                    month_str = match.group(1).upper()
+                    year = match.group(2)
+                    
+                    # Convert month name to code
+                    month_map = {
+                        'JAN': 'F', 'FEB': 'G', 'MAR': 'H', 'APR': 'J', 
+                        'MAY': 'K', 'JUN': 'M', 'JUL': 'N', 'AUG': 'Q',
+                        'SEP': 'U', 'OCT': 'V', 'NOV': 'X', 'DEC': 'Z'
+                    }
+                    
+                    if month_str in month_map:
+                        # Use only last digit of year
+                        return f"VX{month_map[month_str]}{year[-1]}"
+    
+    # If we get here, no valid VIX future code was found
+    return None
+
 def parse_etf_characteristics(file_path=None):
     """
     Parse ETF characteristics from PCF file using a simplified approach
@@ -61,7 +160,9 @@ def parse_etf_characteristics(file_path=None):
             'shares_outstanding': None,
             'fund_cash_component': None,
             'shares_amount_near_future': 0,
-            'shares_amount_far_future': 0
+            'shares_amount_far_future': 0,
+            'near_future_code': None,   # New field for near future code (e.g., VXH5)
+            'far_future_code': None     # New field for far future code (e.g., VXJ5)
         }
         
         # 1. Read the header section (first 2 rows) to get fund info
@@ -115,71 +216,170 @@ def parse_etf_characteristics(file_path=None):
             # Look for the CBOEVIX futures in the holdings
             futures_rows = []
             
-            # Make sure 'Shares Amount' and 'Name' columns exist
-            if 'Shares Amount' in holdings_df.columns and 'Name' in holdings_df.columns:
-                logger.info("Found both 'Shares Amount' and 'Name' columns")
-                
-                # Find rows with CBOEVIX contracts
-                for i, row in holdings_df.iterrows():
-                    name = str(row['Name']).upper() if not pd.isna(row['Name']) else ""
-                    if 'CBOEVIX' in name or ('VIX' in name and 'FUTURE' in name):
-                        # Get the share amount directly
-                        shares_amount = 0
-                        if not pd.isna(row['Shares Amount']):
-                            try:
-                                shares_amount = int(row['Shares Amount'])
-                            except (ValueError, TypeError):
-                                logger.warning(f"Could not convert shares amount to integer: {row['Shares Amount']}")
-                        
-                        # Get the code/contract month
-                        code = str(row['Code']) if 'Code' in holdings_df.columns and not pd.isna(row['Code']) else ""
-                        
-                        futures_rows.append((code, name, shares_amount))
-                        logger.info(f"Found future: {name}, code: {code}, shares: {shares_amount}")
-            else:
-                logger.warning("Missing 'Shares Amount' or 'Name' columns in holdings section")
-                # Try to infer column names based on content
+            # Make sure required columns exist
+            required_cols = ['Shares Amount']
+            name_cols = ['Name', 'Security Name', 'Description']
+            code_cols = ['Code', 'Security Code', 'Ticker']
+            
+            # Find the actual name column
+            name_col = None
+            for col in name_cols:
+                if col in holdings_df.columns:
+                    name_col = col
+                    logger.info(f"Using '{name_col}' as name column")
+                    break
+            
+            # Find the actual code column
+            code_col = None
+            for col in code_cols:
+                if col in holdings_df.columns:
+                    code_col = col
+                    logger.info(f"Using '{code_col}' as code column")
+                    break
+            
+            # Check if we have the required columns
+            shares_col = 'Shares Amount' if 'Shares Amount' in holdings_df.columns else None
+            
+            if not shares_col:
+                logger.warning("Missing 'Shares Amount' column in holdings section")
+                # Try to find an alternative column
                 for col in holdings_df.columns:
                     if 'shares' in col.lower() and 'amount' in col.lower():
-                        logger.info(f"Found alternative shares column: {col}")
                         shares_col = col
-                        for i, row in holdings_df.iterrows():
-                            # Try to find VIX futures in any text column
-                            for text_col in holdings_df.columns:
-                                if holdings_df[text_col].dtype == 'object':
-                                    cell_text = str(row[text_col]).upper() if not pd.isna(row[text_col]) else ""
-                                    if 'CBOEVIX' in cell_text or ('VIX' in cell_text and 'FUTURE' in cell_text):
-                                        shares_amount = 0
-                                        if not pd.isna(row[shares_col]):
-                                            try:
-                                                shares_amount = int(row[shares_col])
-                                            except (ValueError, TypeError):
-                                                pass
-                                        futures_rows.append(("", cell_text, shares_amount))
+                        logger.info(f"Using alternative shares column: {shares_col}")
+                        break
+            
+            if name_col and code_col and shares_col:
+                logger.info(f"Found all required columns: Name='{name_col}', Code='{code_col}', Shares='{shares_col}'")
+                
+                # Find rows with VIX futures
+                for _, row in holdings_df.iterrows():
+                    code = row[code_col] if not pd.isna(row[code_col]) else ""
+                    name = row[name_col] if not pd.isna(row[name_col]) else ""
+                    
+                    # Check if this is a VIX future
+                    is_vix_future = False
+                    name_str = str(name).upper()
+                    code_str = str(code).upper()
+                    
+                    if ('VIX' in name_str or 'CBOEVIX' in name_str or 'VIX' in code_str or 
+                        'FUTURE' in name_str or 'FUT' in name_str):
+                        is_vix_future = True
+                    
+                    if is_vix_future:
+                        # Extract the VIX future code
+                        future_code = extract_vix_future_code(code, name)
+                        
+                        # Get the shares amount
+                        shares_amount = 0
+                        if not pd.isna(row[shares_col]):
+                            try:
+                                shares_amount = int(float(row[shares_col]))
+                            except (ValueError, TypeError):
+                                logger.warning(f"Could not convert shares amount to integer: {row[shares_col]}")
+                        
+                        if future_code:
+                            futures_rows.append((future_code, shares_amount, name, code))
+                            logger.info(f"Found future: {future_code}, shares: {shares_amount}, name: {name}, code: {code}")
+                        else:
+                            logger.warning(f"Could not extract future code from: name='{name}', code='{code}'")
+            else:
+                # Try to scan all text columns for VIX futures references
+                logger.warning("Missing one or more required columns, attempting to scan all columns")
+                
+                # Find a likely shares column
+                shares_col = None
+                for col in holdings_df.columns:
+                    if holdings_df[col].dtype in ['int64', 'float64']:
+                        # Check if values are in a reasonable range for shares
+                        values = holdings_df[col].dropna()
+                        if len(values) > 0 and values.mean() > 0 and values.mean() < 1000:
+                            shares_col = col
+                            logger.info(f"Using '{shares_col}' as likely shares column")
+                            break
+                
+                if not shares_col:
+                    logger.warning("Could not identify a shares column")
+                    return None
+                
+                # Scan all text columns for VIX futures
+                for _, row in holdings_df.iterrows():
+                    vix_future_found = False
+                    vix_code = None
+                    
+                    # Scan each column for VIX future indications
+                    for col in holdings_df.columns:
+                        if pd.isna(row[col]):
+                            continue
+                            
+                        cell_text = str(row[col]).upper()
+                        if 'VIX' in cell_text or 'CBOEVIX' in cell_text or 'FUTURE' in cell_text:
+                            # Try to extract a VIX future code
+                            for other_col in holdings_df.columns:
+                                if other_col != col and not pd.isna(row[other_col]):
+                                    extracted_code = extract_vix_future_code(row[col], row[other_col])
+                                    if extracted_code:
+                                        vix_code = extracted_code
+                                        vix_future_found = True
                                         break
+                        
+                        if vix_future_found:
+                            break
+                    
+                    if vix_future_found and vix_code:
+                        # Get the shares amount
+                        shares_amount = 0
+                        if not pd.isna(row[shares_col]):
+                            try:
+                                shares_amount = int(float(row[shares_col]))
+                            except (ValueError, TypeError):
+                                logger.warning(f"Could not convert shares amount to integer: {row[shares_col]}")
+                        
+                        futures_rows.append((vix_code, shares_amount, "Unknown", "Unknown"))
+                        logger.info(f"Found future through scan: {vix_code}, shares: {shares_amount}")
             
             # Sort futures by contract date/code
-            def extract_contract_date(code_name_tuple):
-                code, name, _ = code_name_tuple
+            def sort_vix_futures(item):
+                code, _, _, _ = item
+                if not code or len(code) < 4:
+                    return "ZZZ999"  # Sort unknown codes last
                 
-                # Try to extract YYMM code from name or code
-                for source in [name, code]:
-                    match = re.search(r'(\d{4})', str(source))
-                    if match:
-                        return match.group(1)
-                return '9999'  # Default sort value
+                # Extract month and year
+                month_code = code[2]
+                year_digit = code[3]
+                
+                # Convert month code to number (1-12)
+                month_num = 0
+                for key, value in MONTH_CODES.items():
+                    if key == month_code:
+                        month_num = value
+                        break
+                
+                # Create sortable string: YYYYMM
+                current_year = datetime.now().year
+                decade = int(current_year / 10) * 10
+                full_year = decade + int(year_digit)
+                
+                # If the resulting year is in the past, assume next decade
+                if full_year < current_year:
+                    full_year += 10
+                
+                return f"{full_year}{month_num:02d}"
             
-            sorted_futures = sorted(futures_rows, key=extract_contract_date)
+            # Sort futures by contract date (nearest first)
+            sorted_futures = sorted(futures_rows, key=sort_vix_futures)
             logger.info(f"Sorted futures: {sorted_futures}")
             
-            # Assign shares to near and far futures
+            # Assign shares to near and far futures with their codes
             if len(sorted_futures) >= 1:
-                characteristics['shares_amount_near_future'] = sorted_futures[0][2]
-                logger.info(f"Near future: {sorted_futures[0][1]} with {sorted_futures[0][2]} shares")
+                characteristics['near_future_code'] = sorted_futures[0][0]
+                characteristics['shares_amount_near_future'] = sorted_futures[0][1]
+                logger.info(f"Near future: {sorted_futures[0][0]} with {sorted_futures[0][1]} shares")
             
             if len(sorted_futures) >= 2:
-                characteristics['shares_amount_far_future'] = sorted_futures[1][2]
-                logger.info(f"Far future: {sorted_futures[1][1]} with {sorted_futures[1][2]} shares")
+                characteristics['far_future_code'] = sorted_futures[1][0]
+                characteristics['shares_amount_far_future'] = sorted_futures[1][1]
+                logger.info(f"Far future: {sorted_futures[1][0]} with {sorted_futures[1][1]} shares")
             
         except Exception as e:
             logger.warning(f"Error parsing VIX futures holdings: {str(e)}")
