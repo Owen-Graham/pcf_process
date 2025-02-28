@@ -203,3 +203,21 @@
 2025-02-28 07:24:42,718 - INFO - [etf_characteristics_parser.py:182] - Far future: CBOEVIX 2504 with 44 shares
 2025-02-28 07:24:42,721 - INFO - [etf_characteristics_parser.py:239] - Saved ETF characteristics to data/etf_characteristics_202502280724.csv and data/etf_characteristics_master.csv
 2025-02-28 07:24:42,721 - INFO - [etf_characteristics_parser.py:253] - Successfully saved ETF characteristics to data/etf_characteristics_202502280724.csv
+2025-02-28 07:46:03,574 - INFO - [etf_characteristics_parser.py:444] - Starting ETF characteristics processing
+2025-02-28 07:46:03,575 - INFO - [etf_characteristics_parser.py:29] - Found latest Simplex ETF file: data/318A-CSV-20250228-202502280746.csv
+2025-02-28 07:46:03,575 - INFO - [etf_characteristics_parser.py:149] - Parsing ETF characteristics from PCF file: data/318A-CSV-20250228-202502280746.csv
+2025-02-28 07:46:03,577 - INFO - [etf_characteristics_parser.py:171] - Header columns: ['ETF Code', 'ETF Name  ', 'Fund Cash Component', 'Shares Outstanding', 'Fund Date', 'Unnamed: 5', 'Unnamed: 6']
+2025-02-28 07:46:03,578 - INFO - [etf_characteristics_parser.py:183] - Found fund date: 20250228.0
+2025-02-28 07:46:03,578 - INFO - [etf_characteristics_parser.py:195] - Found shares outstanding: 720000
+2025-02-28 07:46:03,578 - INFO - [etf_characteristics_parser.py:204] - Found fund cash component: 628124809.0
+2025-02-28 07:46:03,580 - INFO - [etf_characteristics_parser.py:214] - Holdings columns: ['Code', 'Name  ', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-02-28 07:46:03,580 - INFO - [etf_characteristics_parser.py:237] - Using 'Code' as code column
+2025-02-28 07:46:03,580 - WARNING - [etf_characteristics_parser.py:288] - Missing one or more required columns, attempting to scan all columns
+2025-02-28 07:46:03,580 - INFO - [etf_characteristics_parser.py:298] - Using 'Shares Amount' as likely shares column
+2025-02-28 07:46:03,581 - INFO - [etf_characteristics_parser.py:339] - Found future through scan: VXH5, shares: 123
+2025-02-28 07:46:03,582 - INFO - [etf_characteristics_parser.py:339] - Found future through scan: VXJ5, shares: 44
+2025-02-28 07:46:03,582 - INFO - [etf_characteristics_parser.py:371] - Sorted futures: [('VXH5', 123, 'Unknown', 'Unknown'), ('VXJ5', 44, 'Unknown', 'Unknown')]
+2025-02-28 07:46:03,582 - INFO - [etf_characteristics_parser.py:377] - Near future: VXH5 with 123 shares
+2025-02-28 07:46:03,582 - INFO - [etf_characteristics_parser.py:382] - Far future: VXJ5 with 44 shares
+2025-02-28 07:46:03,586 - INFO - [etf_characteristics_parser.py:439] - Saved ETF characteristics to data/etf_characteristics_202502280746.csv and data/etf_characteristics_master.csv
+2025-02-28 07:46:03,586 - INFO - [etf_characteristics_parser.py:453] - Successfully saved ETF characteristics to data/etf_characteristics_202502280746.csv
