@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 import logging
 import traceback
+import re
 
 # Set up paths and logging
 DATA_DIR = "data"
@@ -19,6 +20,60 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger("mufg_fx_downloader")
+
+# Define standard rate labels
+STANDARD_LABELS = ["T.T.S.", "ACC.", "CASH S.", "T.T.B.", "A/S", "D/PED/A", "CASH B."]
+
+def extract_date_from_csv(content):
+    """
+    Extract the date from the CSV content
+    
+    Args:
+        content: CSV content as string
+    
+    Returns:
+        str: Date in YYYY-MM-DD format or None if not found
+    """
+    try:
+        # Pattern to match Japanese dates (YYYY/MM/DD)
+        date_pattern = r'(\d{4})/(\d{1,2})/(\d{1,2})'
+        match = re.search(date_pattern, content)
+        
+        if match:
+            year = match.group(1)
+            month = match.group(2).zfill(2)  # Ensure 2 digits
+            day = match.group(3).zfill(2)    # Ensure 2 digits
+            
+            date_str = f"{year}-{month}-{day}"
+            logger.info(f"Extracted date from CSV: {date_str}")
+            return date_str
+            
+        # Try to find the date in a pandas dataframe
+        try:
+            # Load the CSV into a DataFrame to check for date columns
+            df = pd.read_csv(io.StringIO(content), encoding='utf-8', error_bad_lines=False)
+            
+            # Look through all cells for date patterns
+            for col in df.columns:
+                for val in df[col].astype(str):
+                    date_match = re.search(date_pattern, val)
+                    if date_match:
+                        year = date_match.group(1)
+                        month = date_match.group(2).zfill(2)
+                        day = date_match.group(3).zfill(2)
+                        
+                        date_str = f"{year}-{month}-{day}"
+                        logger.info(f"Extracted date from DataFrame cell: {date_str}")
+                        return date_str
+        except Exception as e:
+            logger.warning(f"Error searching for date in DataFrame: {str(e)}")
+        
+        logger.error("Could not extract date from CSV content - no fallback used")
+        return None
+    
+    except Exception as e:
+        logger.error(f"Error extracting date: {str(e)}")
+        return None
 
 def download_mufg_fx_rates():
     """
@@ -39,8 +94,21 @@ def download_mufg_fx_rates():
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         
-        # The file appears to be in Shift-JIS encoding (common for Japanese files)
-        content = response.content.decode('shift_jis', errors='replace')
+        # Try different encodings until we find one that works
+        encodings = ['shift_jis', 'iso-8859-1', 'utf-8', 'cp932']
+        content = None
+        
+        for encoding in encodings:
+            try:
+                content = response.content.decode(encoding, errors='replace')
+                logger.info(f"Successfully decoded CSV with {encoding} encoding")
+                break
+            except Exception as e:
+                logger.warning(f"Failed to decode with {encoding}: {str(e)}")
+        
+        if not content:
+            logger.error("Could not decode CSV with any encoding")
+            return None
         
         # Save raw file for debugging
         raw_file_path = os.path.join(DATA_DIR, "mufg_fx_raw.csv")
@@ -48,90 +116,87 @@ def download_mufg_fx_rates():
             f.write(content)
         logger.info(f"Saved raw CSV to: {raw_file_path}")
         
+        # Extract date from CSV content - no fallback
+        csv_date = extract_date_from_csv(content)
+        if csv_date is None:
+            logger.error("Date extraction failed - cannot proceed without a valid date")
+            return None
+        
         # Parse the CSV data
         lines = content.strip().split('\n')
         
-        # Get current timestamp and date
+        # Get current timestamp
         timestamp = datetime.now().strftime("%Y%m%d%H%M")
-        date = datetime.now().strftime("%Y-%m-%d")
         
-        # Find the header row with rate types
-        rate_labels = []
-        for i, line in enumerate(lines):
-            if "T.T.S." in line or "T.T.S" in line:
-                # Found header row, extract labels
-                parts = line.split(',')
-                if len(parts) <= 1:  # Not comma-separated, try splitting by whitespace
-                    parts = line.split()
-                
-                # Clean up labels - find the indices where rate labels start
-                start_idx = -1
-                for j, part in enumerate(parts):
-                    if part.strip() in ["T.T.S.", "T.T.S"]:
-                        start_idx = j
-                        break
-                
-                if start_idx >= 0:
-                    rate_labels = [p.strip() for p in parts[start_idx:]]
-                    logger.info(f"Found rate labels: {rate_labels}")
-                    break
+        # Based on the screenshot and description, we'll use the standard rate labels
+        rate_labels = STANDARD_LABELS
+        logger.info(f"Using standard rate labels: {rate_labels}")
         
-        # Check if we can find USDJPY data (USD or ドル)
-        usd_row = None
+        # Look for USD data pattern in each line
+        usd_line = None
+        numeric_values = []
+        
         for line in lines:
-            if "USD" in line or "ドル" in line:
-                usd_row = line
-                break
+            # Check if line contains USD or ドル (dollar in Japanese)
+            if "USD" in line or "ドル" in line or "dollar" in line.lower():
+                logger.info(f"Found USD line: {line}")
+                usd_line = line
+                
+                # Extract numeric values from the line
+                # Pattern to match numbers with optional commas and decimal points
+                matches = re.findall(r'(\d+(?:[,.]\d+)?)', line)
+                
+                if matches:
+                    numeric_values = []
+                    for match in matches:
+                        try:
+                            # Replace commas and convert to float
+                            num_value = float(match.replace(',', ''))
+                            numeric_values.append(num_value)
+                        except ValueError:
+                            continue
+                    
+                    logger.info(f"Extracted numeric values: {numeric_values}")
+                    
+                    # If we found enough values that match our expected count of rate labels,
+                    # or at least some values that are likely to be rates (in the USD row)
+                    if len(numeric_values) >= 4:  # Expecting at least 4 rates
+                        break
         
-        if usd_row and rate_labels:
-            logger.info(f"Found USD row: {usd_row}")
+        # Process the data if we found USD line and numeric values
+        if usd_line and numeric_values:
+            # Validate numeric values look like exchange rates
+            # USD/JPY typically ranges between 100-200 yen per dollar in recent history
+            if not any(100 <= rate <= 200 for rate in numeric_values):
+                logger.error("Extracted values do not appear to be valid exchange rates")
+                return None
             
-            # Split the row by commas if it's proper CSV, or by spaces if not
-            parts = usd_row.split(',')
-            if len(parts) <= 1:  # Not comma-separated, try splitting by whitespace
-                parts = usd_row.split()
+            # Create a list of dictionaries for each rate
+            fx_data_list = []
             
-            # Determine where the numeric rates start
-            numeric_parts = []
-            for part in parts:
-                # Try to convert to float
-                try:
-                    float_val = float(part.strip())
-                    numeric_parts.append(float_val)
-                except ValueError:
-                    continue
+            # Match rate labels with numeric values
+            # Only use as many values as we have labels, or vice versa
+            n_rates = min(len(rate_labels), len(numeric_values))
             
-            if numeric_parts:
-                logger.info(f"Found {len(numeric_parts)} numeric rates: {numeric_parts}")
-                
-                # Create a list of dictionaries for each rate
-                fx_data_list = []
-                
-                # Use min to avoid index errors if there are fewer values than labels
-                n_rates = min(len(rate_labels), len(numeric_parts))
-                
-                for i in range(n_rates):
-                    fx_data = {
-                        'timestamp': timestamp,
-                        'date': date,
-                        'source': url,
-                        'pair': 'USDJPY',
-                        'label': rate_labels[i],
-                        'rate': numeric_parts[i]
-                    }
-                    fx_data_list.append(fx_data)
-                
-                logger.info(f"Created {len(fx_data_list)} FX rate entries")
-                return fx_data_list
-            else:
-                logger.warning("No numeric rates found in USD row")
+            for i in range(n_rates):
+                fx_data = {
+                    'timestamp': timestamp,
+                    'date': csv_date,
+                    'source': url,
+                    'pair': 'USDJPY',
+                    'label': rate_labels[i],
+                    'rate': numeric_values[i]
+                }
+                fx_data_list.append(fx_data)
+            
+            logger.info(f"Created {len(fx_data_list)} FX rate entries with date {csv_date}")
+            return fx_data_list
         else:
-            if not usd_row:
-                logger.warning("USD row not found in CSV data")
-            if not rate_labels:
-                logger.warning("Rate labels not found in CSV data")
-        
-        return None
+            if not usd_line:
+                logger.error("USD line not found in CSV data")
+            if not numeric_values:
+                logger.error("No numeric values found in USD line")
+            return None
     
     except Exception as e:
         logger.error(f"Error downloading FX rates: {str(e)}")
@@ -212,6 +277,8 @@ def process_fx_rates():
     return False
 
 if __name__ == "__main__":
+    import io  # Import here to avoid issues if not needed
+    
     success = process_fx_rates()
     
     if success:
