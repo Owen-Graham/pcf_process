@@ -53,3 +53,18 @@
 2025-02-27 23:52:53,663 - INFO - [etf_characteristics_parser.py:182] - Far future: CBOEVIX 2504 with 44 shares
 2025-02-27 23:52:53,667 - INFO - [etf_characteristics_parser.py:239] - Saved ETF characteristics to data/etf_characteristics_202502272352.csv and data/etf_characteristics_master.csv
 2025-02-27 23:52:53,667 - INFO - [etf_characteristics_parser.py:253] - Successfully saved ETF characteristics to data/etf_characteristics_202502272352.csv
+2025-02-28 05:32:30,373 - INFO - [etf_characteristics_parser.py:244] - Starting ETF characteristics processing
+2025-02-28 05:32:30,373 - INFO - [etf_characteristics_parser.py:29] - Found latest Simplex ETF file: data/318A-CSV-20250228-202502280532.csv
+2025-02-28 05:32:30,373 - INFO - [etf_characteristics_parser.py:50] - Parsing ETF characteristics from PCF file: data/318A-CSV-20250228-202502280532.csv
+2025-02-28 05:32:30,375 - INFO - [etf_characteristics_parser.py:70] - Header columns: ['ETF Code', 'ETF Name  ', 'Fund Cash Component', 'Shares Outstanding', 'Fund Date', 'Unnamed: 5', 'Unnamed: 6']
+2025-02-28 05:32:30,376 - INFO - [etf_characteristics_parser.py:82] - Found fund date: 20250228.0
+2025-02-28 05:32:30,376 - INFO - [etf_characteristics_parser.py:94] - Found shares outstanding: 720000
+2025-02-28 05:32:30,376 - INFO - [etf_characteristics_parser.py:103] - Found fund cash component: 628124809.0
+2025-02-28 05:32:30,377 - INFO - [etf_characteristics_parser.py:113] - Holdings columns: ['Code', 'Name  ', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-02-28 05:32:30,378 - WARNING - [etf_characteristics_parser.py:140] - Missing 'Shares Amount' or 'Name' columns in holdings section
+2025-02-28 05:32:30,378 - INFO - [etf_characteristics_parser.py:144] - Found alternative shares column: Shares Amount
+2025-02-28 05:32:30,378 - INFO - [etf_characteristics_parser.py:173] - Sorted futures: [('', 'CBOEVIX 2503', 123), ('', 'CBOEVIX 2504', 44)]
+2025-02-28 05:32:30,378 - INFO - [etf_characteristics_parser.py:178] - Near future: CBOEVIX 2503 with 123 shares
+2025-02-28 05:32:30,378 - INFO - [etf_characteristics_parser.py:182] - Far future: CBOEVIX 2504 with 44 shares
+2025-02-28 05:32:30,382 - INFO - [etf_characteristics_parser.py:239] - Saved ETF characteristics to data/etf_characteristics_202502280532.csv and data/etf_characteristics_master.csv
+2025-02-28 05:32:30,382 - INFO - [etf_characteristics_parser.py:253] - Successfully saved ETF characteristics to data/etf_characteristics_202502280532.csv
