@@ -275,12 +275,32 @@ jobs:
         python -m pip install --upgrade pip
         pip install pandas numpy
 
-    - name: Download artifacts from previous jobs
+    - name: Create data directory
+      run: mkdir -p data
+
+    - name: Download etf-data artifacts
       uses: actions/download-artifact@v4
       with:
+        name: etf-data
         path: data
-        pattern: "*-data"
-        merge-multiple: true
+
+    - name: Download vix-futures-data artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: vix-futures-data
+        path: data
+
+    - name: Download fx-rate-data artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: fx-rate-data
+        path: data
+
+    - name: List downloaded files
+      run: |
+        echo "=== Downloaded Artifacts ==="
+        ls -la data/
+        echo "==========================="
 
     - name: Calculate Estimated NAVs
       run: python calculate_estimated_navs.py
