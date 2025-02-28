@@ -126,3 +126,11 @@
 2025-02-28 06:15:24,817 - DEBUG - [connectionpool.py:1049] - Starting new HTTPS connection (1): www.simplexasset.com:443
 2025-02-28 06:15:25,717 - DEBUG - [connectionpool.py:544] - https://www.simplexasset.com:443 "GET /etf//doc/318A.csv HTTP/1.1" 200 290
 2025-02-28 06:15:25,719 - INFO - [download_etf_data.py:96] - ETF CSV file saved successfully to: data/318A-CSV-20250228-202502280615.csv
+2025-02-28 06:51:07,953 - INFO - [download_etf_data.py:20] - Downloading Simplex ETF 318A data
+2025-02-28 06:51:07,954 - DEBUG - [download_etf_data.py:34] - Requesting URL: https://www.simplexasset.com/etf/eng/etf.html
+2025-02-28 06:51:07,955 - DEBUG - [connectionpool.py:1049] - Starting new HTTPS connection (1): www.simplexasset.com:443
+2025-02-28 06:51:08,576 - DEBUG - [connectionpool.py:544] - https://www.simplexasset.com:443 "GET /etf/eng/etf.html HTTP/1.1" 200 20948
+2025-02-28 06:51:08,696 - INFO - [download_etf_data.py:61] - Downloading CSV from URL: https://www.simplexasset.com/etf//doc/318A.csv
+2025-02-28 06:51:08,697 - DEBUG - [connectionpool.py:1049] - Starting new HTTPS connection (1): www.simplexasset.com:443
+2025-02-28 06:51:09,292 - DEBUG - [connectionpool.py:544] - https://www.simplexasset.com:443 "GET /etf//doc/318A.csv HTTP/1.1" 200 290
+2025-02-28 06:51:09,295 - INFO - [download_etf_data.py:96] - ETF CSV file saved successfully to: data/318A-CSV-20250228-202502280651.csv
