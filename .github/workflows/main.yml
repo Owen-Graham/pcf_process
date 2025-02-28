@@ -1,8 +1,198 @@
-nav-calculations:
+name: VIX and ETF Data Collection
+
+on:
+  schedule:
+    # ETF data collection - daily at 5:15 AM UTC
+    - cron: "15 5 * * *"
+    # VIX futures data collection - Mon-Fri at 23:15 UTC (after market close)
+    - cron: "15 23 * * 1-5"
+    # FX rates collection - daily at 01:45 UTC (10:45 JST)
+    - cron: "45 1 * * *"
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  contents: write  # Need write permission to push files back to repo
+
+jobs:
+  etf-data:
     runs-on: ubuntu-latest
-    needs: [etf-data, vix-futures, fx-rates]
-    # Only run after the other jobs have completed or manually triggered
-    if: github.event_name == 'workflow_dispatch' || success()
+    # Only run ETF jobs during the morning schedule (5:15 AM)
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '15 5 * * *')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for commits
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+        
+    - name: Setup Chrome
+      uses: browser-actions/setup-chrome@v1
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4 pandas selenium webdriver-manager
+
+    - name: Run ETF Data Downloader
+      run: python download_etf_data.py
+
+    - name: Extract VIX futures from PCF
+      run: python pcf_vix_extractor.py
+      
+    - name: Extract ETF Characteristics
+      run: python etf_characteristics_parser.py
+      
+    - name: Parse Simplex NAV Data
+      run: python simplex_nav_parser.py --debug
+
+    - name: Commit and Push ETF data
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+        
+        # Stash any changes before pull
+        git stash -u || true
+        
+        # Pull with rebase
+        git pull origin main --rebase
+        
+        # Pop the stash if there was something stashed
+        git stash pop || true
+        
+        # Add and commit changes
+        git add data/*.csv
+        git add data/*.log
+        git commit -m "Daily ETF data update $(date +'%Y-%m-%d')" || echo "No changes to commit"
+        
+        # Push with force (be careful with this!)
+        git push --force
+
+    - name: Upload ETF data as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: etf-data
+        path: |
+          data/*.csv
+          data/*.log
+          data/*.html
+          data/*.png
+        retention-days: 399  # Keep for 399 days
+
+    - name: Display log file (for debugging)
+      if: always()  # Run even if previous steps fail
+      run: |
+        echo "=== ETF DATA DOWNLOAD LOG ==="
+        cat data/etf_downloader.log || echo "Log file not found"
+        echo "=============================="
+        echo "=== PCF VIX EXTRACTION LOG ==="
+        cat data/pcf_vix_extractor.log || echo "Log file not found"
+        echo "==============================="
+        echo "=== ETF CHARACTERISTICS LOG ==="
+        cat data/etf_characteristics.log || echo "Log file not found"
+        echo "================================="
+        echo "=== SIMPLEX NAV PARSER LOG ==="
+        cat data/simplex_nav_parser.log || echo "Log file not found"
+        echo "================================="
+
+  vix-futures:
+    runs-on: ubuntu-latest
+    # Only run VIX jobs during the evening schedule (23:15 UTC) or manual trigger
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '15 23 * * 1-5')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for commits
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+        
+    - name: Setup Chrome and ChromeDriver
+      uses: browser-actions/setup-chrome@v1
+      
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install yfinance pandas requests beautifulsoup4 selenium webdriver-manager
+
+    - name: Run CBOE VIX Downloader
+      run: python cboe_vix_downloader.py
+
+    - name: Run Yahoo Finance VIX Downloader  
+      run: python yahoo_vix_downloader.py
+
+    - name: Run VIX Futures Master Downloader
+      run: python vix_futures_downloader.py
+
+    - name: Commit and Push VIX futures data
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+        
+        # Stash any changes before pull
+        git stash -u || true
+        
+        # Pull with rebase
+        git pull origin main --rebase
+        
+        # Pop the stash if there was something stashed
+        git stash pop || true
+        
+        # Add and commit changes
+        git add data/vix_futures_*.csv
+        git add data/etf_characteristics_*.csv
+        git add data/nav_data_*.csv
+        git add data/*.log
+        git add data/cboe_debug.html
+        git commit -m "VIX futures update $(date +'%Y-%m-%d')" || echo "No changes to commit"
+        
+        # Push with force (be careful with this!)
+        git push --force
+
+    - name: Upload VIX futures data as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: vix-futures-data
+        path: |
+          data/vix_futures_*.csv
+          data/etf_characteristics_*.csv
+          data/nav_data_*.csv
+          data/*.log
+          data/*.html
+          data/*.png
+        retention-days: 399  # Keep for 399 days
+
+    - name: Display log files (for debugging)
+      if: always()  # Run even if previous steps fail
+      run: |
+        echo "=== CBOE VIX DOWNLOADER LOG ==="
+        cat data/cboe_vix_downloader.log || echo "Log file not found"
+        echo "================================"
+        echo "=== YAHOO VIX DOWNLOADER LOG ==="
+        cat data/yahoo_vix_downloader.log || echo "Log file not found"
+        echo "================================="
+        echo "=== VIX FUTURES DOWNLOADER LOG ==="
+        cat data/vix_downloader.log || echo "Log file not found"
+        echo "==================================="
+        echo "=== ETF CHARACTERISTICS LOG ==="
+        cat data/etf_characteristics.log || echo "Log file not found"
+        echo "================================="
+        echo "=== SIMPLEX NAV PARSER LOG ==="
+        cat data/simplex_nav_parser.log || echo "Log file not found"
+        echo "================================="
+        
+  fx-rates:
+    runs-on: ubuntu-latest
+    # Only run FX jobs during the scheduled time (01:45 UTC = 10:45 JST) or manual trigger
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '45 1 * * *')
     
     steps:
     - name: Checkout repository
@@ -18,19 +208,12 @@ nav-calculations:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pandas numpy
+        pip install requests pandas
 
-    - name: Download artifacts from previous jobs
-      uses: actions/download-artifact@v4
-      with:
-        path: data
-        pattern: "*-data"
-        merge-multiple: true
+    - name: Run MUFG FX Rate Downloader
+      run: python mufg_fx_downloader.py
 
-    - name: Calculate Estimated NAVs
-      run: python calculate_estimated_navs.py
-
-    - name: Commit and Push NAV calculations
+    - name: Commit and Push FX rate data
       run: |
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "actions@github.com"
@@ -45,25 +228,27 @@ nav-calculations:
         git stash pop || true
         
         # Add and commit changes
-        git add data/estimated_navs.csv
-        git add data/estimated_navs_calculator.log
-        git commit -m "NAV calculations update $(date +'%Y-%m-%d')" || echo "No changes to commit"
+        git add data/fx_data_*.csv
+        git add data/mufg_fx_*.csv
+        git add data/mufg_fx_downloader.log
+        git commit -m "FX rate data update $(date +'%Y-%m-%d')" || echo "No changes to commit"
         
         # Push with force (be careful with this!)
         git push --force
 
-    - name: Upload NAV calculations as artifacts
+    - name: Upload FX rate data as artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: nav-calculations-data
+        name: fx-rate-data
         path: |
-          data/estimated_navs.csv
-          data/estimated_navs_calculator.log
+          data/fx_data_*.csv
+          data/mufg_fx_*.csv
+          data/mufg_fx_downloader.log
         retention-days: 399  # Keep for 399 days
 
     - name: Display log file (for debugging)
       if: always()  # Run even if previous steps fail
       run: |
-        echo "=== ESTIMATED NAVS CALCULATOR LOG ==="
-        cat data/estimated_navs_calculator.log || echo "Log file not found"
-        echo "======================================="
+        echo "=== MUFG FX DOWNLOADER LOG ==="
+        cat data/mufg_fx_downloader.log || echo "Log file not found"
+        echo "=============================="
