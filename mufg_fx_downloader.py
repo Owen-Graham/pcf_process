@@ -4,8 +4,6 @@ import pandas as pd
 from datetime import datetime
 import logging
 import traceback
-import csv
-import io
 
 # Set up paths and logging
 DATA_DIR = "data"
@@ -27,7 +25,7 @@ def download_mufg_fx_rates():
     Download USDJPY FX rates from MUFG Bank website
     
     Returns:
-        DataFrame: DataFrame with FX rate data or None if download fails
+        list: List of dictionaries with FX rate data or None if download fails
     """
     try:
         url = "https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv"
@@ -51,15 +49,32 @@ def download_mufg_fx_rates():
         logger.info(f"Saved raw CSV to: {raw_file_path}")
         
         # Parse the CSV data
-        # First, let's see what structure the file has
         lines = content.strip().split('\n')
         
-        # Create a dictionary to store the FX data
-        fx_data = {
-            'timestamp': datetime.now().strftime("%Y%m%d%H%M"),
-            'date': datetime.now().strftime("%Y-%m-%d"),
-            'source': url
-        }
+        # Get current timestamp and date
+        timestamp = datetime.now().strftime("%Y%m%d%H%M")
+        date = datetime.now().strftime("%Y-%m-%d")
+        
+        # Find the header row with rate types
+        rate_labels = []
+        for i, line in enumerate(lines):
+            if "T.T.S." in line or "T.T.S" in line:
+                # Found header row, extract labels
+                parts = line.split(',')
+                if len(parts) <= 1:  # Not comma-separated, try splitting by whitespace
+                    parts = line.split()
+                
+                # Clean up labels - find the indices where rate labels start
+                start_idx = -1
+                for j, part in enumerate(parts):
+                    if part.strip() in ["T.T.S.", "T.T.S"]:
+                        start_idx = j
+                        break
+                
+                if start_idx >= 0:
+                    rate_labels = [p.strip() for p in parts[start_idx:]]
+                    logger.info(f"Found rate labels: {rate_labels}")
+                    break
         
         # Check if we can find USDJPY data (USD or ドル)
         usd_row = None
@@ -68,16 +83,13 @@ def download_mufg_fx_rates():
                 usd_row = line
                 break
         
-        if usd_row:
+        if usd_row and rate_labels:
             logger.info(f"Found USD row: {usd_row}")
             
             # Split the row by commas if it's proper CSV, or by spaces if not
             parts = usd_row.split(',')
             if len(parts) <= 1:  # Not comma-separated, try splitting by whitespace
                 parts = usd_row.split()
-            
-            # Extract rate data based on the provided example
-            # 'Ê‰Ý–¼ T.T.S. ACC. CASH S. T.T.B. A/S D/PED/A CASH B. USD (•Äƒhƒ‹) 150.24 150.67 152.04 148.24 147.81 147.51 146.24
             
             # Determine where the numeric rates start
             numeric_parts = []
@@ -92,48 +104,59 @@ def download_mufg_fx_rates():
             if numeric_parts:
                 logger.info(f"Found {len(numeric_parts)} numeric rates: {numeric_parts}")
                 
-                # Map the rates based on the expected order in the file
-                rate_names = ["TTS", "ACC", "CASH_S", "TTB", "AS", "DPEDA", "CASH_B"]
+                # Create a list of dictionaries for each rate
+                fx_data_list = []
                 
-                # Ensure we don't exceed the available data
-                rate_names = rate_names[:len(numeric_parts)]
+                # Use min to avoid index errors if there are fewer values than labels
+                n_rates = min(len(rate_labels), len(numeric_parts))
                 
-                # Add rates to fx_data dictionary
-                for i, name in enumerate(rate_names):
-                    if i < len(numeric_parts):
-                        fx_data[f"USD_JPY_{name}"] = numeric_parts[i]
+                for i in range(n_rates):
+                    fx_data = {
+                        'timestamp': timestamp,
+                        'date': date,
+                        'source': url,
+                        'pair': 'USDJPY',
+                        'label': rate_labels[i],
+                        'rate': numeric_parts[i]
+                    }
+                    fx_data_list.append(fx_data)
+                
+                logger.info(f"Created {len(fx_data_list)} FX rate entries")
+                return fx_data_list
             else:
                 logger.warning("No numeric rates found in USD row")
         else:
-            logger.warning("USD row not found in CSV data")
+            if not usd_row:
+                logger.warning("USD row not found in CSV data")
+            if not rate_labels:
+                logger.warning("Rate labels not found in CSV data")
         
-        # Return the collected data
-        return fx_data
+        return None
     
     except Exception as e:
         logger.error(f"Error downloading FX rates: {str(e)}")
         logger.error(traceback.format_exc())
         return None
 
-def save_fx_rates(fx_data):
+def save_fx_rates(fx_data_list):
     """
     Save FX rate data to CSV files
     
     Args:
-        fx_data: Dictionary with FX rate data
+        fx_data_list: List of dictionaries with FX rate data
     
     Returns:
         tuple: Paths to daily and master CSV files
     """
-    if not fx_data:
+    if not fx_data_list:
         logger.warning("No FX data to save")
         return None, None
     
     # Create DataFrame
-    df = pd.DataFrame([fx_data])
+    df = pd.DataFrame(fx_data_list)
     
     # Get timestamp for file naming
-    timestamp = fx_data['timestamp']
+    timestamp = fx_data_list[0]['timestamp']
     
     # Daily snapshot filename
     daily_file = os.path.join(DATA_DIR, f"fx_data_{timestamp}.csv")
@@ -152,7 +175,7 @@ def save_fx_rates(fx_data):
             
             # Check if this timestamp already exists in the master file
             if timestamp in existing_df['timestamp'].values:
-                # Remove the existing entry with this timestamp
+                # Remove the existing entries with this timestamp
                 existing_df = existing_df[existing_df['timestamp'] != timestamp]
             
             # Append new data
@@ -176,11 +199,11 @@ def process_fx_rates():
     logger.info("Starting FX rate data processing")
     
     # Download FX rates
-    fx_data = download_mufg_fx_rates()
+    fx_data_list = download_mufg_fx_rates()
     
-    if fx_data:
+    if fx_data_list:
         # Save to CSV
-        daily_file, master_file = save_fx_rates(fx_data)
+        daily_file, master_file = save_fx_rates(fx_data_list)
         if daily_file and master_file:
             logger.info(f"Successfully saved FX rate data to {daily_file} and {master_file}")
             return True
