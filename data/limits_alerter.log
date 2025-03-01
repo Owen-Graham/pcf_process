@@ -58,6 +58,7 @@ Allowed range: -16.20% to 16.20%
 Current basket value: 486484436.51 JPY
 Initial basket value: 666648017.58 JPY
 2025-03-01 05:56:02,232 - limits_alerter - INFO - Price limit alert detected and saved to file
+<<<<<<< Updated upstream
 2025-03-01 11:01:08,961 - limits_alerter - INFO - Starting limits alerter with most recent available data
 2025-03-01 11:01:08,961 - limits_alerter - INFO - Getting ETF data for 318A.T from 2025-02-22 to 2025-03-01
 2025-03-01 11:01:09,233 - limits_alerter - INFO - Most recent closing price of 318A.T: 925.90 JPY at 2025-02-28 00:00:00+09:00
@@ -84,3 +85,31 @@ Allowed range: -16.20% to 16.20%
 Current basket value: 486484436.51 JPY
 Initial basket value: 666648017.58 JPY
 2025-03-01 11:01:10,916 - limits_alerter - INFO - Price limit alert detected and saved to file
+=======
+2025-03-01 11:01:12,912 - limits_alerter - INFO - Starting limits alerter with most recent available data
+2025-03-01 11:01:12,912 - limits_alerter - INFO - Getting ETF data for 318A.T from 2025-02-22 to 2025-03-01
+2025-03-01 11:01:14,120 - limits_alerter - INFO - Most recent closing price of 318A.T: 925.90 JPY at 2025-02-28 00:00:00+09:00
+2025-03-01 11:01:14,120 - limits_alerter - INFO - Daily price limits: 775.90 to 1075.90 JPY
+2025-03-01 11:01:14,123 - limits_alerter - INFO - Using ETF composition data from 2025-02-28 00:00:00 (latest available)
+2025-03-01 11:01:14,123 - limits_alerter - INFO - Found near future: VXH5
+2025-03-01 11:01:14,124 - limits_alerter - INFO - Found far future: VXJ5
+2025-03-01 11:01:14,124 - limits_alerter - INFO - Found near shares in column 'shares_amount_near_future': 123.0
+2025-03-01 11:01:14,124 - limits_alerter - INFO - Found far shares in column 'shares_amount_far_future': 44.0
+2025-03-01 11:01:14,124 - limits_alerter - INFO - ETF composition: {'VXH5': 123.0, 'VXJ5': 44.0}
+2025-03-01 11:01:14,124 - limits_alerter - INFO - ETF composition for 2025-02-28: {'VXH5': 123.0, 'VXJ5': 44.0}
+2025-03-01 11:01:14,127 - limits_alerter - INFO - Using yahoo_vix_downloader to get VIX futures prices
+2025-03-01 11:01:16,835 - limits_alerter - INFO - Using VX=F price for front month VXH5: 19.6299991607666
+2025-03-01 11:01:16,835 - limits_alerter - INFO - Found price for VXJ5 from YAHOO:VXJ5: 18.829099655151367
+2025-03-01 11:01:16,835 - limits_alerter - INFO - Successfully retrieved all 2 futures prices from yahoo_vix_downloader
+2025-03-01 11:01:16,835 - limits_alerter - INFO - Getting USD/JPY exchange rate from 2025-02-22 to 2025-03-01
+2025-03-01 11:01:16,974 - limits_alerter - INFO - Most recent USD/JPY exchange rate: 150.01 from 2025-02-28
+2025-03-01 11:01:16,974 - limits_alerter - INFO - Calculated basket value: 486484436.51 JPY (USD: 3242970.28)
+2025-03-01 11:01:16,975 - limits_alerter - INFO - Current basket value: 486484436.51 JPY
+2025-03-01 11:01:16,975 - limits_alerter - INFO - Price limits: 775.90 to 1075.90 JPY
+2025-03-01 11:01:16,976 - limits_alerter - INFO - Estimated NAV per share: 675.67 JPY
+2025-03-01 11:01:16,976 - limits_alerter - WARNING - ALERT: Basket value changed by -27.03%, exceeding daily price limits!
+Allowed range: -16.20% to 16.20%
+Current basket value: 486484436.51 JPY
+Initial basket value: 666648017.58 JPY
+2025-03-01 11:01:16,976 - limits_alerter - INFO - Price limit alert detected and saved to file
+>>>>>>> Stashed changes
