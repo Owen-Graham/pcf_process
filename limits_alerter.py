@@ -7,6 +7,7 @@ import time
 import logging
 import argparse
 import traceback
+import sys
 from common import setup_logging, SAVE_DIR, get_yfinance_ticker_for_vix_future, normalize_vix_ticker
 
 # Set up logging
@@ -113,7 +114,11 @@ def get_etf_composition(date):
             df['date'] = pd.to_datetime(df['timestamp'], format='%Y%m%d%H%M')
             
         # Find the row for the given date (closest date that's not in the future)
-        target_date = pd.to_datetime(date)
+        # Convert both to naive datetimes to avoid timezone comparison issues
+        target_date = pd.to_datetime(date).tz_localize(None)
+        
+        # Make sure all dates in df are also timezone naive
+        df['date'] = df['date'].dt.tz_localize(None)
         df = df[df['date'] <= target_date]
         
         if df.empty:
@@ -370,7 +375,8 @@ def monitor_basket_value(composition, initial_basket_value, price_limits, closin
 def main():
     """Main function to analyze ETF price limits and underlying basket value."""
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Monitor 318A ETF and underlying basket value')
+    parser = argparse.ArgumentParser(description='Check 318A ETF basket value against price limits')
+    parser.add_argument('--check-only', action='store_true', help='Perform one-time check only (no monitoring)', default=True)
     parser.add_argument('--monitor', action='store_true', help='Enable continuous monitoring')
     parser.add_argument('--interval', type=int, default=60, help='Monitoring interval in seconds (default: 60)')
     parser.add_argument('--duration', type=int, default=60, help='Monitoring duration in minutes (default: 60)')
@@ -441,7 +447,7 @@ def main():
             logger.info(f"Current basket value: {current_basket_value:.2f} JPY ({pct_change:.2%} change)")
             check_for_alerts(current_basket_value, initial_basket_value, price_limits, closing_price)
     
-    # Start monitoring if requested
+    # Start monitoring if specifically requested (default is to just do a one-time check)
     if args.monitor:
         end_time = datetime.now() + timedelta(minutes=args.duration)
         logger.info(f"Will monitor until {end_time}")
@@ -497,6 +503,26 @@ def main():
         except Exception as e:
             logger.error(f"Error in monitoring loop: {str(e)}")
             logger.error(traceback.format_exc())
+    else:
+        # Just do a one-time check (which we've already done above)
+        current_time = datetime.now().astimezone(pytz.timezone('Asia/Tokyo'))
+        
+        # If any alert was detected in the one-time check, save it to a file
+        if current_basket_value and check_for_alerts(current_basket_value, initial_basket_value, price_limits, closing_price):
+            pct_change = (current_basket_value - initial_basket_value) / initial_basket_value
+            
+            # Save alert to file
+            alert_file = os.path.join(SAVE_DIR, f"price_alert_{datetime.now().strftime('%Y%m%d%H%M')}.log")
+            with open(alert_file, "w") as f:
+                f.write(f"PRICE LIMIT ALERT\n")
+                f.write(f"Time: {current_time}\n")
+                f.write(f"Basket value: {current_basket_value:.2f} JPY\n")
+                f.write(f"Initial value: {initial_basket_value:.2f} JPY\n")
+                f.write(f"Change: {pct_change:.2%}\n")
+                f.write(f"Price limits: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY\n")
+                f.write(f"Allowed range: {(price_limits[0]-closing_price)/closing_price:.2%} to {(price_limits[1]-closing_price)/closing_price:.2%}\n")
+            
+            logger.info("One-time check completed - alert detected and saved")
     
     return 0
 
