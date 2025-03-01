@@ -8,6 +8,10 @@ on:
     - cron: "15 23 * * 1-5"
     # FX rates collection - daily at 01:45 UTC (10:45 JST)
     - cron: "45 1 * * *"
+    # Limits Alerter - 06:00 JST (21:00 UTC previous day) - Mon-Fri
+    - cron: "0 21 * * 0-4"
+    # Limits Alerter - 07:30 JST (22:30 UTC previous day) - Mon-Fri
+    - cron: "30 22 * * 0-4"
   workflow_dispatch:  # Allow manual triggering
 
 permissions:
@@ -252,6 +256,116 @@ jobs:
         echo "=== MUFG FX DOWNLOADER LOG ==="
         cat data/mufg_fx_downloader.log || echo "Log file not found"
         echo "=============================="
+
+  limits-alerter-morning:
+    runs-on: ubuntu-latest
+    # Only run during the morning schedule (21:00 UTC = 06:00 JST next day)
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 21 * * 0-4')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for commits
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install yfinance pandas numpy pytz
+
+    - name: Run Limits Alerter (Morning Check)
+      run: python limits_alerter.py --monitor --interval 60 --duration 15
+
+    - name: Commit and Push Alerts (if any)
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+        
+        # Stash any changes before pull
+        git stash -u || true
+        
+        # Pull with rebase
+        git pull origin main --rebase
+        
+        # Pop the stash if there was something stashed
+        git stash pop || true
+        
+        # Add and commit changes
+        git add data/limits_alerter.log
+        git add data/price_alert_*.log
+        git commit -m "Limits Alerter Morning Check $(date +'%Y-%m-%d')" || echo "No changes to commit"
+        
+        # Push with force (be careful with this!)
+        git push --force
+
+    - name: Upload Alerter logs as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: limits-alerter-morning-logs
+        path: |
+          data/limits_alerter.log
+          data/price_alert_*.log
+        retention-days: 399  # Keep for 399 days
+
+  limits-alerter-midmorning:
+    runs-on: ubuntu-latest
+    # Only run during the mid-morning schedule (22:30 UTC = 07:30 JST next day)
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '30 22 * * 0-4')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for commits
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install yfinance pandas numpy pytz
+
+    - name: Run Limits Alerter (Mid-Morning Check)
+      run: python limits_alerter.py --monitor --interval 60 --duration 15
+
+    - name: Commit and Push Alerts (if any)
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+        
+        # Stash any changes before pull
+        git stash -u || true
+        
+        # Pull with rebase
+        git pull origin main --rebase
+        
+        # Pop the stash if there was something stashed
+        git stash pop || true
+        
+        # Add and commit changes
+        git add data/limits_alerter.log
+        git add data/price_alert_*.log
+        git commit -m "Limits Alerter Mid-Morning Check $(date +'%Y-%m-%d')" || echo "No changes to commit"
+        
+        # Push with force (be careful with this!)
+        git push --force
+
+    - name: Upload Alerter logs as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: limits-alerter-midmorning-logs
+        path: |
+          data/limits_alerter.log
+          data/price_alert_*.log
+        retention-days: 399  # Keep for 399 days
 
   nav-calculations:
     runs-on: ubuntu-latest
