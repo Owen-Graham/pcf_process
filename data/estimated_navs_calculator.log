@@ -1367,3 +1367,257 @@
 2025-03-01 01:30:55,277 - INFO - Estimated NAV with CASH B.: 128,596.76 JPY per share
 2025-03-01 01:30:55,278 - INFO - Saved estimated NAVs to data/estimated_navs.csv
 2025-03-01 01:30:55,279 - INFO - NAV calculations completed successfully
+2025-03-01 01:49:52,135 - INFO - Starting estimated NAV calculations
+2025-03-01 01:49:52,135 - INFO - Starting NAV calculations
+2025-03-01 01:49:52,138 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202503010149.csv
+2025-03-01 01:49:52,138 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202503010149.csv
+2025-03-01 01:49:52,139 - INFO - Updated ETF characteristics file: data/etf_characteristics_202503010149.csv
+2025-03-01 01:49:52,141 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280704.csv
+2025-03-01 01:49:52,142 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280548.csv
+2025-03-01 01:49:52,143 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280556.csv
+2025-03-01 01:49:52,145 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280651.csv
+2025-03-01 01:49:52,146 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280532.csv
+2025-03-01 01:49:52,147 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502271126.csv
+2025-03-01 01:49:52,149 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202502280746.csv
+2025-03-01 01:49:52,149 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202502280746.csv
+2025-03-01 01:49:52,149 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280746.csv
+2025-03-01 01:49:52,151 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202503010129.csv
+2025-03-01 01:49:52,151 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202503010129.csv
+2025-03-01 01:49:52,152 - INFO - Updated ETF characteristics file: data/etf_characteristics_202503010129.csv
+2025-03-01 01:49:52,153 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502271142.csv
+2025-03-01 01:49:52,154 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202502282350.csv
+2025-03-01 01:49:52,154 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202502282350.csv
+2025-03-01 01:49:52,155 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502282350.csv
+2025-03-01 01:49:52,156 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280724.csv
+2025-03-01 01:49:52,158 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502271203.csv
+2025-03-01 01:49:52,159 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280607.csv
+2025-03-01 01:49:52,160 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202503010122.csv
+2025-03-01 01:49:52,161 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202503010122.csv
+2025-03-01 01:49:52,161 - INFO - Updated ETF characteristics file: data/etf_characteristics_202503010122.csv
+2025-03-01 01:49:52,162 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502272352.csv
+2025-03-01 01:49:52,164 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280701.csv
+2025-03-01 01:49:52,165 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502271117.csv
+2025-03-01 01:49:52,166 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_master.csv
+2025-03-01 01:49:52,167 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_master.csv
+2025-03-01 01:49:52,167 - INFO - Updated ETF characteristics file: data/etf_characteristics_master.csv
+2025-03-01 01:49:52,169 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280716.csv
+2025-03-01 01:49:52,170 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280615.csv
+2025-03-01 01:49:52,171 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202502282139.csv
+2025-03-01 01:49:52,172 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202502282139.csv
+2025-03-01 01:49:52,172 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502282139.csv
+2025-03-01 01:49:52,172 - INFO - Listing all files in data directory:
+2025-03-01 01:49:52,172 - INFO -   318A-CSV-20250228-202502280724.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,172 - INFO -   318A-CSV-20250227-202502271020.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,173 - INFO -   vix_futures_202502262332.csv - Size: 66 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,173 - INFO -   etf_characteristics_202503010149.csv - Size: 193 bytes, Modified: 2025-03-01 01:49:52.137974
+2025-03-01 01:49:52,173 - INFO -   vix_futures_202502282139.csv - Size: 836 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,173 - INFO -   cboe_debug.html - Size: 310165 bytes, Modified: 2025-03-01 01:49:51.244966
+2025-03-01 01:49:52,173 - INFO -   vix_futures_202502280705.csv - Size: 834 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,173 - INFO -   vix_futures_yahoo_202502282327.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,173 - INFO -   vix_futures_202503010130.csv - Size: 836 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,173 - INFO -   fx_data_202502280701.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,173 - INFO -   nav_data_202502280717.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,173 - INFO -   vix_futures_202502270229.csv - Size: 1090 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,173 - INFO -   318A-CSV-20250228-202502280651.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,173 - INFO -   318A-CSV-20250227-202502271117.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,173 - INFO -   etf_characteristics_202502280704.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.139973
+2025-03-01 01:49:52,173 - INFO -   vix_futures_yahoo_202502271102.csv - Size: 482 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,174 - INFO -   fx_data_202502280607.csv - Size: 781 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,174 - INFO -   nav_data_202502282139.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,174 - INFO -   fx_data_master.csv - Size: 9822 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,174 - INFO -   vix_futures_yahoo_202502280717.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,174 - INFO -   vix_futures_yahoo_202502280607.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,174 - INFO -   vix_futures_202502270005.csv - Size: 183 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,174 - INFO -   318A-CSV-20250228-202502280548.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,174 - INFO -   vix_futures_202502270133.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,174 - INFO -   vix_futures_202502270550.csv - Size: 1090 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,174 - INFO -   318A-CSV-20250227-202502271032.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,174 - INFO -   etf_characteristics_202502280548.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.140974
+2025-03-01 01:49:52,174 - INFO -   vix_futures_202502280607.csv - Size: 408 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,174 - INFO -   vix_downloader.log - Size: 716650 bytes, Modified: 2025-03-01 01:49:51.279966
+2025-03-01 01:49:52,174 - INFO -   vix_futures_yahoo_202502280651.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,175 - INFO -   nav_data_202503010129.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,175 - INFO -   vix_futures_yahoo_202502280548.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,175 - INFO -   318A-CSV-20250228-202502280615.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,175 - INFO -   etf_characteristics_202502280556.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.142973
+2025-03-01 01:49:52,175 - INFO -   vix_futures_yahoo_202503010129.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,175 - INFO -   vix_futures_202502271047.csv - Size: 1970 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,175 - INFO -   vix_futures_yahoo_202502271203.csv - Size: 482 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,175 - INFO -   mufg_fx_raw.csv - Size: 5350 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,175 - INFO -   318A-CSV-20250228-202503010149.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.577960
+2025-03-01 01:49:52,175 - INFO -   vix_futures_202502282350.csv - Size: 836 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,175 - INFO -   318A-CSV-20250228-202502280701.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,175 - INFO -   nav_data_202503010149.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,175 - INFO -   vix_futures_202502280702.csv - Size: 834 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,175 - INFO -   etf_characteristics_202502280651.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.143974
+2025-03-01 01:49:52,176 - INFO -   vix_futures_202503010122.csv - Size: 836 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,176 - INFO -   vix_futures_202502282327.csv - Size: 836 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,176 - INFO -   fx_data_202502282138.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,176 - INFO -   318A-CSV-20250227-202502271047.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,176 - INFO -   vix_futures_yahoo_202502280702.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,176 - INFO -   fx_data_202503010148.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,176 - INFO -   etf_characteristics_202502280532.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.144974
+2025-03-01 01:49:52,176 - INFO -   etf_characteristics.log - Size: 42392 bytes, Modified: 2025-03-01 01:49:51.243966
+2025-03-01 01:49:52,176 - INFO -   vix_futures_yahoo_202502271047.csv - Size: 482 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,176 - INFO -   etf_characteristics_202502271126.csv - Size: 161 bytes, Modified: 2025-03-01 01:49:52.146974
+2025-03-01 01:49:52,176 - INFO -   vix_futures_yahoo_202502272353.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,176 - INFO -   mufg_fx_downloader.log - Size: 21316 bytes, Modified: 2025-03-01 01:49:51.690970
+2025-03-01 01:49:52,176 - INFO -   vix_futures_yahoo_202502271127.csv - Size: 482 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,176 - INFO -   vix_futures_master.csv - Size: 27631 bytes, Modified: 2025-03-01 01:49:51.274966
+2025-03-01 01:49:52,176 - INFO -   vix_futures_202502270216.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,177 - INFO -   etf_characteristics_202502280746.csv - Size: 193 bytes, Modified: 2025-03-01 01:49:52.148973
+2025-03-01 01:49:52,177 - INFO -   vix_futures_202502272353.csv - Size: 834 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,177 - INFO -   etf_characteristics_202503010129.csv - Size: 193 bytes, Modified: 2025-03-01 01:49:52.150974
+2025-03-01 01:49:52,177 - INFO -   vix_futures_202503010149.csv - Size: 836 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,177 - INFO -   pcf_vix_extractor.log - Size: 0 bytes, Modified: 2025-03-01 01:49:51.235966
+2025-03-01 01:49:52,177 - INFO -   vix_futures_yahoo_202503010149.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,177 - INFO -   318A-CSV-20250228-202502280556.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,177 - INFO -   etf_downloader.log - Size: 27081 bytes, Modified: 2025-03-01 01:49:51.241966
+2025-03-01 01:49:52,177 - INFO -   simplex_nav_parser.log - Size: 191800 bytes, Modified: 2025-03-01 01:49:51.245966
+2025-03-01 01:49:52,177 - INFO -   vix_futures_yahoo_202502280556.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,177 - INFO -   fx_data_202502282350.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,177 - INFO -   yahoo_vix_downloader.log - Size: 936874 bytes, Modified: 2025-03-01 01:49:51.291966
+2025-03-01 01:49:52,177 - INFO -   nav_data_202502272353.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,177 - INFO -   318A-CSV-20250227-202502271102.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,177 - INFO -   cboe_vix_downloader.log - Size: 8687744 bytes, Modified: 2025-03-01 01:49:51.214966
+2025-03-01 01:49:52,178 - INFO -   vix_futures_202502271203.csv - Size: 838 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,178 - INFO -   vix_futures_202502280556.csv - Size: 834 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,178 - INFO -   fx_data_202502280615.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,178 - INFO -   318A-CSV-20250228-202502272352.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,178 - INFO -   etf_characteristics_202502271142.csv - Size: 154 bytes, Modified: 2025-03-01 01:49:52.151973
+2025-03-01 01:49:52,178 - INFO -   nav_data_202502280651.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,178 - INFO -   318A-CSV-20250228-202502282139.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,178 - INFO -   vix_futures_202502270150.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,178 - INFO -   vix_futures_202502270549.csv - Size: 1090 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,178 - INFO -   etf_characteristics_202502282350.csv - Size: 193 bytes, Modified: 2025-03-01 01:49:52.153974
+2025-03-01 01:49:52,178 - INFO -   318A-CSV-20250228-202502280716.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,178 - INFO -   318A-CSV-20250228-202502280704.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,178 - INFO -   fx_data_202503010129.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,178 - INFO -   vix_futures_yahoo_202503010122.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,179 - INFO -   fx_data_202502280704.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,179 - INFO -   vix_futures_202502271143.csv - Size: 838 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,179 - INFO -   nav_data_202502280548.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,179 - INFO -   etf_characteristics_202502280724.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.155974
+2025-03-01 01:49:52,179 - INFO -   vix_futures_yahoo_202502271117.csv - Size: 482 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,179 - INFO -   vix_futures_202502270236.csv - Size: 1090 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,179 - INFO -   318A-CSV-20250227-202502271126.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,179 - INFO -   nav_data_202502280725.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,179 - INFO -   vix_futures_202502271117.csv - Size: 838 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,179 - INFO -   nav_data_202503010122.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,179 - INFO -   vix_futures_202502270559.csv - Size: 1090 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,179 - INFO -   fx_data_202502280724.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,179 - INFO -   estimated_navs_calculator.log - Size: 172802 bytes, Modified: 2025-03-01 01:49:52.178974
+2025-03-01 01:49:52,179 - INFO -   318A-CSV-20250227-202502271027.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,179 - INFO -   vix_futures_202502270152.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,180 - INFO -   318A-CSV-20250227-202502271142.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,180 - INFO -   etf_characteristics_202502271203.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.156974
+2025-03-01 01:49:52,180 - INFO -   vix_futures_202502270100.csv - Size: 1095 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,180 - INFO -   etf_characteristics_202502280607.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.157974
+2025-03-01 01:49:52,180 - INFO -   nav_data_202502280607.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,180 - INFO -   vix_futures_yahoo_202502282139.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,180 - INFO -   vix_futures_202502280746.csv - Size: 834 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,180 - INFO -   etf_characteristics_202503010122.csv - Size: 193 bytes, Modified: 2025-03-01 01:49:52.159974
+2025-03-01 01:49:52,180 - INFO -   nav_data_202502280532.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,180 - INFO -   vix_futures_202502270605.csv - Size: 1090 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,180 - INFO -   vix_futures_yahoo_202502271143.csv - Size: 481 bytes, Modified: 2025-03-01 01:49:51.269966
+2025-03-01 01:49:52,180 - INFO -   nav_data_202502280702.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,180 - INFO -   318A-CSV-20250228-202502280532.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,180 - INFO -   etf_characteristics_202502272352.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.161974
+2025-03-01 01:49:52,180 - INFO -   318A-CSV-20250228-202502280746.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,181 - INFO -   nav_data_202502282350.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,181 - INFO -   vix_futures_202502280548.csv - Size: 834 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,181 - INFO -   318A-CSV-20250228-202503010122.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,181 - INFO -   vix_futures_202502270625.csv - Size: 1090 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,181 - INFO -   vix_futures_202502270225.csv - Size: 1090 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,181 - INFO -   etf_characteristics_202502280701.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.162974
+2025-03-01 01:49:52,181 - INFO -   318A-CSV-20250227-202502271203.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,181 - INFO -   etf_characteristics_202502271117.csv - Size: 161 bytes, Modified: 2025-03-01 01:49:52.163974
+2025-03-01 01:49:52,181 - INFO -   vix_futures_202502270006.csv - Size: 183 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,181 - INFO -   nav_data_202502280556.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,181 - INFO -   vix_futures_yahoo_202502280746.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,181 - INFO -   etf_characteristics_master.csv - Size: 1313 bytes, Modified: 2025-03-01 01:49:52.166974
+2025-03-01 01:49:52,181 - INFO -   vix_futures_202502271102.csv - Size: 838 bytes, Modified: 2025-03-01 01:49:51.272966
+2025-03-01 01:49:52,181 - INFO -   318A-CSV-20250228-202502282350.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,182 - INFO -   vix_futures_202502280725.csv - Size: 834 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,182 - INFO -   vix_futures_yahoo_202502280705.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,182 - INFO -   vix_futures_yahoo_202502280724.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,182 - INFO -   fx_data_202502280548.csv - Size: 108 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,182 - INFO -   nav_data_202502280615.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,182 - INFO -   pcf_vix_extractor.py - Size: 37479 bytes, Modified: 2025-03-01 01:49:41.034881
+2025-03-01 01:49:52,182 - INFO -   vix_futures_202502280717.csv - Size: 408 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,182 - INFO -   vix_futures_202502280615.csv - Size: 834 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,182 - INFO -   vix_futures_202502271127.csv - Size: 838 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,182 - INFO -   318A-CSV-20250228-202502280607.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,182 - INFO -   fx_data_202502280650.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,182 - INFO -   fx_data_202502280716.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,182 - INFO -   fx_data_202503010121.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,182 - INFO -   nav_data_202502280704.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,182 - INFO -   318A-CSV-20250228-202503010129.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.572961
+2025-03-01 01:49:52,183 - INFO -   318A-CSV-20250227-202502270703.csv - Size: 290 bytes, Modified: 2025-03-01 01:49:50.571960
+2025-03-01 01:49:52,183 - INFO -   fx_data_202502280745.csv - Size: 784 bytes, Modified: 2025-03-01 01:49:51.688970
+2025-03-01 01:49:52,183 - INFO -   vix_futures_202502270505.csv - Size: 1090 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,183 - INFO -   etf_characteristics_202502280716.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.167974
+2025-03-01 01:49:52,183 - INFO -   etf_characteristics_202502280615.csv - Size: 160 bytes, Modified: 2025-03-01 01:49:52.168974
+2025-03-01 01:49:52,183 - INFO -   nav_data_202502280746.csv - Size: 139 bytes, Modified: 2025-03-01 01:49:51.238966
+2025-03-01 01:49:52,183 - INFO -   nav_data_master.csv - Size: 1612 bytes, Modified: 2025-03-01 01:49:51.239966
+2025-03-01 01:49:52,183 - INFO -   etf_characteristics_202502282139.csv - Size: 193 bytes, Modified: 2025-03-01 01:49:52.170974
+2025-03-01 01:49:52,183 - INFO -   vix_futures_202502280651.csv - Size: 834 bytes, Modified: 2025-03-01 01:49:51.268966
+2025-03-01 01:49:52,183 - INFO -   estimated_navs.csv - Size: 1442 bytes, Modified: 2025-03-01 01:49:50.659961
+2025-03-01 01:49:52,183 - INFO -   vix_futures_yahoo_202502282350.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,183 - INFO -   vix_futures_yahoo_202502280615.csv - Size: 484 bytes, Modified: 2025-03-01 01:49:51.270966
+2025-03-01 01:49:52,183 - INFO -   vix_futures_202502262349.csv - Size: 183 bytes, Modified: 2025-03-01 01:49:51.267966
+2025-03-01 01:49:52,183 - INFO - Total files found: 160
+2025-03-01 01:49:52,183 - INFO - Looking for files matching: data/vix_futures_*.csv
+2025-03-01 01:49:52,184 - INFO - Found 65 matching files: ['data/vix_futures_202502262332.csv', 'data/vix_futures_202502282139.csv', 'data/vix_futures_202502280705.csv', 'data/vix_futures_yahoo_202502282327.csv', 'data/vix_futures_202503010130.csv', 'data/vix_futures_202502270229.csv', 'data/vix_futures_yahoo_202502271102.csv', 'data/vix_futures_yahoo_202502280717.csv', 'data/vix_futures_yahoo_202502280607.csv', 'data/vix_futures_202502270005.csv', 'data/vix_futures_202502270133.csv', 'data/vix_futures_202502270550.csv', 'data/vix_futures_202502280607.csv', 'data/vix_futures_yahoo_202502280651.csv', 'data/vix_futures_yahoo_202502280548.csv', 'data/vix_futures_yahoo_202503010129.csv', 'data/vix_futures_202502271047.csv', 'data/vix_futures_yahoo_202502271203.csv', 'data/vix_futures_202502282350.csv', 'data/vix_futures_202502280702.csv', 'data/vix_futures_202503010122.csv', 'data/vix_futures_202502282327.csv', 'data/vix_futures_yahoo_202502280702.csv', 'data/vix_futures_yahoo_202502271047.csv', 'data/vix_futures_yahoo_202502272353.csv', 'data/vix_futures_yahoo_202502271127.csv', 'data/vix_futures_master.csv', 'data/vix_futures_202502270216.csv', 'data/vix_futures_202502272353.csv', 'data/vix_futures_202503010149.csv', 'data/vix_futures_yahoo_202503010149.csv', 'data/vix_futures_yahoo_202502280556.csv', 'data/vix_futures_202502271203.csv', 'data/vix_futures_202502280556.csv', 'data/vix_futures_202502270150.csv', 'data/vix_futures_202502270549.csv', 'data/vix_futures_yahoo_202503010122.csv', 'data/vix_futures_202502271143.csv', 'data/vix_futures_yahoo_202502271117.csv', 'data/vix_futures_202502270236.csv', 'data/vix_futures_202502271117.csv', 'data/vix_futures_202502270559.csv', 'data/vix_futures_202502270152.csv', 'data/vix_futures_202502270100.csv', 'data/vix_futures_yahoo_202502282139.csv', 'data/vix_futures_202502280746.csv', 'data/vix_futures_202502270605.csv', 'data/vix_futures_yahoo_202502271143.csv', 'data/vix_futures_202502280548.csv', 'data/vix_futures_202502270625.csv', 'data/vix_futures_202502270225.csv', 'data/vix_futures_202502270006.csv', 'data/vix_futures_yahoo_202502280746.csv', 'data/vix_futures_202502271102.csv', 'data/vix_futures_202502280725.csv', 'data/vix_futures_yahoo_202502280705.csv', 'data/vix_futures_yahoo_202502280724.csv', 'data/vix_futures_202502280717.csv', 'data/vix_futures_202502280615.csv', 'data/vix_futures_202502271127.csv', 'data/vix_futures_202502270505.csv', 'data/vix_futures_202502280651.csv', 'data/vix_futures_yahoo_202502282350.csv', 'data/vix_futures_yahoo_202502280615.csv', 'data/vix_futures_202502262349.csv']
+2025-03-01 01:49:52,184 - INFO - Reading file: data/vix_futures_master.csv
+2025-03-01 01:49:52,186 - INFO - Looking for files matching: data/etf_characteristics_*.csv
+2025-03-01 01:49:52,186 - INFO - Found 22 matching files: ['data/etf_characteristics_202503010149.csv', 'data/etf_characteristics_202502280704.csv', 'data/etf_characteristics_202502280548.csv', 'data/etf_characteristics_202502280556.csv', 'data/etf_characteristics_202502280651.csv', 'data/etf_characteristics_202502280532.csv', 'data/etf_characteristics_202502271126.csv', 'data/etf_characteristics_202502280746.csv', 'data/etf_characteristics_202503010129.csv', 'data/etf_characteristics_202502271142.csv', 'data/etf_characteristics_202502282350.csv', 'data/etf_characteristics_202502280724.csv', 'data/etf_characteristics_202502271203.csv', 'data/etf_characteristics_202502280607.csv', 'data/etf_characteristics_202503010122.csv', 'data/etf_characteristics_202502272352.csv', 'data/etf_characteristics_202502280701.csv', 'data/etf_characteristics_202502271117.csv', 'data/etf_characteristics_master.csv', 'data/etf_characteristics_202502280716.csv', 'data/etf_characteristics_202502280615.csv', 'data/etf_characteristics_202502282139.csv']
+2025-03-01 01:49:52,187 - INFO - Reading file: data/etf_characteristics_202502282139.csv
+2025-03-01 01:49:52,188 - INFO - Looking for files matching: data/nav_data_*.csv
+2025-03-01 01:49:52,189 - INFO - Found 18 matching files: ['data/nav_data_202502280717.csv', 'data/nav_data_202502282139.csv', 'data/nav_data_202503010129.csv', 'data/nav_data_202503010149.csv', 'data/nav_data_202502272353.csv', 'data/nav_data_202502280651.csv', 'data/nav_data_202502280548.csv', 'data/nav_data_202502280725.csv', 'data/nav_data_202503010122.csv', 'data/nav_data_202502280607.csv', 'data/nav_data_202502280532.csv', 'data/nav_data_202502280702.csv', 'data/nav_data_202502282350.csv', 'data/nav_data_202502280556.csv', 'data/nav_data_202502280615.csv', 'data/nav_data_202502280704.csv', 'data/nav_data_202502280746.csv', 'data/nav_data_master.csv']
+2025-03-01 01:49:52,189 - INFO - Reading file: data/nav_data_master.csv
+2025-03-01 01:49:52,190 - INFO - Looking for files matching: data/fx_data_*.csv
+2025-03-01 01:49:52,190 - INFO - Found 15 matching files: ['data/fx_data_202502280701.csv', 'data/fx_data_202502280607.csv', 'data/fx_data_master.csv', 'data/fx_data_202502282138.csv', 'data/fx_data_202503010148.csv', 'data/fx_data_202502282350.csv', 'data/fx_data_202502280615.csv', 'data/fx_data_202503010129.csv', 'data/fx_data_202502280704.csv', 'data/fx_data_202502280724.csv', 'data/fx_data_202502280548.csv', 'data/fx_data_202502280650.csv', 'data/fx_data_202502280716.csv', 'data/fx_data_202503010121.csv', 'data/fx_data_202502280745.csv']
+2025-03-01 01:49:52,190 - INFO - Reading file: data/fx_data_202502280701.csv
+2025-03-01 01:49:52,192 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-01 01:49:52,192 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-01 01:49:52,192 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-01 01:49:52,192 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-01 01:49:52,192 - INFO - Found FX Rate: A/S = 148.24
+2025-03-01 01:49:52,192 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-01 01:49:52,192 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-01 01:49:52,193 - INFO - ETF Characteristics: shares_outstanding=720000, near_shares=123 (VXH5), far_shares=44 (VXJ5), cash=628124809.0
+2025-03-01 01:49:52,193 - INFO - Latest published NAV: 872.0
+2025-03-01 01:49:52,219 - INFO - All available futures contracts: ['VIX', 'VXH5', 'VXJ5', 'VXK5', 'VXM5', 'VXN5', 'VXQ5', 'VXU5', 'VXV5', 'VXX5']
+2025-03-01 01:49:52,220 - INFO - Found price for near future VXH5: 18.1337 (CBOE)
+2025-03-01 01:49:52,220 - INFO - Found price for far future VXJ5: 18.6034 (CBOE)
+2025-03-01 01:49:52,220 - INFO - Near future value: 2,230,445.10 USD
+2025-03-01 01:49:52,220 - INFO - Far future value: 818,549.60 USD
+2025-03-01 01:49:52,220 - INFO - Cash component: 628,124,809.00 USD
+2025-03-01 01:49:52,220 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-01 01:49:52,220 - INFO - Near future value: 2,230,445.10 USD
+2025-03-01 01:49:52,220 - INFO - Far future value: 818,549.60 USD
+2025-03-01 01:49:52,220 - INFO - Cash component: 628,124,809.00 USD
+2025-03-01 01:49:52,220 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-01 01:49:52,220 - INFO - Near future value: 2,230,445.10 USD
+2025-03-01 01:49:52,220 - INFO - Far future value: 818,549.60 USD
+2025-03-01 01:49:52,220 - INFO - Cash component: 628,124,809.00 USD
+2025-03-01 01:49:52,220 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-01 01:49:52,221 - INFO - Near future value: 2,230,445.10 USD
+2025-03-01 01:49:52,221 - INFO - Far future value: 818,549.60 USD
+2025-03-01 01:49:52,221 - INFO - Cash component: 628,124,809.00 USD
+2025-03-01 01:49:52,221 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-01 01:49:52,221 - INFO - Near future value: 2,230,445.10 USD
+2025-03-01 01:49:52,221 - INFO - Far future value: 818,549.60 USD
+2025-03-01 01:49:52,221 - INFO - Cash component: 628,124,809.00 USD
+2025-03-01 01:49:52,221 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-01 01:49:52,221 - INFO - Near future value: 2,230,445.10 USD
+2025-03-01 01:49:52,221 - INFO - Far future value: 818,549.60 USD
+2025-03-01 01:49:52,221 - INFO - Cash component: 628,124,809.00 USD
+2025-03-01 01:49:52,221 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-01 01:49:52,221 - INFO - Near future value: 2,230,445.10 USD
+2025-03-01 01:49:52,221 - INFO - Far future value: 818,549.60 USD
+2025-03-01 01:49:52,221 - INFO - Cash component: 628,124,809.00 USD
+2025-03-01 01:49:52,221 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-01 01:49:52,223 - INFO - Saved estimated NAVs to data/estimated_navs.csv
+2025-03-01 01:49:52,223 - INFO - NAV calculations completed successfully
