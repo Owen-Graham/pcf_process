@@ -1,4 +1,4 @@
-import yfinance as yf
+import os
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -6,11 +6,11 @@ import pytz
 import time
 import logging
 import argparse
-from common import convert_futures_ticker_to_yahoo
+import traceback
+from common import setup_logging, SAVE_DIR, get_yfinance_ticker_for_vix_future, normalize_vix_ticker
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Set up logging
+logger = setup_logging('limits_alerter')
 
 def get_daily_price_limits(base_price):
     """Determine daily price limits based on the base price from TSE rules in Q7."""
@@ -61,47 +61,109 @@ def get_daily_price_limits(base_price):
     return max(1, base_price - limit), base_price + limit
 
 def get_etf_composition(date):
-    """Get the ETF composition from the master CSV for the given date."""
+    """Get the ETF composition from the etf_characteristics_master.csv for the given date."""
     try:
         # Read the ETF characteristics master CSV
-        df = pd.read_csv("etf_characteristics_master.csv")
+        etf_file = os.path.join(SAVE_DIR, "etf_characteristics_master.csv")
+        if not os.path.exists(etf_file):
+            logger.error(f"ETF characteristics file not found: {etf_file}")
+            return None
+            
+        df = pd.read_csv(etf_file)
         
-        # Convert date column to datetime if it's not already
-        if not pd.api.types.is_datetime64_any_dtype(df['date']):
-            df['date'] = pd.to_datetime(df['date'])
+        # Check if we have data
+        if df.empty:
+            logger.error("ETF characteristics file is empty")
+            return None
+            
+        # Check if we have the required columns
+        required_cols = ['timestamp', 'fund_date', 'near_future', 'far_future', 
+                         'shares_amount_near_future', 'shares_amount_far_future']
         
-        # Find the row for the given date
-        date_str = date.strftime('%Y-%m-%d')
-        closest_date = df.loc[df['date'] <= date_str, 'date'].max()
-        
-        if pd.isna(closest_date):
-            logger.error(f"No composition data found for date {date_str} or earlier")
+        # Check for old column names as well
+        if 'near_future_code' in df.columns and 'near_future' not in df.columns:
+            df = df.rename(columns={'near_future_code': 'near_future'})
+            logger.info("Renamed near_future_code to near_future")
+            
+        if 'far_future_code' in df.columns and 'far_future' not in df.columns:
+            df = df.rename(columns={'far_future_code': 'far_future'})
+            logger.info("Renamed far_future_code to far_future")
+            
+        # Check if all required columns are present
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            logger.error(f"Missing columns in ETF characteristics file: {missing_cols}")
             return None
         
-        # Get the row for the closest date
-        composition_row = df[df['date'] == closest_date].iloc[0]
+        # Convert timestamp to datetime for comparison if needed
+        if 'fund_date' in df.columns:
+            # Try to parse fund_date to datetime
+            try:
+                df['date'] = pd.to_datetime(df['fund_date'], format='%Y%m%d')
+            except:
+                # If that format fails, try different formats
+                try:
+                    df['date'] = pd.to_datetime(df['fund_date'])
+                except:
+                    logger.warning("Could not convert fund_date to datetime, using timestamp")
+                    # Use timestamp as a fallback
+                    df['date'] = pd.to_datetime(df['timestamp'], format='%Y%m%d%H%M')
+        else:
+            # Use timestamp as fallback
+            df['date'] = pd.to_datetime(df['timestamp'], format='%Y%m%d%H%M')
+            
+        # Find the row for the given date (closest date that's not in the future)
+        target_date = pd.to_datetime(date)
+        df = df[df['date'] <= target_date]
         
-        # Extract futures tickers and weights
+        if df.empty:
+            logger.error(f"No data found for date {date} or earlier")
+            return None
+            
+        # Get the latest data
+        latest_data = df.sort_values('date', ascending=False).iloc[0]
+        
+        # Extract the composition
         composition = {}
-        for col in df.columns:
-            if '_weight' in col:
-                # Extract the futures ticker
-                futures_key = col.replace('_weight', '')
-                if futures_key in composition_row and not pd.isna(composition_row[futures_key]):
-                    futures_ticker = composition_row[futures_key]
-                    weight = composition_row[col]
-                    if not pd.isna(weight) and weight > 0:
-                        composition[futures_ticker] = weight
         
+        # Get near and far futures with their weights
+        near_future = latest_data.get('near_future')
+        far_future = latest_data.get('far_future')
+        
+        if pd.isna(near_future) or pd.isna(far_future):
+            logger.error("Missing future codes in ETF data")
+            return None
+            
+        # Normalize futures tickers
+        near_future = normalize_vix_ticker(near_future)
+        far_future = normalize_vix_ticker(far_future)
+        
+        # Get shares amounts
+        near_shares = latest_data.get('shares_amount_near_future', 0)
+        far_shares = latest_data.get('shares_amount_far_future', 0)
+        
+        if near_shares <= 0 or far_shares <= 0:
+            logger.error(f"Invalid shares amounts: near={near_shares}, far={far_shares}")
+            return None
+            
+        # Calculate weights (this is simplified - in reality would depend on the share value)
+        # but for our purposes, we'll just use the share amounts as weights
+        composition[near_future] = float(near_shares)
+        composition[far_future] = float(far_shares)
+        
+        logger.info(f"ETF composition: {composition}")
         return composition
     
     except Exception as e:
-        logger.error(f"Error reading ETF composition: {e}")
+        logger.error(f"Error getting ETF composition: {str(e)}")
+        logger.error(traceback.format_exc())
         return None
 
 def get_etf_closing_data():
     """Get closing price of 318A ETF on Tokyo Stock Exchange."""
     try:
+        import yfinance as yf
+        
         ticker = "318A.T"  # Correct ticker for 318A
         
         stock = yf.Ticker(ticker)
@@ -133,12 +195,15 @@ def get_etf_closing_data():
         return closing_price, closing_time_jst, (lower_limit, upper_limit)
     
     except Exception as e:
-        logger.error(f"Error getting ETF data: {e}")
+        logger.error(f"Error getting ETF data: {str(e)}")
+        logger.error(traceback.format_exc())
         return None, None, None
 
 def get_vix_futures_prices(composition, reference_time):
     """Get VIX futures prices from Yahoo Finance using proper ticker mapping."""
     try:
+        import yfinance as yf
+        
         futures_prices = {}
         
         # Format date for yfinance
@@ -148,7 +213,7 @@ def get_vix_futures_prices(composition, reference_time):
         # Get prices for each futures contract in the composition
         for futures_ticker, weight in composition.items():
             # Convert to Yahoo Finance ticker format
-            yahoo_ticker = convert_futures_ticker_to_yahoo(futures_ticker)
+            yahoo_ticker = get_yfinance_ticker_for_vix_future(futures_ticker)
             
             # Get data
             future = yf.Ticker(yahoo_ticker)
@@ -167,12 +232,15 @@ def get_vix_futures_prices(composition, reference_time):
         return futures_prices
     
     except Exception as e:
-        logger.error(f"Error getting VIX futures prices: {e}")
+        logger.error(f"Error getting VIX futures prices: {str(e)}")
+        logger.error(traceback.format_exc())
         return None
 
 def get_exchange_rate(reference_time):
     """Get USD/JPY exchange rate at the specified time."""
     try:
+        import yfinance as yf
+        
         usdjpy = yf.Ticker("USDJPY=X")
         
         # Convert time to date string
@@ -193,7 +261,8 @@ def get_exchange_rate(reference_time):
         return exchange_rate
     
     except Exception as e:
-        logger.error(f"Error getting exchange rate: {e}")
+        logger.error(f"Error getting exchange rate: {str(e)}")
+        logger.error(traceback.format_exc())
         return None
 
 def calculate_basket_value(composition, futures_prices, exchange_rate):
@@ -206,7 +275,9 @@ def calculate_basket_value(composition, futures_prices, exchange_rate):
     
     for futures_ticker, weight in composition.items():
         if futures_ticker in futures_prices:
-            basket_value_usd += futures_prices[futures_ticker] * weight
+            # VIX futures are 1000 times the index
+            contract_multiplier = 1000
+            basket_value_usd += futures_prices[futures_ticker] * weight * contract_multiplier
             total_weight += weight
     
     # Check if we have valid weights
@@ -248,7 +319,10 @@ def monitor_basket_value(composition, initial_basket_value, price_limits, closin
     logger.info(f"Starting monitoring. Will check every {check_interval} seconds.")
     
     try:
-        while True:
+        alert_counter = 0
+        max_alerts = 5
+        
+        while alert_counter < max_alerts:
             current_time = datetime.now().astimezone(pytz.timezone('Asia/Tokyo'))
             
             # Get current futures prices and exchange rate
@@ -269,7 +343,20 @@ def monitor_basket_value(composition, initial_basket_value, price_limits, closin
                 logger.info(f"Current basket value: {current_basket_value:.2f} JPY ({pct_change:.2%} change)")
                 
                 # Check for alerts
-                check_for_alerts(current_basket_value, initial_basket_value, price_limits, closing_price)
+                if check_for_alerts(current_basket_value, initial_basket_value, price_limits, closing_price):
+                    alert_counter += 1
+                    logger.warning(f"Alert {alert_counter} of {max_alerts}")
+                    
+                    # Save alert to file
+                    alert_file = os.path.join(SAVE_DIR, f"price_alert_{datetime.now().strftime('%Y%m%d%H%M')}.log")
+                    with open(alert_file, "w") as f:
+                        f.write(f"PRICE LIMIT ALERT\n")
+                        f.write(f"Time: {current_time}\n")
+                        f.write(f"Basket value: {current_basket_value:.2f} JPY\n")
+                        f.write(f"Initial value: {initial_basket_value:.2f} JPY\n")
+                        f.write(f"Change: {pct_change:.2%}\n")
+                        f.write(f"Price limits: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY\n")
+                        f.write(f"Allowed range: {(price_limits[0]-closing_price)/closing_price:.2%} to {(price_limits[1]-closing_price)/closing_price:.2%}\n")
             
             # Wait for next check
             time.sleep(check_interval)
@@ -277,7 +364,8 @@ def monitor_basket_value(composition, initial_basket_value, price_limits, closin
     except KeyboardInterrupt:
         logger.info("Monitoring stopped by user.")
     except Exception as e:
-        logger.error(f"Error in monitoring loop: {e}")
+        logger.error(f"Error in monitoring loop: {str(e)}")
+        logger.error(traceback.format_exc())
 
 def main():
     """Main function to analyze ETF price limits and underlying basket value."""
@@ -285,6 +373,7 @@ def main():
     parser = argparse.ArgumentParser(description='Monitor 318A ETF and underlying basket value')
     parser.add_argument('--monitor', action='store_true', help='Enable continuous monitoring')
     parser.add_argument('--interval', type=int, default=60, help='Monitoring interval in seconds (default: 60)')
+    parser.add_argument('--duration', type=int, default=60, help='Monitoring duration in minutes (default: 60)')
     args = parser.parse_args()
     
     # Get ETF closing data
@@ -292,15 +381,15 @@ def main():
     
     if not all([closing_price, closing_time, price_limits]):
         logger.error("Could not get ETF data. Exiting.")
-        return
+        return 1
     
     # Get the ETF composition from the master CSV
     composition = get_etf_composition(closing_time)
     
     if not composition:
         logger.error("Could not get ETF composition. Exiting.")
-        return
-    
+        return 1
+            
     logger.info(f"ETF composition for {closing_time.strftime('%Y-%m-%d')}: {composition}")
     
     # Get initial futures prices and exchange rate
@@ -309,21 +398,36 @@ def main():
     
     if not futures_prices:
         logger.error("Could not get VIX futures prices. Exiting.")
-        return
+        return 1
     
     if not exchange_rate:
         logger.error("Could not get USD/JPY exchange rate. Exiting.")
-        return
+        return 1
     
     # Calculate initial basket value
     initial_basket_value = calculate_basket_value(composition, futures_prices, exchange_rate)
     
     if not initial_basket_value:
         logger.error("Could not calculate initial basket value. Exiting.")
-        return
+        return 1
     
     logger.info(f"Initial basket value: {initial_basket_value:.2f} JPY")
     logger.info(f"Price limits for next trading day: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY")
+    
+    # Calculate share value
+    shares_outstanding = 0
+    try:
+        # Try to read the ETF characteristics to get shares outstanding
+        etf_file = os.path.join(SAVE_DIR, "etf_characteristics_master.csv")
+        if os.path.exists(etf_file):
+            df = pd.read_csv(etf_file)
+            if 'shares_outstanding' in df.columns and not df.empty:
+                shares_outstanding = df.iloc[-1]['shares_outstanding']
+                if shares_outstanding > 0:
+                    nav_per_share = initial_basket_value / shares_outstanding
+                    logger.info(f"Estimated NAV per share: {nav_per_share:.2f} JPY")
+    except Exception as e:
+        logger.warning(f"Could not calculate NAV per share: {str(e)}")
     
     # Current value check (single run)
     current_time = datetime.now().astimezone(pytz.timezone('Asia/Tokyo'))
@@ -339,7 +443,63 @@ def main():
     
     # Start monitoring if requested
     if args.monitor:
-        monitor_basket_value(composition, initial_basket_value, price_limits, closing_price, args.interval)
+        end_time = datetime.now() + timedelta(minutes=args.duration)
+        logger.info(f"Will monitor until {end_time}")
+        
+        # Modified to run for a fixed duration
+        try:
+            alert_counter = 0
+            max_alerts = 5
+            
+            while datetime.now() < end_time and alert_counter < max_alerts:
+                current_time = datetime.now().astimezone(pytz.timezone('Asia/Tokyo'))
+                
+                # Get current futures prices and exchange rate
+                current_futures_prices = get_vix_futures_prices(composition, current_time)
+                current_exchange_rate = get_exchange_rate(current_time)
+                
+                if not current_futures_prices or not current_exchange_rate:
+                    logger.warning("Could not get current prices. Skipping this check.")
+                    time.sleep(args.interval)
+                    continue
+                
+                # Calculate current basket value
+                current_basket_value = calculate_basket_value(composition, current_futures_prices, current_exchange_rate)
+                
+                if current_basket_value:
+                    # Calculate percentage change
+                    pct_change = (current_basket_value - initial_basket_value) / initial_basket_value
+                    logger.info(f"Current basket value: {current_basket_value:.2f} JPY ({pct_change:.2%} change)")
+                    
+                    # Check for alerts
+                    if check_for_alerts(current_basket_value, initial_basket_value, price_limits, closing_price):
+                        alert_counter += 1
+                        logger.warning(f"Alert {alert_counter} of {max_alerts}")
+                        
+                        # Save alert to file
+                        alert_file = os.path.join(SAVE_DIR, f"price_alert_{datetime.now().strftime('%Y%m%d%H%M')}.log")
+                        with open(alert_file, "w") as f:
+                            f.write(f"PRICE LIMIT ALERT\n")
+                            f.write(f"Time: {current_time}\n")
+                            f.write(f"Basket value: {current_basket_value:.2f} JPY\n")
+                            f.write(f"Initial value: {initial_basket_value:.2f} JPY\n")
+                            f.write(f"Change: {pct_change:.2%}\n")
+                            f.write(f"Price limits: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY\n")
+                            f.write(f"Allowed range: {(price_limits[0]-closing_price)/closing_price:.2%} to {(price_limits[1]-closing_price)/closing_price:.2%}\n")
+                
+                # Wait for next check
+                time.sleep(args.interval)
+                
+            logger.info("Monitoring completed")
+        
+        except KeyboardInterrupt:
+            logger.info("Monitoring stopped by user.")
+        except Exception as e:
+            logger.error(f"Error in monitoring loop: {str(e)}")
+            logger.error(traceback.format_exc())
+    
+    return 0
 
 if __name__ == "__main__":
-    main()
+    exit_code = main()
+    sys.exit(exit_code)
