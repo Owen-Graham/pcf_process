@@ -1,6 +1,6 @@
 import os
 import re
-import time
+import time as time_module  # Rename to avoid conflict
 import traceback
 from datetime import datetime, timedelta, time
 import logging
@@ -56,7 +56,7 @@ def download_vix_futures_from_cboe():
     Returns:
         dict: Dictionary with VIX futures prices
     """
-    start_time = time.time()
+    start_time = time_module.time()  # Use the renamed module here
     browser = None
     
     try:
