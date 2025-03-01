@@ -1,3 +1,81 @@
+import os
+import logging
+import re
+from datetime import datetime
+import pandas as pd
+import traceback
+
+# Define global constants
+SAVE_DIR = "data"
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+# VIX futures month codes mapping
+MONTH_CODES = {
+    'F': 1,   # January
+    'G': 2,   # February
+    'H': 3,   # March
+    'J': 4,   # April
+    'K': 5,   # May
+    'M': 6,   # June
+    'N': 7,   # July
+    'Q': 8,   # August
+    'U': 9,   # September
+    'V': 10,  # October
+    'X': 11,  # November
+    'Z': 12   # December
+}
+
+def setup_logging(name):
+    """Set up logging for a script."""
+    logger = logging.getLogger(name)
+    
+    # Check if logger already has handlers to avoid adding duplicate handlers
+    if not logger.handlers:
+        logger.setLevel(logging.INFO)
+        
+        # Create file handler
+        file_handler = logging.FileHandler(os.path.join(SAVE_DIR, f"{name}.log"))
+        file_handler.setLevel(logging.INFO)
+        
+        # Create console handler
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        
+        # Create formatter
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        
+        # Add formatter to handlers
+        file_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+        
+        # Add handlers to logger
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
+    
+    return logger
+
+def normalize_vix_ticker(ticker):
+    """
+    Normalize VIX futures ticker to standard format (VXH5 instead of VXH25)
+    
+    Args:
+        ticker: VIX futures ticker (e.g., VXH25, VXH5)
+    
+    Returns:
+        Normalized ticker (e.g., VXH5)
+    """
+    if not ticker or not isinstance(ticker, str):
+        return ticker
+        
+    # If ticker is in format VX<letter><2-digit-year>
+    match = re.match(r'(VX[A-Z])(\d{2})$', ticker)
+    if match:
+        prefix = match.group(1)
+        year = match.group(2)
+        # Take only the last digit of the year
+        return f"{prefix}{year[-1]}"
+    return ticker
+
 def get_yfinance_ticker_for_vix_future(contract_code):
     """
     Convert VIX futures contract code (e.g., VXJ4) to yfinance ticker format.
@@ -149,3 +227,148 @@ def get_alternative_yfinance_tickers(contract_code):
         
     except Exception:
         return []
+
+def get_next_vix_contracts(num_contracts=3):
+    """
+    Get the next N VIX futures contracts based on the current date.
+    
+    Args:
+        num_contracts (int): Number of future contracts to return
+        
+    Returns:
+        list: List of VIX futures contract codes (e.g., ['VXH5', 'VXJ5', 'VXK5'])
+    """
+    current_date = datetime.now()
+    current_month = current_date.month
+    current_year = current_date.year % 10  # Last digit of year
+    
+    # Month codes used in VIX futures (reverse of MONTH_CODES)
+    month_codes = {v: k for k, v in MONTH_CODES.items()}
+    
+    contracts = []
+    
+    # Get the current month and the next N-1 months
+    for i in range(num_contracts):
+        # Calculate month and year (handling year wrap)
+        month_idx = (current_month + i) % 12
+        if month_idx == 0:  # Handle December (0 after modulo)
+            month_idx = 12
+            
+        # Calculate year digit (handle year rollover)
+        year_digit = current_year
+        if month_idx < current_month:
+            year_digit = (current_year + 1) % 10
+        
+        # Get the month code
+        month_code = month_codes.get(month_idx)
+        
+        # Create contract code
+        contract = f"VX{month_code}{year_digit}"
+        contracts.append(contract)
+    
+    return contracts
+
+def format_vix_data(futures_data, source):
+    """
+    Format VIX futures data into standardized records.
+    
+    Args:
+        futures_data (dict): Raw futures data dictionary
+        source (str): Source of the data (e.g., 'CBOE', 'Yahoo')
+        
+    Returns:
+        list: List of standardized records
+    """
+    records = []
+    timestamp = futures_data.get('timestamp', datetime.now().strftime("%Y%m%d%H%M"))
+    price_date = futures_data.get('date', datetime.now().strftime("%Y-%m-%d"))
+    
+    for key, value in futures_data.items():
+        # Skip non-price fields
+        if key in ['date', 'timestamp'] or value is None:
+            continue
+        
+        # Determine VIX future code and symbol
+        vix_future = None
+        symbol = key
+        
+        if key.startswith(f"{source}:VX"):
+            vix_future = key.split(':')[1]
+        elif key.startswith('/VX'):
+            vix_future = 'VX' + key[3:]
+        elif key.upper() in ['VX=F', 'VIX']:
+            vix_future = 'VIX'
+        else:
+            continue
+        
+        # Create standardized record
+        record = {
+            'timestamp': timestamp,
+            'price_date': price_date,
+            'vix_future': vix_future,
+            'source': source,
+            'symbol': symbol,
+            'price': float(value)
+        }
+        
+        records.append(record)
+    
+    return records
+
+def find_latest_file(pattern, directory=SAVE_DIR):
+    """
+    Find the latest file matching a pattern in a directory.
+    
+    Args:
+        pattern (str): File pattern to match (e.g., "vix_futures_*.csv")
+        directory (str): Directory to search in
+        
+    Returns:
+        str: Path to the latest file or None if no files found
+    """
+    try:
+        import glob
+        
+        # Get full pattern path
+        full_pattern = os.path.join(directory, pattern)
+        
+        # Use glob to find all matching files
+        matching_files = glob.glob(full_pattern)
+        
+        if not matching_files:
+            return None
+        
+        # Sort by modification time (newest first)
+        matching_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+        
+        # Return the latest file
+        return matching_files[0]
+    
+    except Exception as e:
+        logging.error(f"Error finding files with pattern {pattern}: {str(e)}")
+        logging.error(traceback.format_exc())
+        return None
+
+def read_latest_file(pattern, default_cols=None, directory=SAVE_DIR):
+    """
+    Read the latest file matching the pattern into a pandas DataFrame.
+    
+    Args:
+        pattern (str): File pattern to match (e.g., "vix_futures_*.csv")
+        default_cols (list): Default column list if file doesn't exist
+        directory (str): Directory to search in
+        
+    Returns:
+        pandas.DataFrame: DataFrame with the file contents or empty DataFrame
+    """
+    latest_file = find_latest_file(pattern, directory)
+    
+    if latest_file:
+        try:
+            df = pd.read_csv(latest_file)
+            return df
+        except Exception as e:
+            logging.error(f"Error reading file {latest_file}: {str(e)}")
+            logging.error(traceback.format_exc())
+    
+    return pd.DataFrame(columns=default_cols if default_cols else [])
