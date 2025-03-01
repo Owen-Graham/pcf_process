@@ -1,13 +1,74 @@
 import yfinance as yf
 import traceback
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import os
+import pytz
 from common import setup_logging, SAVE_DIR, format_vix_data
 
 # Set up logging
 logger = setup_logging('yahoo_vix_downloader')
+
+def determine_yahoo_trading_date(timestamp):
+    """
+    Map a Yahoo Finance timestamp to the correct CBOE VIX futures trading date
+    
+    Args:
+        timestamp: Timestamp from Yahoo Finance data
+    
+    Returns:
+        str: Trading date in YYYY-MM-DD format
+    """
+    if timestamp is None:
+        return None
+    
+    # Convert to Central Time (CBOE's timezone)
+    central = pytz.timezone('US/Central')
+    if not timestamp.tzinfo:
+        # If timestamp has no timezone, assume it's UTC
+        timestamp = pytz.utc.localize(timestamp)
+    
+    ct_time = timestamp.astimezone(central)
+    ct_date = ct_time.date()
+    ct_hour = ct_time.hour
+    
+    # Trading session logic:
+    # Sunday: After 17:00 CT = Monday's session
+    # Monday-Thursday: After 17:00 CT = next day's session
+    # Friday: After 17:00 CT = Monday's session (skip weekend)
+    
+    weekday = ct_date.weekday()  # 0=Monday, 6=Sunday
+    
+    if weekday == 6:  # Sunday
+        if ct_hour >= 17:
+            # After 5 PM Sunday -> Monday's session
+            next_date = ct_date + timedelta(days=1)
+            return next_date.strftime("%Y-%m-%d")
+        else:
+            # Before 5 PM Sunday -> Friday's session
+            prev_date = ct_date - timedelta(days=2)
+            return prev_date.strftime("%Y-%m-%d")
+    elif weekday == 4:  # Friday
+        if ct_hour >= 17:
+            # After 5 PM Friday -> Monday's session
+            next_date = ct_date + timedelta(days=3)
+            return next_date.strftime("%Y-%m-%d")
+        else:
+            # Before 5 PM Friday -> Friday's session
+            return ct_date.strftime("%Y-%m-%d")
+    elif weekday == 5:  # Saturday
+        # All Saturday data is for Monday
+        monday_date = ct_date + timedelta(days=2)
+        return monday_date.strftime("%Y-%m-%d")
+    else:  # Monday-Thursday
+        if ct_hour >= 17:
+            # After 5 PM -> next day's session
+            next_date = ct_date + timedelta(days=1)
+            return next_date.strftime("%Y-%m-%d")
+        else:
+            # Before 5 PM -> current day's session
+            return ct_date.strftime("%Y-%m-%d")
 
 def download_vix_futures_from_yfinance():
     """
@@ -24,9 +85,11 @@ def download_vix_futures_from_yfinance():
         current_date = datetime.now()
         
         futures_data = {
-            'date': current_date.strftime("%Y-%m-%d"),
             'timestamp': current_date.strftime("%Y%m%d%H%M")
         }
+        
+        # Track the timestamp of the data we download to determine trading date
+        data_timestamp = None
         
         # Get the VIX index price as a fallback for the front month
         try:
@@ -37,6 +100,10 @@ def download_vix_futures_from_yfinance():
                 futures_data['VX=F'] = vix_value
                 futures_data['YAHOO:VIX'] = vix_value  # Standardized format
                 logger.info(f"Yahoo: ^VIX = {vix_value}")
+                
+                # Save the timestamp for date validation
+                data_timestamp = vix_data.index[-1]
+                logger.info(f"Yahoo data timestamp: {data_timestamp}")
             else:
                 logger.warning("Could not download ^VIX data from Yahoo Finance")
         except Exception as e:
@@ -81,6 +148,11 @@ def download_vix_futures_from_yfinance():
                         # Extract numeric value properly
                         settlement_price = float(data['Close'].iloc[-1])
                         
+                        # Update data timestamp if not already set
+                        if data_timestamp is None:
+                            data_timestamp = data.index[-1]
+                            logger.info(f"Yahoo data timestamp from {ticker}: {data_timestamp}")
+                        
                         # Map to the corresponding VIX contract ticker format
                         if i in position_to_contract:
                             # Standard format
@@ -114,6 +186,11 @@ def download_vix_futures_from_yfinance():
                             # Extract numeric value properly
                             settlement_price = float(data['Close'].iloc[-1])
                             
+                            # Update data timestamp if not already set
+                            if data_timestamp is None:
+                                data_timestamp = data.index[-1]
+                                logger.info(f"Yahoo data timestamp from {ticker} (retry): {data_timestamp}")
+                            
                             # Map to the corresponding VIX contract ticker format
                             if i in position_to_contract:
                                 # Standard format
@@ -137,6 +214,12 @@ def download_vix_futures_from_yfinance():
                     except Exception as retry_e:
                         logger.warning(f"Retry for {ticker} also failed: {str(retry_e)}")
         
+        # If we have a timestamp, determine the trading date
+        if data_timestamp is not None:
+            trading_date = determine_yahoo_trading_date(data_timestamp)
+            logger.info(f"Determined trading date for Yahoo data: {trading_date}")
+            futures_data['date'] = trading_date
+        
         if futures_found:
             logger.info(f"Successfully retrieved VIX futures data from Yahoo Finance (processing took {time.time() - start_time:.2f}s)")
             return futures_data
@@ -154,6 +237,11 @@ def download_vix_futures_from_yfinance():
                         # Extract numeric value properly
                         settlement_price = float(data['Close'].iloc[-1])
                         
+                        # Update data timestamp if not already set
+                        if data_timestamp is None:
+                            data_timestamp = data.index[-1]
+                            logger.info(f"Yahoo data timestamp from direct {ticker}: {data_timestamp}")
+                        
                         # Standard format (already in the correct format)
                         futures_data[ticker] = settlement_price
                         
@@ -170,12 +258,28 @@ def download_vix_futures_from_yfinance():
                 except Exception as e:
                     logger.warning(f"Error downloading {ticker} directly: {str(e)}")
             
+            # If we have a timestamp now, determine the trading date
+            if data_timestamp is not None and 'date' not in futures_data:
+                trading_date = determine_yahoo_trading_date(data_timestamp)
+                logger.info(f"Determined trading date for Yahoo data (fallback): {trading_date}")
+                futures_data['date'] = trading_date
+            
             if futures_found:
                 logger.info(f"Successfully retrieved some VIX futures using direct contract notation (processing took {time.time() - start_time:.2f}s)")
                 return futures_data
             else:
                 logger.warning("Could not retrieve any VIX futures data from Yahoo Finance")
-                return futures_data  # Return with just the VIX index if available
+                
+                # If we have at least the VIX index, return what we have
+                if 'VX=F' in futures_data or 'YAHOO:VIX' in futures_data:
+                    # If we still don't have a date, use current date
+                    if 'date' not in futures_data and data_timestamp is not None:
+                        trading_date = determine_yahoo_trading_date(data_timestamp)
+                        logger.info(f"Determined trading date for VIX index: {trading_date}")
+                        futures_data['date'] = trading_date
+                    return futures_data
+                else:
+                    return None
     
     except Exception as e:
         logger.error(f"Error in Yahoo Finance download: {str(e)}")
