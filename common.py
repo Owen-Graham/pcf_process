@@ -152,6 +152,50 @@ def get_next_vix_contracts(num_contracts=3):
     
     return contracts
 
+# common.py
+def get_yfinance_ticker_for_vix_future(contract_code):
+    """
+    Convert VIX futures contract code (e.g., VXJ4) to yfinance ticker format.
+    
+    Args:
+        contract_code (str): VIX futures contract code (e.g., VXJ4, VXK4)
+        
+    Returns:
+        str: yfinance ticker for the VIX futures contract
+    """
+    # Extract month code and year
+    if len(contract_code) < 4:
+        raise ValueError(f"Invalid contract code: {contract_code}")
+        
+    month_code = contract_code[2]
+    year_digit = contract_code[3]
+    
+    # Month code mapping (futures standard)
+    month_to_number = {
+        'F': '01',  # January
+        'G': '02',  # February
+        'H': '03',  # March
+        'J': '04',  # April
+        'K': '05',  # May
+        'M': '06',  # June
+        'N': '07',  # July
+        'Q': '08',  # August
+        'U': '09',  # September
+        'V': '10',  # October
+        'X': '11',  # November
+        'Z': '12',  # December
+    }
+    
+    if month_code not in month_to_number:
+        raise ValueError(f"Invalid month code in contract: {contract_code}")
+    
+    # Build the year string (assuming 202X for now)
+    year = f"202{year_digit}"
+    
+    # Yahoo Finance format for VIX futures
+    return f"^VIX{month_to_number[month_code]}.{year}"
+
+
 def log_response_details(response, source_name):
     """Log detailed information about HTTP responses"""
     logger = logging.getLogger(source_name)
