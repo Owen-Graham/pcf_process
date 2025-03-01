@@ -279,7 +279,7 @@ jobs:
         pip install yfinance pandas numpy pytz
 
     - name: Run Limits Alerter (Morning Check)
-      run: python limits_alerter.py --monitor --interval 60 --duration 15
+      run: python limits_alerter.py --check-only
 
     - name: Commit and Push Alerts (if any)
       run: |
@@ -334,7 +334,7 @@ jobs:
         pip install yfinance pandas numpy pytz
 
     - name: Run Limits Alerter (Mid-Morning Check)
-      run: python limits_alerter.py --monitor --interval 60 --duration 15
+      run: python limits_alerter.py --check-only
 
     - name: Commit and Push Alerts (if any)
       run: |
