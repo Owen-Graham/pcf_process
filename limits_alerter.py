@@ -8,6 +8,7 @@ import logging
 import argparse
 import traceback
 import sys
+import yfinance as yf
 from common import setup_logging, SAVE_DIR, get_yfinance_ticker_for_vix_future, normalize_vix_ticker
 
 # Set up logging
@@ -62,7 +63,18 @@ def get_daily_price_limits(base_price):
     return max(1, base_price - limit), base_price + limit
 
 def get_etf_composition(date):
-    """Get the ETF composition from the etf_characteristics_master.csv for the given date."""
+    """
+    Get the ETF composition from the etf_characteristics_master.csv for the given date.
+    
+    Uses the most recent ETF composition data available before or on the given date.
+    If no date-specific data is available, tries multiple fallback approaches.
+    
+    Args:
+        date: Date to get composition for
+        
+    Returns:
+        dict: Dictionary mapping futures tickers to weights, or None if not found
+    """
     try:
         # Read the ETF characteristics master CSV
         etf_file = os.path.join(SAVE_DIR, "etf_characteristics_master.csv")
@@ -90,7 +102,7 @@ def get_etf_composition(date):
             df = df.rename(columns={'far_future_code': 'far_future'})
             logger.info("Renamed far_future_code to far_future")
             
-        # Check if all required columns are present
+        # Check if all required columns are present (after renaming)
         missing_cols = [col for col in required_cols if col not in df.columns]
         if missing_cols:
             logger.error(f"Missing columns in ETF characteristics file: {missing_cols}")
@@ -127,6 +139,9 @@ def get_etf_composition(date):
             
         # Get the latest data
         latest_data = df.sort_values('date', ascending=False).iloc[0]
+        
+        # Log the data we're using
+        logger.info(f"Using ETF composition data from {latest_data['date']} (latest available)")
         
         # Extract the composition
         composition = {}
@@ -260,15 +275,22 @@ def get_etf_composition(date):
         return None
 
 def get_etf_closing_data():
-    """Get closing price of 318A ETF on Tokyo Stock Exchange."""
+    """
+    Get closing price of 318A ETF on Tokyo Stock Exchange.
+    
+    Will look back up to 7 days to find the most recent data, which handles weekends.
+    
+    Returns:
+        tuple: (closing_price, closing_time, price_limits) or (None, None, None) if failure
+    """
     try:
-        import yfinance as yf
-        
         ticker = "318A.T"  # Correct ticker for 318A
         
         # Use a 7-day lookback to ensure we get the most recent data even on weekends
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        
+        logger.info(f"Getting ETF data for {ticker} from {start_date} to {end_date}")
         
         stock = yf.Ticker(ticker)
         hist = stock.history(start=start_date, end=end_date)
@@ -299,10 +321,19 @@ def get_etf_closing_data():
         return None, None, None
 
 def get_vix_futures_prices(composition, reference_time):
-    """Get VIX futures prices from Yahoo Finance using proper ticker mapping."""
-    try:
-        import yfinance as yf
+    """
+    Get VIX futures prices from Yahoo Finance using proper ticker mapping.
+    
+    Will look back up to 7 days to find the most recent data, which handles weekends.
+    
+    Args:
+        composition: Dictionary mapping futures tickers to weights
+        reference_time: Reference time for price data
         
+    Returns:
+        dict: Dictionary mapping futures tickers to prices, or None if failure
+    """
+    try:
         futures_prices = {}
         
         # Format date for yfinance - request a longer period to ensure we get the most recent data
@@ -310,10 +341,14 @@ def get_vix_futures_prices(composition, reference_time):
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
         
+        logger.info(f"Getting VIX futures prices from {start_date} to {end_date}")
+        
         # Get prices for each futures contract in the composition
         for futures_ticker, weight in composition.items():
             # Convert to Yahoo Finance ticker format
             yahoo_ticker = get_yfinance_ticker_for_vix_future(futures_ticker)
+            
+            logger.info(f"Requesting data for {futures_ticker} (Yahoo ticker: {yahoo_ticker})")
             
             # Get data - use a 7-day lookback to ensure we get the most recent data
             future = yf.Ticker(yahoo_ticker)
@@ -322,10 +357,32 @@ def get_vix_futures_prices(composition, reference_time):
             if len(future_data) > 0:
                 # Get the most recent closing price
                 futures_prices[futures_ticker] = future_data['Close'].iloc[-1]
-                logger.info(f"Retrieved most recent price for {futures_ticker} ({yahoo_ticker}): {futures_prices[futures_ticker]:.2f}")
+                price_date = future_data.index[-1].strftime('%Y-%m-%d')
+                logger.info(f"Retrieved most recent price for {futures_ticker} ({yahoo_ticker}): {futures_prices[futures_ticker]:.2f} from {price_date}")
             else:
                 logger.error(f"No data found for {yahoo_ticker} ({futures_ticker})")
-                return None
+                
+                # Try alternative tickers as a fallback
+                from common import get_alternative_yfinance_tickers
+                alternative_tickers = get_alternative_yfinance_tickers(futures_ticker)
+                
+                for alt_ticker in alternative_tickers:
+                    logger.info(f"Trying alternative ticker {alt_ticker} for {futures_ticker}")
+                    try:
+                        alt_future = yf.Ticker(alt_ticker)
+                        alt_data = alt_future.history(start=start_date, end=end_date)
+                        
+                        if len(alt_data) > 0:
+                            futures_prices[futures_ticker] = alt_data['Close'].iloc[-1]
+                            price_date = alt_data.index[-1].strftime('%Y-%m-%d')
+                            logger.info(f"Retrieved price from alternative ticker {alt_ticker}: {futures_prices[futures_ticker]:.2f} from {price_date}")
+                            break
+                    except Exception as alt_e:
+                        logger.warning(f"Failed to get data from alternative ticker {alt_ticker}: {str(alt_e)}")
+                
+                if futures_ticker not in futures_prices:
+                    logger.error(f"Could not get price for {futures_ticker} from any source")
+                    return None
         
         if not futures_prices:
             logger.error("Could not retrieve any futures prices")
@@ -339,15 +396,25 @@ def get_vix_futures_prices(composition, reference_time):
         return None
 
 def get_exchange_rate(reference_time):
-    """Get USD/JPY exchange rate at the specified time."""
-    try:
-        import yfinance as yf
+    """
+    Get USD/JPY exchange rate at the specified time.
+    
+    Will look back up to 7 days to find the most recent data, which handles weekends.
+    
+    Args:
+        reference_time: Reference time for exchange rate
         
+    Returns:
+        float: Exchange rate or None if failure
+    """
+    try:
         usdjpy = yf.Ticker("USDJPY=X")
         
         # Format date for yfinance - use a 7-day lookback to ensure we get the most recent data
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        
+        logger.info(f"Getting USD/JPY exchange rate from {start_date} to {end_date}")
         
         # Get exchange rate data
         fx_data = usdjpy.history(start=start_date, end=end_date)
@@ -358,7 +425,8 @@ def get_exchange_rate(reference_time):
         
         # Get the most recent exchange rate
         exchange_rate = fx_data['Close'].iloc[-1]
-        logger.info(f"Most recent USD/JPY exchange rate: {exchange_rate:.2f}")
+        rate_date = fx_data.index[-1].strftime('%Y-%m-%d')
+        logger.info(f"Most recent USD/JPY exchange rate: {exchange_rate:.2f} from {rate_date}")
         
         return exchange_rate
     
@@ -479,6 +547,8 @@ def main():
     parser.add_argument('--duration', type=int, default=60, help='Monitoring duration in minutes (default: 60)')
     args = parser.parse_args()
     
+    logger.info("Starting limits alerter with most recent available data")
+    
     # Get ETF closing data - the most recent data available
     closing_price, closing_time, price_limits = get_etf_closing_data()
     
@@ -558,6 +628,11 @@ def main():
         logger.info("Price limit alert detected and saved to file")
     else:
         logger.info("No price limit alerts detected")
+    
+    # Start monitoring if requested
+    if args.monitor:
+        logger.info("Starting continuous monitoring")
+        monitor_basket_value(composition, initial_basket_value, price_limits, closing_price, args.interval)
     
     return 0
 
