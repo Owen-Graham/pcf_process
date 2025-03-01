@@ -161,8 +161,8 @@ def parse_etf_characteristics(file_path=None):
             'fund_cash_component': None,
             'shares_amount_near_future': 0,
             'shares_amount_far_future': 0,
-            'near_future_code': None,   # New field for near future code (e.g., VXH5)
-            'far_future_code': None     # New field for far future code (e.g., VXJ5)
+            'near_future': None,   # Changed from 'near_future_code' to 'near_future'
+            'far_future': None     # Changed from 'far_future_code' to 'far_future'
         }
         
         # 1. Read the header section (first 2 rows) to get fund info
@@ -217,7 +217,7 @@ def parse_etf_characteristics(file_path=None):
             futures_rows = []
             
             # Make sure required columns exist
-            required_cols = ['Shares Amount']
+            required_cols = ["shares_outstanding", "shares_amount_near_future", "shares_amount_far_future"]
             name_cols = ['Name', 'Security Name', 'Description']
             code_cols = ['Code', 'Security Code', 'Ticker']
             
@@ -372,12 +372,12 @@ def parse_etf_characteristics(file_path=None):
             
             # Assign shares to near and far futures with their codes
             if len(sorted_futures) >= 1:
-                characteristics['near_future_code'] = sorted_futures[0][0]
+                characteristics['near_future'] = sorted_futures[0][0]  # Changed from 'near_future_code' to 'near_future'
                 characteristics['shares_amount_near_future'] = sorted_futures[0][1]
                 logger.info(f"Near future: {sorted_futures[0][0]} with {sorted_futures[0][1]} shares")
             
             if len(sorted_futures) >= 2:
-                characteristics['far_future_code'] = sorted_futures[1][0]
+                characteristics['far_future'] = sorted_futures[1][0]  # Changed from 'far_future_code' to 'far_future'
                 characteristics['shares_amount_far_future'] = sorted_futures[1][1]
                 logger.info(f"Far future: {sorted_futures[1][0]} with {sorted_futures[1][1]} shares")
             
