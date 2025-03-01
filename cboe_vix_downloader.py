@@ -2,7 +2,7 @@ import os
 import re
 import time
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta, time
 import logging
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -10,10 +10,44 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import pytz
 from common import setup_logging, SAVE_DIR
 
 # Set up logging
 logger = setup_logging('cboe_vix_downloader')
+
+def validate_cboe_date():
+    """
+    Determine when the CBOE website was last updated based on current time
+    
+    Returns:
+        str: Trading date in YYYY-MM-DD format that the CBOE website is showing
+    """
+    # Get current time in Central Time
+    central = pytz.timezone('US/Central')
+    now = datetime.now(central)
+    
+    # If it's a weekend (Saturday or Sunday), data is from Friday
+    if now.weekday() >= 5:  # 5=Saturday, 6=Sunday
+        # Get previous Friday
+        days_to_subtract = now.weekday() - 4  # 4=Friday
+        friday_date = now.date() - timedelta(days=days_to_subtract)
+        return friday_date.strftime("%Y-%m-%d")
+    
+    # On business days
+    if now.time() >= time(17, 0):
+        # After 5 PM CT, the website should be updated with today's data
+        return now.date().strftime("%Y-%m-%d")
+    else:
+        # Before 5 PM CT, the website likely shows previous business day's data
+        if now.weekday() == 0:  # Monday
+            # If it's Monday before 5 PM, data is from Friday
+            friday_date = now.date() - timedelta(days=3)
+            return friday_date.strftime("%Y-%m-%d")
+        else:
+            # Otherwise, previous business day
+            prev_date = now.date() - timedelta(days=1)
+            return prev_date.strftime("%Y-%m-%d")
 
 def download_vix_futures_from_cboe():
     """
@@ -63,9 +97,13 @@ def download_vix_futures_from_cboe():
         # Parse with BeautifulSoup
         soup = BeautifulSoup(page_source, 'html.parser')
         
+        # Determine the date for the price data using our heuristic
+        price_date = validate_cboe_date()
+        logger.info(f"Using estimated date for CBOE data: {price_date}")
+        
         # Get current date
         futures_data = {
-            'date': datetime.now().strftime("%Y-%m-%d"),
+            'date': price_date,
             'timestamp': datetime.now().strftime("%Y%m%d%H%M")
         }
         
