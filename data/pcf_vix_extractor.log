@@ -1,0 +1,13 @@
+2025-03-01 04:42:59,624 - pcf_vix_extractor - INFO - Found latest Simplex ETF file: data/318A-CSV-20250228-202502280724.csv
+2025-03-01 04:42:59,624 - pcf_vix_extractor - INFO - Extracting VIX futures from PCF file: data/318A-CSV-20250228-202502280724.csv
+2025-03-01 04:42:59,624 - pcf_vix_extractor - ERROR - Error parsing PCF file: read_csv() got an unexpected keyword argument 'errors'
+2025-03-01 04:42:59,624 - pcf_vix_extractor - ERROR - Traceback (most recent call last):
+  File "/home/runner/work/pcf_process/pcf_process/pcf_vix_extractor.py", line 102, in extract_vix_futures_from_pcf
+    df = pd.read_csv(file_path, encoding='utf-8', errors='replace')
+TypeError: read_csv() got an unexpected keyword argument 'errors'
+
+2025-03-01 04:42:59,624 - pcf_vix_extractor - INFO - Attempting PCF parsing based on expected format
+2025-03-01 04:42:59,625 - pcf_vix_extractor - INFO - Found Code,Name header at line 4
+2025-03-01 04:42:59,625 - pcf_vix_extractor - INFO - Manually extracted: VXH5 = 18.1337
+2025-03-01 04:42:59,625 - pcf_vix_extractor - INFO - Manually extracted: VXJ5 = 18.6034
+2025-03-01 04:42:59,625 - pcf_vix_extractor - INFO - Successfully extracted 2 VIX futures from manual parsing
