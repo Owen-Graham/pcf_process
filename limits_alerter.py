@@ -9,7 +9,7 @@ import argparse
 import traceback
 import sys
 import yfinance as yf
-from common import setup_logging, SAVE_DIR, get_yfinance_ticker_for_vix_future, normalize_vix_ticker
+from common import setup_logging, SAVE_DIR, get_yfinance_ticker_for_vix_future, normalize_vix_ticker, get_next_vix_contracts
 
 # Set up logging
 logger = setup_logging('limits_alerter')
