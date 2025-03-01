@@ -1,0 +1,34 @@
+2025-03-01 04:42:40,266 - limits_alerter - INFO - Starting limits alerter with most recent available data
+2025-03-01 04:42:40,266 - limits_alerter - INFO - Getting ETF data for 318A.T from 2025-02-22 to 2025-03-01
+2025-03-01 04:42:40,647 - limits_alerter - INFO - Most recent closing price of 318A.T: 925.90 JPY at 2025-02-28 00:00:00+09:00
+2025-03-01 04:42:40,647 - limits_alerter - INFO - Daily price limits: 775.90 to 1075.90 JPY
+2025-03-01 04:42:40,649 - limits_alerter - INFO - Renamed near_future_code to near_future
+2025-03-01 04:42:40,649 - limits_alerter - INFO - Renamed far_future_code to far_future
+2025-03-01 04:42:40,651 - limits_alerter - INFO - Using ETF composition data from 2025-02-28 00:00:00 (latest available)
+2025-03-01 04:42:40,652 - limits_alerter - ERROR - Missing future codes in ETF data
+2025-03-01 04:42:40,652 - limits_alerter - ERROR - Available columns: ['timestamp', 'fund_date', 'shares_outstanding', 'fund_cash_component', 'shares_amount_near_future', 'shares_amount_far_future', 'near_future', 'far_future', 'date']
+2025-03-01 04:42:40,652 - limits_alerter - INFO - Attempting to use VIX futures master file as fallback
+2025-03-01 04:42:40,653 - limits_alerter - INFO - Using fallback futures: near=VXH25, far=VXH5
+2025-03-01 04:42:40,653 - limits_alerter - INFO - Found near shares in column 'shares_amount_near_future': 123.0
+2025-03-01 04:42:40,654 - limits_alerter - INFO - Found far shares in column 'shares_amount_far_future': 44.0
+2025-03-01 04:42:40,654 - limits_alerter - INFO - ETF composition: {'VXH5': 44.0}
+2025-03-01 04:42:40,654 - limits_alerter - INFO - ETF composition for 2025-02-28: {'VXH5': 44.0}
+2025-03-01 04:42:40,654 - limits_alerter - INFO - Getting VIX futures prices from 2025-02-22 to 2025-03-01
+2025-03-01 04:42:40,654 - limits_alerter - INFO - Requesting data for VXH5 (Yahoo ticker: ^VIX03.2025)
+2025-03-01 04:42:41,325 - limits_alerter - ERROR - No data found for ^VIX03.2025 (VXH5)
+2025-03-01 04:42:41,325 - limits_alerter - INFO - Trying alternative ticker ^VIX03.2025 for VXH5
+2025-03-01 04:42:41,326 - limits_alerter - INFO - Trying alternative ticker ^VIX035 for VXH5
+2025-03-01 04:42:42,048 - limits_alerter - INFO - Trying alternative ticker VIX03.2025 for VXH5
+2025-03-01 04:42:42,664 - limits_alerter - INFO - Trying alternative ticker ^VFTW1 for VXH5
+2025-03-01 04:42:42,738 - limits_alerter - INFO - Retrieved price from alternative ticker ^VFTW1: 18.89 from 2025-02-28
+2025-03-01 04:42:42,738 - limits_alerter - INFO - Getting USD/JPY exchange rate from 2025-02-22 to 2025-03-01
+2025-03-01 04:42:42,811 - limits_alerter - INFO - Most recent USD/JPY exchange rate: 150.01 from 2025-02-28
+2025-03-01 04:42:42,811 - limits_alerter - INFO - Calculated basket value: 124683964.41 JPY (USD: 831159.97)
+2025-03-01 04:42:42,811 - limits_alerter - INFO - Current basket value: 124683964.41 JPY
+2025-03-01 04:42:42,811 - limits_alerter - INFO - Price limits: 775.90 to 1075.90 JPY
+2025-03-01 04:42:42,812 - limits_alerter - INFO - Estimated NAV per share: 173.17 JPY
+2025-03-01 04:42:42,813 - limits_alerter - WARNING - ALERT: Basket value changed by -81.30%, exceeding daily price limits!
+Allowed range: -16.20% to 16.20%
+Current basket value: 124683964.41 JPY
+Initial basket value: 666648017.58 JPY
+2025-03-01 04:42:42,813 - limits_alerter - INFO - Price limit alert detected and saved to file
