@@ -93,14 +93,8 @@ def get_etf_composition(date):
         required_cols = ['timestamp', 'fund_date', 'near_future', 'far_future', 
                          'shares_amount_near_future', 'shares_amount_far_future']
         
-        # Check for old column names as well
-        if 'near_future_code' in df.columns and 'near_future' not in df.columns:
-            df = df.rename(columns={'near_future_code': 'near_future'})
-            logger.info("Renamed near_future_code to near_future")
-            
-        if 'far_future_code' in df.columns and 'far_future' not in df.columns:
-            df = df.rename(columns={'far_future_code': 'far_future'})
-            logger.info("Renamed far_future_code to far_future")
+        # No renaming - use columns as they exist in the file
+        # We expect 'near_future' and 'far_future' to be the standard column names
             
         # Check if all required columns are present (after renaming)
         missing_cols = [col for col in required_cols if col not in df.columns]
@@ -153,77 +147,29 @@ def get_etf_composition(date):
         # Try different column names that might contain the futures data
         future_columns = ['near_future', 'far_future', 'near_future_code', 'far_future_code']
         
-        # Find near future
-        for col in future_columns:
-            if col.startswith('near') and col in latest_data and not pd.isna(latest_data.get(col)):
-                near_future = latest_data.get(col)
-                logger.info(f"Found near future in column '{col}': {near_future}")
-                break
+        # Find near future in the "near_future" column
+        if 'near_future' in latest_data and not pd.isna(latest_data.get('near_future')):
+            near_future = latest_data.get('near_future')
+            logger.info(f"Found near future: {near_future}")
+        else:
+            near_future = None
+            logger.error("near_future value not found or is null")
         
-        # Find far future
-        for col in future_columns:
-            if col.startswith('far') and col in latest_data and not pd.isna(latest_data.get(col)):
-                far_future = latest_data.get(col)
-                logger.info(f"Found far future in column '{col}': {far_future}")
-                break
+        # Find far future in the "far_future" column
+        if 'far_future' in latest_data and not pd.isna(latest_data.get('far_future')):
+            far_future = latest_data.get('far_future')
+            logger.info(f"Found far future: {far_future}")
+        else:
+            far_future = None
+            logger.error("far_future value not found or is null")
         
-        # Check if we found both futures
+        # Check if we found both futures - fail immediately if not found
         if pd.isna(near_future) or pd.isna(far_future) or near_future is None or far_future is None:
-            logger.error("Missing future codes in ETF data")
+            logger.error("Missing near_future or far_future values in ETF data")
             logger.error(f"Available columns: {latest_data.index.tolist()}")
-            
-            # Try to use a fallback from vix_futures_master.csv if available
-            vix_futures_file = os.path.join(SAVE_DIR, "vix_futures_master.csv")
-            if os.path.exists(vix_futures_file):
-                logger.info("Attempting to use VIX futures master file as fallback")
-                try:
-                    vix_df = pd.read_csv(vix_futures_file)
-                    if not vix_df.empty and 'vix_future' in vix_df.columns:
-                        # Get the two most recent futures
-                        unique_futures = vix_df['vix_future'].unique()
-                        # Filter out any non-VX futures (like VIX index)
-                        vx_futures = [f for f in unique_futures if f.startswith('VX')]
-                        
-                        if len(vx_futures) >= 2:
-                            # Sort them to get the nearest and next futures
-                            sorted_futures = sorted(vx_futures)
-                            near_future = sorted_futures[0]
-                            far_future = sorted_futures[1]
-                            logger.info(f"Using fallback futures: near={near_future}, far={far_future}")
-                        else:
-                            logger.error(f"Not enough VX futures in vix_futures_master.csv: {vx_futures}")
-                            return None
-                    else:
-                        logger.error("VIX futures master file doesn't have required data")
-                        return None
-                except Exception as e:
-                    logger.error(f"Error reading VIX futures master file: {str(e)}")
-                    return None
-            else:
-                # Last resort fallback - use hardcoded current month futures 
-                # This is better than failing completely
-                current_month = datetime.now().month
-                current_year = datetime.now().year % 10  # Last digit of year
-                
-                # Month codes used in VIX futures
-                month_codes = {
-                    1: 'F', 2: 'G', 3: 'H', 4: 'J', 5: 'K', 6: 'M',
-                    7: 'N', 8: 'Q', 9: 'U', 10: 'V', 11: 'X', 12: 'Z'
-                }
-                
-                # Get current and next month codes
-                current_code = month_codes.get(current_month)
-                next_month = (current_month % 12) + 1
-                next_code = month_codes.get(next_month)
-                next_year = current_year if next_month > current_month else (current_year + 1) % 10
-                
-                if current_code and next_code:
-                    near_future = f"VX{current_code}{current_year}"
-                    far_future = f"VX{next_code}{next_year}"
-                    logger.warning(f"Using fallback futures based on current date: near={near_future}, far={far_future}")
-                else:
-                    logger.error("Could not determine fallback futures")
-                    return None
+            logger.error(f"Found values - near_future: '{near_future}', far_future: '{far_future}'")
+            logger.error("No fallback - proper ETF composition data is required")
+            return None
             
         # Normalize futures tickers
         near_future = normalize_vix_ticker(near_future)
@@ -251,15 +197,11 @@ def get_etf_composition(date):
                 logger.info(f"Found far shares in column '{col}': {far_shares}")
                 break
         
-        # Check if we have valid shares amounts
+        # Check if we have valid shares amounts - fail if invalid
         if near_shares <= 0 or far_shares <= 0:
-            logger.warning(f"Invalid or missing shares amounts: near={near_shares}, far={far_shares}")
-            
-            # Use fallback shares values - better than failing
-            # These are placeholder values that will at least let the script run
-            near_shares = 1.0
-            far_shares = 1.0
-            logger.warning(f"Using fallback shares values: near={near_shares}, far={far_shares}")
+            logger.error(f"Invalid or missing shares amounts: near={near_shares}, far={far_shares}")
+            logger.error("No fallback - valid share amounts are required")
+            return None
             
         # Calculate weights (this is simplified - in reality would depend on the share value)
         # but for our purposes, we'll just use the share amounts as weights
@@ -362,27 +304,9 @@ def get_vix_futures_prices(composition, reference_time):
             else:
                 logger.error(f"No data found for {yahoo_ticker} ({futures_ticker})")
                 
-                # Try alternative tickers as a fallback
-                from common import get_alternative_yfinance_tickers
-                alternative_tickers = get_alternative_yfinance_tickers(futures_ticker)
-                
-                for alt_ticker in alternative_tickers:
-                    logger.info(f"Trying alternative ticker {alt_ticker} for {futures_ticker}")
-                    try:
-                        alt_future = yf.Ticker(alt_ticker)
-                        alt_data = alt_future.history(start=start_date, end=end_date)
-                        
-                        if len(alt_data) > 0:
-                            futures_prices[futures_ticker] = alt_data['Close'].iloc[-1]
-                            price_date = alt_data.index[-1].strftime('%Y-%m-%d')
-                            logger.info(f"Retrieved price from alternative ticker {alt_ticker}: {futures_prices[futures_ticker]:.2f} from {price_date}")
-                            break
-                    except Exception as alt_e:
-                        logger.warning(f"Failed to get data from alternative ticker {alt_ticker}: {str(alt_e)}")
-                
-                if futures_ticker not in futures_prices:
-                    logger.error(f"Could not get price for {futures_ticker} from any source")
-                    return None
+                # Don't try alternative tickers - if primary ticker fails, we should fail too
+                logger.error(f"Could not get price for {futures_ticker} from primary source")
+                return None
         
         if not futures_prices:
             logger.error("Could not retrieve any futures prices")
