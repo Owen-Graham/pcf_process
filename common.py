@@ -372,3 +372,51 @@ def read_latest_file(pattern, default_cols=None, directory=SAVE_DIR):
             logging.error(traceback.format_exc())
     
     return pd.DataFrame(columns=default_cols if default_cols else [])
+
+
+def map_position_to_contract(position):
+    """
+    Map a VIX futures position (1st, 2nd, 3rd month) to the actual contract code.
+    
+    Args:
+        position (int): Position (1=front month, 2=second month, etc.)
+        
+    Returns:
+        str: VIX futures contract code (e.g., VXH5, VXJ5)
+    """
+    if position < 1:
+        raise ValueError(f"Invalid position: {position} (must be >= 1)")
+    
+    # Get the next N VIX futures contracts
+    next_contracts = get_next_vix_contracts(position)
+    
+    # Return the contract at the specified position (1-indexed)
+    if position <= len(next_contracts):
+        return next_contracts[position-1]
+    else:
+        # If position is beyond what we calculated, calculate more
+        next_contracts = get_next_vix_contracts(position)
+        return next_contracts[position-1]
+
+def map_contract_to_position(contract_code):
+    """
+    Map a VIX futures contract code to its position (1st, 2nd, 3rd month).
+    
+    Args:
+        contract_code (str): VIX futures contract code (e.g., VXH5, VXJ5)
+        
+    Returns:
+        int: Position (1=front month, 2=second month, etc.) or None if not found
+    """
+    # Normalize the contract code
+    normalized_code = normalize_vix_ticker(contract_code)
+    
+    # Get the next several contracts to search
+    next_contracts = get_next_vix_contracts(6)  # Look ahead 6 months
+    
+    # Find the position
+    if normalized_code in next_contracts:
+        return next_contracts.index(normalized_code) + 1  # 1-indexed
+    
+    # Not found in the next 6 months
+    return None
