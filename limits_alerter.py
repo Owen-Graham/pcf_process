@@ -1,9 +1,9 @@
 import os
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import pytz
-import time
+import time as time_module
 import logging
 import argparse
 import traceback
@@ -269,6 +269,86 @@ def get_etf_closing_data():
         logger.error(traceback.format_exc())
         return None, None, None
 
+def get_tse_closing_time(reference_date):
+    """
+    Get the Tokyo Stock Exchange closing time (15:00 JST) for the given date.
+    
+    Args:
+        reference_date: The reference date to use
+        
+    Returns:
+        datetime: The TSE closing time as a timezone-aware datetime
+    """
+    # Create a datetime at 15:00 JST on the reference date
+    jst = pytz.timezone('Asia/Tokyo')
+    
+    # If reference_date doesn't have a timezone, assume it's already in JST
+    if reference_date.tzinfo is None:
+        reference_date = jst.localize(reference_date)
+    else:
+        # Convert to JST if needed
+        reference_date = reference_date.astimezone(jst)
+    
+    # Set the time to 15:00 JST (TSE closing time)
+    closing_time = datetime.combine(
+        reference_date.date(),
+        time(hour=15, minute=0, second=0)
+    )
+    closing_time = jst.localize(closing_time)
+    
+    logger.info(f"Using TSE closing time: {closing_time} for initial basket valuation")
+    return closing_time
+
+def get_latest_us_market_time(reference_date):
+    """
+    Get the time of the most recent US market data available.
+    For weekends, that would be Friday 16:00 CT (close of CBOE).
+    
+    Args:
+        reference_date: The reference date to use
+        
+    Returns:
+        datetime: The latest market time as a timezone-aware datetime
+    """
+    # Central Time (US)
+    ct = pytz.timezone('US/Central')
+    
+    # If reference_date doesn't have a timezone, assume it's in UTC
+    if reference_date.tzinfo is None:
+        reference_date = pytz.utc.localize(reference_date)
+    
+    # Convert to Central Time
+    reference_ct = reference_date.astimezone(ct)
+    
+    # Determine the most recent trading day
+    weekday = reference_ct.weekday()
+    
+    # For weekends, use Friday (weekday 4)
+    # For Monday-Friday, use the current day if before 16:00 CT, otherwise previous day
+    if weekday == 5:  # Saturday
+        days_back = 1  # Go back to Friday
+    elif weekday == 6:  # Sunday
+        days_back = 2  # Go back to Friday
+    elif weekday == 0 and reference_ct.hour < 16:  # Monday before 16:00 CT
+        days_back = 3  # Go back to Friday
+    elif reference_ct.hour < 16:  # Weekday before 16:00 CT
+        days_back = 1  # Use previous day's close
+    else:
+        days_back = 0  # Use today's data
+    
+    # Calculate the date
+    trading_date = reference_ct.date() - timedelta(days=days_back)
+    
+    # Set the time to 16:00 CT (CBOE closing time)
+    trading_time = datetime.combine(
+        trading_date,
+        time(hour=16, minute=0, second=0)
+    )
+    trading_time = ct.localize(trading_time)
+    
+    logger.info(f"Using latest US market time: {trading_time} for current basket valuation")
+    return trading_time
+
 def get_vix_futures_prices(composition, reference_time, label=""):
     """
     Get current VIX futures prices from Yahoo Finance.
@@ -291,6 +371,15 @@ def get_vix_futures_prices(composition, reference_time, label=""):
         
         logger.info(f"===== Getting {label} VIX Futures Prices =====")
         logger.info(f"Reference time: {reference_time}")
+        
+        # Calculate a lookback period for the data
+        # For the initial basket (using TSE closing time), we need to look back
+        # For the current basket (using latest US market data), we need today's data
+        lookback_days = 7  # Always use at least 7 days lookback to ensure we get some data
+        
+        start_date = (reference_time - timedelta(days=lookback_days)).strftime('%Y-%m-%d')
+        end_date = reference_time.strftime('%Y-%m-%d')
+        logger.info(f"Data date range: {start_date} to {end_date}")
         
         # Use position-based tickers for contracts
         next_contracts = get_next_vix_contracts(6)  # Get up to 6 upcoming contracts
@@ -319,13 +408,36 @@ def get_vix_futures_prices(composition, reference_time, label=""):
                     try:
                         logger.info(f"Trying to download {ticker} for {normalized_ticker}")
                         
-                        # Use period parameter for better compatibility
-                        data = yf.download(ticker, period="5d", progress=False)
+                        # Use start and end dates for the lookup
+                        data = yf.download(ticker, start=start_date, end=end_date, progress=False)
                         
                         if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                            # Fix the warning about float on single element Series
-                            price = float(data['Close'].iloc[0])
-                            price_date = data.index[-1]
+                            # Find the closest price to our reference time
+                            # Convert data index to the same timezone as reference_time for comparison
+                            if reference_time.tzinfo:
+                                data_tz = data.index.tz
+                                if data_tz is None:
+                                    # If data has no timezone, assume UTC
+                                    data_with_tz = data.copy()
+                                    data_with_tz.index = data.index.tz_localize('UTC')
+                                else:
+                                    data_with_tz = data
+                                
+                                # Convert all timestamps to the reference timezone
+                                ref_tz = reference_time.tzinfo
+                                data_in_ref_tz = data_with_tz.copy()
+                                data_in_ref_tz.index = data_with_tz.index.tz_convert(ref_tz)
+                                
+                                # Sort by timestamp distance from reference_time
+                                time_diffs = abs(data_in_ref_tz.index - reference_time)
+                                closest_idx = time_diffs.argmin()
+                                closest_time = data_in_ref_tz.index[closest_idx]
+                                price = float(data_in_ref_tz['Close'].iloc[closest_idx])
+                                price_date = closest_time
+                            else:
+                                # If reference time has no timezone, just use the last available price
+                                price = float(data['Close'].iloc[-1])
+                                price_date = data.index[-1]
                             
                             # Validate price
                             if pd.isna(price) or price <= 0:
@@ -350,12 +462,30 @@ def get_vix_futures_prices(composition, reference_time, label=""):
                 if not price_found and position == 1:
                     try:
                         logger.info(f"Trying VIX index for front-month {normalized_ticker}")
-                        data = yf.download("^VIX", period="5d", progress=False)
+                        data = yf.download("^VIX", start=start_date, end=end_date, progress=False)
                         
                         if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                            # Fix the warning about float on single element Series
-                            price = float(data['Close'].iloc[0])
-                            price_date = data.index[-1]
+                            # Find the closest price to our reference time, same as above
+                            if reference_time.tzinfo:
+                                data_tz = data.index.tz
+                                if data_tz is None:
+                                    data_with_tz = data.copy()
+                                    data_with_tz.index = data.index.tz_localize('UTC')
+                                else:
+                                    data_with_tz = data
+                                
+                                ref_tz = reference_time.tzinfo
+                                data_in_ref_tz = data_with_tz.copy()
+                                data_in_ref_tz.index = data_with_tz.index.tz_convert(ref_tz)
+                                
+                                time_diffs = abs(data_in_ref_tz.index - reference_time)
+                                closest_idx = time_diffs.argmin()
+                                closest_time = data_in_ref_tz.index[closest_idx]
+                                price = float(data_in_ref_tz['Close'].iloc[closest_idx])
+                                price_date = closest_time
+                            else:
+                                price = float(data['Close'].iloc[-1])
+                                price_date = data.index[-1]
                             
                             # Validate price
                             if pd.isna(price) or price <= 0:
@@ -419,9 +549,10 @@ def get_exchange_rate(reference_time, label=""):
         
         usdjpy = yf.Ticker("USDJPY=X")
         
-        # Format date for yfinance - use a 7-day lookback to find the most recent data
-        end_date = datetime.now().strftime('%Y-%m-%d')
-        start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        # Calculate lookback period - similar to the futures price function
+        lookback_days = 7
+        start_date = (reference_time - timedelta(days=lookback_days)).strftime('%Y-%m-%d')
+        end_date = reference_time.strftime('%Y-%m-%d')
         
         logger.info(f"Querying USD/JPY exchange rate from {start_date} to {end_date}")
         
@@ -429,12 +560,35 @@ def get_exchange_rate(reference_time, label=""):
         fx_data = usdjpy.history(start=start_date, end=end_date)
         
         if len(fx_data) == 0:
-            logger.error(f"No USD/JPY data found in the last 7 days")
+            logger.error(f"No USD/JPY data found for the specified period")
             return None, None
         
-        # Get the most recent exchange rate
-        exchange_rate = float(fx_data['Close'].iloc[0])
-        rate_date = fx_data.index[-1]
+        # Find the closest rate to our reference time
+        if reference_time.tzinfo:
+            # Convert data index to the same timezone as reference_time
+            data_tz = fx_data.index.tz
+            if data_tz is None:
+                # If data has no timezone, assume UTC
+                fx_data_with_tz = fx_data.copy()
+                fx_data_with_tz.index = fx_data.index.tz_localize('UTC')
+            else:
+                fx_data_with_tz = fx_data
+            
+            # Convert to reference timezone
+            ref_tz = reference_time.tzinfo
+            fx_data_in_ref_tz = fx_data_with_tz.copy()
+            fx_data_in_ref_tz.index = fx_data_with_tz.index.tz_convert(ref_tz)
+            
+            # Find closest time
+            time_diffs = abs(fx_data_in_ref_tz.index - reference_time)
+            closest_idx = time_diffs.argmin()
+            closest_time = fx_data_in_ref_tz.index[closest_idx]
+            exchange_rate = float(fx_data_in_ref_tz['Close'].iloc[closest_idx])
+            rate_date = closest_time
+        else:
+            # If reference time has no timezone, use the last available rate
+            exchange_rate = float(fx_data['Close'].iloc[-1])
+            rate_date = fx_data.index[-1]
         
         if pd.isna(exchange_rate) or exchange_rate <= 0:
             logger.error(f"Invalid exchange rate: {exchange_rate}")
@@ -623,6 +777,92 @@ def check_for_alerts(current_value, initial_value, price_limits, closing_price,
         logger.error(traceback.format_exc())
         return False
 
+def monitor_basket_value(composition, initial_basket_value, price_limits, closing_price, 
+                         initial_price_details, initial_rate_details, check_interval=60):
+    """Start continuous monitoring of the basket value."""
+    logger.info(f"Starting monitoring. Will check every {check_interval} seconds.")
+    
+    try:
+        alert_counter = 0
+        max_alerts = 5
+        
+        while alert_counter < max_alerts:
+            current_time = datetime.now()
+            us_market_time = get_latest_us_market_time(current_time)
+            
+            # Get current futures prices and exchange rate
+            current_futures_prices, current_price_details = get_vix_futures_prices(
+                composition, 
+                us_market_time, 
+                label="MONITOR"
+            )
+            
+            if not current_futures_prices or not current_price_details:
+                logger.error("Failed to get current futures prices. Aborting monitor.")
+                return
+                
+            current_exchange_rate, current_rate_details = get_exchange_rate(
+                us_market_time, 
+                label="MONITOR"
+            )
+            
+            if not current_exchange_rate or not current_rate_details:
+                logger.error("Failed to get current exchange rate. Aborting monitor.")
+                return
+            
+            # Calculate current basket value
+            current_basket_value = calculate_basket_value(
+                composition, 
+                current_futures_prices, 
+                current_exchange_rate, 
+                current_price_details, 
+                current_rate_details, 
+                label="MONITOR"
+            )
+            
+            if not current_basket_value:
+                logger.error("Failed to calculate current basket value. Aborting monitor.")
+                return
+                
+            # Check for alerts
+            is_alert = check_for_alerts(
+                current_basket_value, 
+                initial_basket_value, 
+                price_limits, 
+                closing_price,
+                current_price_details,
+                initial_price_details,
+                current_rate_details,
+                initial_rate_details
+            )
+            
+            if is_alert:
+                alert_counter += 1
+                logger.warning(f"Alert {alert_counter} of {max_alerts}")
+                
+                # Save alert to file (simplified version for monitoring)
+                alert_file = os.path.join(SAVE_DIR, f"price_alert_monitor_{datetime.now().strftime('%Y%m%d%H%M')}.log")
+                with open(alert_file, "w") as f:
+                    f.write(f"PRICE LIMIT ALERT (Monitoring)\n")
+                    f.write(f"Time: {current_time}\n")
+                    f.write(f"Basket value: {current_basket_value:.2f} JPY\n")
+                    f.write(f"Initial value: {initial_basket_value:.2f} JPY\n")
+                    pct_change = (current_basket_value - initial_basket_value) / initial_basket_value
+                    f.write(f"Change: {pct_change:.2%}\n")
+                    f.write(f"Price limits: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY\n")
+                    allowed_lower_pct = (price_limits[0]-closing_price)/closing_price
+                    allowed_upper_pct = (price_limits[1]-closing_price)/closing_price
+                    f.write(f"Allowed range: {allowed_lower_pct:.2%} to {allowed_upper_pct:.2%}\n")
+            
+            # Wait for next check
+            time_module.sleep(check_interval)
+    
+    except KeyboardInterrupt:
+        logger.info("Monitoring stopped by user.")
+    except Exception as e:
+        logger.error(f"Error in monitoring loop: {str(e)}")
+        logger.error(traceback.format_exc())
+
 def main():
     """Main function to analyze ETF price limits and underlying basket value."""
     # Parse command line arguments
@@ -652,22 +892,33 @@ def main():
             
     logger.info(f"ETF composition for {closing_time.strftime('%Y-%m-%d')}: {composition}")
     
-    # Get most recent futures prices for the initial basket value
-    # This should be based on the closing prices used at closing_time
-    initial_futures_prices, initial_price_details = get_vix_futures_prices(composition, closing_time, label="INITIAL")
+    # Calculate the exact 15:00 JST time for the initial basket valuation
+    # This ensures we use the prices at TSE closing time
+    tse_closing_time = get_tse_closing_time(closing_time)
+    
+    # Get futures prices for the initial basket value at TSE closing time
+    logger.info("Getting futures prices for INITIAL basket value at TSE closing time")
+    initial_futures_prices, initial_price_details = get_vix_futures_prices(
+        composition, 
+        tse_closing_time, 
+        label="INITIAL"
+    )
     
     if not initial_futures_prices or not initial_price_details:
         logger.error("Could not get VIX futures prices for initial basket. Exiting.")
         return 1
     
-    # Get exchange rate at closing time
-    initial_exchange_rate, initial_rate_details = get_exchange_rate(closing_time, label="INITIAL")
+    # Get exchange rate at TSE closing time
+    initial_exchange_rate, initial_rate_details = get_exchange_rate(
+        tse_closing_time, 
+        label="INITIAL"
+    )
     
     if not initial_exchange_rate or not initial_rate_details:
         logger.error("Could not get USD/JPY exchange rate for initial basket. Exiting.")
         return 1
     
-    # Calculate initial basket value based on closing prices
+    # Calculate initial basket value based on TSE closing time prices
     initial_basket_value = calculate_basket_value(
         composition, 
         initial_futures_prices, 
@@ -681,22 +932,30 @@ def main():
         logger.error("Could not calculate initial basket value. Exiting.")
         return 1
     
-    # Get current futures prices (may be different from initial)
+    # Get current futures prices - determine the most recent valid US market time
     logger.info("--------------------------------------------------")
     current_time = datetime.now()
-    current_futures_prices, current_price_details = get_vix_futures_prices(composition, current_time, label="CURRENT")
+    us_market_time = get_latest_us_market_time(current_time)
+    
+    current_futures_prices, current_price_details = get_vix_futures_prices(
+        composition, 
+        us_market_time, 
+        label="CURRENT"
+    )
     
     if not current_futures_prices or not current_price_details:
         logger.error("Could not get current VIX futures prices. Exiting.")
         return 1
     
     # Get current exchange rate
-    current_exchange_rate, current_rate_details = get_exchange_rate(current_time, label="CURRENT")
+    current_exchange_rate, current_rate_details = get_exchange_rate(
+        us_market_time, 
+        label="CURRENT"
+    )
     
     if not current_exchange_rate or not current_rate_details:
         logger.error("Could not get current USD/JPY exchange rate. Exiting.")
         return 1
-
     
     # Calculate current basket value
     current_basket_value = calculate_basket_value(
@@ -772,11 +1031,13 @@ def main():
             f.write(f"Change: {pct_change:.2%} ({current_basket_value - initial_basket_value:,.2f} JPY)\n\n")
             
             f.write(f"=== Initial Futures Prices ===\n")
+            f.write(f"Initial Reference Time: {tse_closing_time}\n")
             for ticker, details in initial_price_details.items():
                 f.write(f"  {ticker}: {details['price']:.4f} (from {details['source']} at {details['timestamp']})\n")
             f.write(f"\n")
             
             f.write(f"=== Current Futures Prices ===\n")
+            f.write(f"Current Reference Time: {us_market_time}\n")
             for ticker, details in current_price_details.items():
                 f.write(f"  {ticker}: {details['price']:.4f} (from {details['source']} at {details['timestamp']})\n")
             f.write(f"\n")
@@ -796,95 +1057,13 @@ def main():
             composition, 
             initial_basket_value, 
             price_limits, 
-            closing_price, 
+            closing_price,
+            initial_price_details,
+            initial_rate_details,
             args.interval
         )
     
     return 0
-
-def monitor_basket_value(composition, initial_basket_value, price_limits, closing_price, check_interval=60):
-    """Start continuous monitoring of the basket value."""
-    logger.info(f"Starting monitoring. Will check every {check_interval} seconds.")
-    
-    try:
-        alert_counter = 0
-        max_alerts = 5
-        
-        while alert_counter < max_alerts:
-            current_time = datetime.now().astimezone(pytz.timezone('Asia/Tokyo'))
-            
-            # Get current futures prices and exchange rate
-            current_futures_prices, current_price_details = get_vix_futures_prices(
-                composition, 
-                current_time, 
-                label="MONITOR"
-            )
-            
-            if not current_futures_prices or not current_price_details:
-                logger.error("Failed to get current futures prices. Aborting monitor.")
-                return
-                
-            current_exchange_rate, current_rate_details = get_exchange_rate(
-                current_time, 
-                label="MONITOR"
-            )
-            
-            if not current_exchange_rate or not current_rate_details:
-                logger.error("Failed to get current exchange rate. Aborting monitor.")
-                return
-            
-            # Calculate current basket value
-            current_basket_value = calculate_basket_value(
-                composition, 
-                current_futures_prices, 
-                current_exchange_rate, 
-                current_price_details, 
-                current_rate_details, 
-                label="MONITOR"
-            )
-            
-            if not current_basket_value:
-                logger.error("Failed to calculate current basket value. Aborting monitor.")
-                return
-                
-            # Check for alerts
-            is_alert = check_for_alerts(
-                current_basket_value, 
-                initial_basket_value, 
-                price_limits, 
-                closing_price,
-                current_price_details,
-                {},  # We don't have initial price details in monitoring mode
-                current_rate_details,
-                {}   # We don't have initial rate details in monitoring mode
-            )
-            
-            if is_alert:
-                alert_counter += 1
-                logger.warning(f"Alert {alert_counter} of {max_alerts}")
-                
-                # Save alert to file (simplified version for monitoring)
-                alert_file = os.path.join(SAVE_DIR, f"price_alert_monitor_{datetime.now().strftime('%Y%m%d%H%M')}.log")
-                with open(alert_file, "w") as f:
-                    f.write(f"PRICE LIMIT ALERT (Monitoring)\n")
-                    f.write(f"Time: {current_time}\n")
-                    f.write(f"Basket value: {current_basket_value:.2f} JPY\n")
-                    f.write(f"Initial value: {initial_basket_value:.2f} JPY\n")
-                    pct_change = (current_basket_value - initial_basket_value) / initial_basket_value
-                    f.write(f"Change: {pct_change:.2%}\n")
-                    f.write(f"Price limits: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY\n")
-                    allowed_lower_pct = (price_limits[0]-closing_price)/closing_price
-                    allowed_upper_pct = (price_limits[1]-closing_price)/closing_price
-                    f.write(f"Allowed range: {allowed_lower_pct:.2%} to {allowed_upper_pct:.2%}\n")
-            
-            # Wait for next check
-            time.sleep(check_interval)
-    
-    except KeyboardInterrupt:
-        logger.info("Monitoring stopped by user.")
-    except Exception as e:
-        logger.error(f"Error in monitoring loop: {str(e)}")
-        logger.error(traceback.format_exc())
 
 if __name__ == "__main__":
     exit_code = main()
