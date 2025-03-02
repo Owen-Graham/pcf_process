@@ -194,3 +194,32 @@ Allowed range: -16.20% to 16.20%
 Current basket value: 486484436.51 JPY
 Initial basket value: 666648017.58 JPY
 2025-03-02 00:55:11,010 - limits_alerter - INFO - Price limit alert detected and saved to file
+2025-03-02 03:45:21,170 - limits_alerter - INFO - Starting limits alerter with most recent available data
+2025-03-02 03:45:21,170 - limits_alerter - INFO - Getting ETF data for 318A.T from 2025-02-23 to 2025-03-02
+2025-03-02 03:45:21,406 - limits_alerter - INFO - Most recent closing price of 318A.T: 925.90 JPY at 2025-02-28 00:00:00+09:00
+2025-03-02 03:45:21,406 - limits_alerter - INFO - Daily price limits: 775.90 to 1075.90 JPY
+2025-03-02 03:45:21,410 - limits_alerter - INFO - Using ETF composition data from 2025-02-28 00:00:00 (latest available)
+2025-03-02 03:45:21,410 - limits_alerter - INFO - Found near future: VXH5
+2025-03-02 03:45:21,410 - limits_alerter - INFO - Found far future: VXJ5
+2025-03-02 03:45:21,410 - limits_alerter - INFO - Found near shares: 123.0
+2025-03-02 03:45:21,411 - limits_alerter - INFO - Found far shares: 44.0
+2025-03-02 03:45:21,411 - limits_alerter - INFO - ETF composition: {'VXH5': 123.0, 'VXJ5': 44.0}
+2025-03-02 03:45:21,411 - limits_alerter - INFO - ETF composition for 2025-02-28: {'VXH5': 123.0, 'VXJ5': 44.0}
+2025-03-02 03:45:21,411 - limits_alerter - INFO - Determined VXH5 is contract position 1
+2025-03-02 03:45:21,411 - limits_alerter - INFO - Determined VXJ5 is contract position 2
+2025-03-02 03:45:21,411 - limits_alerter - INFO - Trying to download ^VXIND1 for VXH5
+2025-03-02 03:45:21,493 - limits_alerter - INFO - Found price for VXH5 using ^VXIND1: 18.829099655151367
+2025-03-02 03:45:21,493 - limits_alerter - INFO - Trying to download ^VXIND2 for VXJ5
+2025-03-02 03:45:21,567 - limits_alerter - INFO - Found price for VXJ5 using ^VXIND2: 19.046100616455078
+2025-03-02 03:45:21,567 - limits_alerter - INFO - Successfully retrieved all current futures prices: {'VXH5': 18.829099655151367, 'VXJ5': 19.046100616455078}
+2025-03-02 03:45:21,567 - limits_alerter - INFO - Getting USD/JPY exchange rate from 2025-02-23 to 2025-03-02
+2025-03-02 03:45:21,673 - limits_alerter - INFO - Most recent USD/JPY exchange rate: 150.01 from 2025-02-28
+2025-03-02 03:45:21,673 - limits_alerter - INFO - Calculated basket value: 473138980.01 JPY (USD: 3154007.68)
+2025-03-02 03:45:21,673 - limits_alerter - INFO - Current basket value: 473138980.01 JPY
+2025-03-02 03:45:21,674 - limits_alerter - INFO - Price limits: 775.90 to 1075.90 JPY
+2025-03-02 03:45:21,675 - limits_alerter - INFO - Estimated NAV per share: 657.14 JPY
+2025-03-02 03:45:21,675 - limits_alerter - WARNING - ALERT: Basket value changed by -29.03%, exceeding daily price limits!
+Allowed range: -16.20% to 16.20%
+Current basket value: 473138980.01 JPY
+Initial basket value: 666648017.58 JPY
+2025-03-02 03:45:21,675 - limits_alerter - INFO - Price limit alert detected and saved to file
