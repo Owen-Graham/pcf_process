@@ -696,6 +696,7 @@ def main():
     if not current_exchange_rate or not current_rate_details:
         logger.error("Could not get current USD/JPY exchange rate. Exiting.")
         return 1
+
     
     # Calculate current basket value
     current_basket_value = calculate_basket_value(
@@ -703,4 +704,188 @@ def main():
         current_futures_prices, 
         current_exchange_rate, 
         current_price_details, 
+        current_rate_details, 
+        label="CURRENT"
+    )
+    
+    if not current_basket_value:
+        logger.error("Could not calculate current basket value. Exiting.")
+        return 1
+    
+    # Calculate shares outstanding from ETF characteristics
+    shares_outstanding = 0
+    try:
+        etf_file = os.path.join(SAVE_DIR, "etf_characteristics_master.csv")
+        if os.path.exists(etf_file):
+            df = pd.read_csv(etf_file)
+            if 'shares_outstanding' in df.columns and not df.empty:
+                shares_outstanding = df.iloc[-1]['shares_outstanding']
+                if shares_outstanding > 0:
+                    nav_per_share = current_basket_value / shares_outstanding
+                    logger.info(f"Estimated NAV per share: {nav_per_share:.2f} JPY (based on {shares_outstanding:,} shares outstanding)")
+                else:
+                    logger.warning("Invalid shares_outstanding value (must be positive)")
+            else:
+                logger.warning("shares_outstanding column not found in ETF characteristics")
+        else:
+            logger.warning("ETF characteristics file not found")
+    except Exception as e:
+        logger.warning(f"Could not calculate NAV per share: {str(e)}")
+    
+    # Check for alerts (compare current basket value to price limits)
+    is_alert = check_for_alerts(
+        current_basket_value, 
+        initial_basket_value, 
+        price_limits, 
+        closing_price,
+        current_price_details,
+        initial_price_details,
         current_rate_details,
+        initial_rate_details
+    )
+    
+    # If any alert was detected, save it to a file
+    if is_alert:
+        pct_change = (current_basket_value - initial_basket_value) / initial_basket_value
+        current_time_str = datetime.now().astimezone(pytz.timezone('Asia/Tokyo')).strftime("%Y-%m-%d %H:%M:%S %Z")
+        
+        # Define limits for cleaner code below
+        lower_limit, upper_limit = price_limits
+        allowed_lower_pct = (lower_limit - closing_price) / closing_price
+        allowed_upper_pct = (upper_limit - closing_price) / closing_price
+            
+        # Save alert to file with detailed information
+        alert_file = os.path.join(SAVE_DIR, f"price_alert_{datetime.now().strftime('%Y%m%d%H%M')}.log")
+        with open(alert_file, "w") as f:
+            f.write(f"PRICE LIMIT ALERT\n")
+            f.write(f"Alert Time: {current_time_str}\n\n")
+            
+            f.write(f"=== ETF Information ===\n")
+            f.write(f"ETF: 318A (Simplex VIX Short-Term Futures ETF)\n")
+            f.write(f"Closing Price: {closing_price:.2f} JPY\n")
+            f.write(f"Price Limits: {lower_limit:.2f} JPY to {upper_limit:.2f} JPY\n")
+            f.write(f"Allowed Range: {allowed_lower_pct:.2%} to {allowed_upper_pct:.2%}\n\n")
+            
+            f.write(f"=== Basket Value Change ===\n")
+            f.write(f"Initial Basket Value: {initial_basket_value:,.2f} JPY\n")
+            f.write(f"Current Basket Value: {current_basket_value:,.2f} JPY\n")
+            f.write(f"Change: {pct_change:.2%} ({current_basket_value - initial_basket_value:,.2f} JPY)\n\n")
+            
+            f.write(f"=== Initial Futures Prices ===\n")
+            for ticker, details in initial_price_details.items():
+                f.write(f"  {ticker}: {details['price']:.4f} (from {details['source']} at {details['timestamp']})\n")
+            f.write(f"\n")
+            
+            f.write(f"=== Current Futures Prices ===\n")
+            for ticker, details in current_price_details.items():
+                f.write(f"  {ticker}: {details['price']:.4f} (from {details['source']} at {details['timestamp']})\n")
+            f.write(f"\n")
+            
+            f.write(f"=== Exchange Rates ===\n")
+            f.write(f"Initial Rate: {initial_exchange_rate:.2f} JPY/USD (from {initial_rate_details['source']} at {initial_rate_details['timestamp']})\n")
+            f.write(f"Current Rate: {current_exchange_rate:.2f} JPY/USD (from {current_rate_details['source']} at {current_rate_details['timestamp']})\n")
+            
+        logger.info(f"Price limit alert detected and saved to {alert_file}")
+    else:
+        logger.info("No price limit alerts detected")
+    
+    # Start monitoring if requested
+    if args.monitor:
+        logger.info("Starting continuous monitoring")
+        monitor_basket_value(
+            composition, 
+            initial_basket_value, 
+            price_limits, 
+            closing_price, 
+            args.interval
+        )
+    
+    return 0
+
+def monitor_basket_value(composition, initial_basket_value, price_limits, closing_price, check_interval=60):
+    """Start continuous monitoring of the basket value."""
+    logger.info(f"Starting monitoring. Will check every {check_interval} seconds.")
+    
+    try:
+        alert_counter = 0
+        max_alerts = 5
+        
+        while alert_counter < max_alerts:
+            current_time = datetime.now().astimezone(pytz.timezone('Asia/Tokyo'))
+            
+            # Get current futures prices and exchange rate
+            current_futures_prices, current_price_details = get_vix_futures_prices(
+                composition, 
+                current_time, 
+                label="MONITOR"
+            )
+            
+            if not current_futures_prices or not current_price_details:
+                logger.error("Failed to get current futures prices. Aborting monitor.")
+                return
+                
+            current_exchange_rate, current_rate_details = get_exchange_rate(
+                current_time, 
+                label="MONITOR"
+            )
+            
+            if not current_exchange_rate or not current_rate_details:
+                logger.error("Failed to get current exchange rate. Aborting monitor.")
+                return
+            
+            # Calculate current basket value
+            current_basket_value = calculate_basket_value(
+                composition, 
+                current_futures_prices, 
+                current_exchange_rate, 
+                current_price_details, 
+                current_rate_details, 
+                label="MONITOR"
+            )
+            
+            if not current_basket_value:
+                logger.error("Failed to calculate current basket value. Aborting monitor.")
+                return
+                
+            # Check for alerts
+            is_alert = check_for_alerts(
+                current_basket_value, 
+                initial_basket_value, 
+                price_limits, 
+                closing_price,
+                current_price_details,
+                {},  # We don't have initial price details in monitoring mode
+                current_rate_details,
+                {}   # We don't have initial rate details in monitoring mode
+            )
+            
+            if is_alert:
+                alert_counter += 1
+                logger.warning(f"Alert {alert_counter} of {max_alerts}")
+                
+                # Save alert to file (simplified version for monitoring)
+                alert_file = os.path.join(SAVE_DIR, f"price_alert_monitor_{datetime.now().strftime('%Y%m%d%H%M')}.log")
+                with open(alert_file, "w") as f:
+                    f.write(f"PRICE LIMIT ALERT (Monitoring)\n")
+                    f.write(f"Time: {current_time}\n")
+                    f.write(f"Basket value: {current_basket_value:.2f} JPY\n")
+                    f.write(f"Initial value: {initial_basket_value:.2f} JPY\n")
+                    pct_change = (current_basket_value - initial_basket_value) / initial_basket_value
+                    f.write(f"Change: {pct_change:.2%}\n")
+                    f.write(f"Price limits: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY\n")
+                    allowed_lower_pct = (price_limits[0]-closing_price)/closing_price
+                    allowed_upper_pct = (price_limits[1]-closing_price)/closing_price
+                    f.write(f"Allowed range: {allowed_lower_pct:.2%} to {allowed_upper_pct:.2%}\n")
+            
+            # Wait for next check
+            time.sleep(check_interval)
+    
+    except KeyboardInterrupt:
+        logger.info("Monitoring stopped by user.")
+    except Exception as e:
+        logger.error(f"Error in monitoring loop: {str(e)}")
+        logger.error(traceback.format_exc())
+
+if __name__ == "__main__":
+    exit_code = main()
+    sys.exit(exit_code)
