@@ -225,7 +225,7 @@ def get_etf_closing_data():
         
         # Extract closing price and time from the most recent data
         try:
-            closing_price = hist['Close'].iloc[-1]
+            closing_price = float(hist['Close'].iloc[-1])
             if pd.isna(closing_price) or closing_price <= 0:
                 logger.error(f"Invalid closing price: {closing_price}")
                 return None, None, None
@@ -269,7 +269,7 @@ def get_etf_closing_data():
         logger.error(traceback.format_exc())
         return None, None, None
 
-def get_vix_futures_prices(composition, reference_time):
+def get_vix_futures_prices(composition, reference_time, label=""):
     """
     Get current VIX futures prices from Yahoo Finance.
     Focuses only on ^VXIND and ^VFTW ticker formats.
@@ -278,12 +278,19 @@ def get_vix_futures_prices(composition, reference_time):
     Args:
         composition: Dictionary mapping futures tickers to weights
         reference_time: Reference time for price data
+        label: Optional label for logging (e.g., "Initial" or "Current")
         
     Returns:
-        dict: Dictionary mapping futures tickers to prices, or None if failure
+        tuple: (prices_dict, details_dict) or (None, None) if failure
+        prices_dict: Dictionary mapping futures tickers to prices
+        details_dict: Dictionary with detailed metadata about each price
     """
     try:
         futures_prices = {}
+        price_details = {}  # Store additional details about each price
+        
+        logger.info(f"===== Getting {label} VIX Futures Prices =====")
+        logger.info(f"Reference time: {reference_time}")
         
         # Use position-based tickers for contracts
         next_contracts = get_next_vix_contracts(6)  # Get up to 6 upcoming contracts
@@ -298,7 +305,7 @@ def get_vix_futures_prices(composition, reference_time):
                 logger.info(f"Determined {normalized_ticker} is contract position {position}")
             else:
                 logger.error(f"Could not determine position for {normalized_ticker}")
-                return None
+                return None, None
         
         # Download all futures prices using only the specific ticker formats
         for normalized_ticker, position in position_map.items():
@@ -317,7 +324,8 @@ def get_vix_futures_prices(composition, reference_time):
                         
                         if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
                             # Fix the warning about float on single element Series
-                            price = float(data['Close'].iloc[-1])
+                            price = float(data['Close'].iloc[0])
+                            price_date = data.index[-1]
                             
                             # Validate price
                             if pd.isna(price) or price <= 0:
@@ -325,7 +333,14 @@ def get_vix_futures_prices(composition, reference_time):
                                 continue
                                 
                             futures_prices[normalized_ticker] = price
-                            logger.info(f"Found price for {normalized_ticker} using {ticker}: {price}")
+                            # Store details about the price
+                            price_details[normalized_ticker] = {
+                                'price': price,
+                                'timestamp': price_date,
+                                'source': ticker,
+                                'position': position
+                            }
+                            logger.info(f"Found price for {normalized_ticker} using {ticker}: {price:.4f} (from {price_date})")
                             price_found = True
                             break
                     except Exception as e:
@@ -339,14 +354,22 @@ def get_vix_futures_prices(composition, reference_time):
                         
                         if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
                             # Fix the warning about float on single element Series
-                            price = float(data['Close'].iloc[-1])
+                            price = float(data['Close'].iloc[0])
+                            price_date = data.index[-1]
                             
                             # Validate price
                             if pd.isna(price) or price <= 0:
                                 logger.warning(f"Invalid VIX index price: {price}")
                             else:
                                 futures_prices[normalized_ticker] = price
-                                logger.info(f"Using VIX index price for {normalized_ticker}: {price}")
+                                # Store details about the price
+                                price_details[normalized_ticker] = {
+                                    'price': price,
+                                    'timestamp': price_date,
+                                    'source': "^VIX (index price)",
+                                    'position': position
+                                }
+                                logger.info(f"Using VIX index price for {normalized_ticker}: {price:.4f} (from {price_date})")
                                 price_found = True
                     except Exception as e:
                         logger.warning(f"Failed to download VIX index: {str(e)}")
@@ -354,89 +377,123 @@ def get_vix_futures_prices(composition, reference_time):
                 # If we still don't have a price, fail
                 if not price_found:
                     logger.error(f"Could not find price for {normalized_ticker} using any ticker format")
-                    return None
+                    return None, None
             else:
                 logger.error(f"Position {position} for {normalized_ticker} is beyond supported range")
-                return None
+                return None, None
         
         # Check if we have all the prices we need
         missing_futures = [ticker for ticker in composition.keys() if normalize_vix_ticker(ticker) not in futures_prices]
         if missing_futures:
             logger.error(f"Missing prices for futures: {missing_futures}")
-            return None
+            return None, None
         
-        logger.info(f"Successfully retrieved all current futures prices: {futures_prices}")
-        return futures_prices
+        # Log a detailed summary of all futures prices
+        logger.info(f"===== {label} VIX Futures Prices Summary =====")
+        for ticker, details in price_details.items():
+            logger.info(f"{ticker} [{details['source']}]: {details['price']:.4f} at {details['timestamp']}")
+        logger.info("==========================================")
+        
+        return futures_prices, price_details
     
     except Exception as e:
         logger.error(f"Error getting VIX futures prices: {str(e)}")
         logger.error(traceback.format_exc())
-        return None
-        
-def get_exchange_rate(reference_time):
+        return None, None
+
+def get_exchange_rate(reference_time, label=""):
     """
     Get USD/JPY exchange rate at the specified time.
-    No fallbacks - fails if current rate cannot be found.
+    No fallbacks - fails cleanly if current rate cannot be found.
     
     Args:
         reference_time: Reference time for exchange rate
+        label: Optional label for logging (e.g., "Initial" or "Current")
         
     Returns:
-        float: Exchange rate or None if failure
+        tuple: (exchange_rate, details) or (None, None) if failure
     """
     try:
+        logger.info(f"===== Getting {label} USD/JPY Exchange Rate =====")
+        logger.info(f"Reference time: {reference_time}")
+        
         usdjpy = yf.Ticker("USDJPY=X")
         
         # Format date for yfinance - use a 7-day lookback to find the most recent data
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
         
-        logger.info(f"Getting USD/JPY exchange rate from {start_date} to {end_date}")
+        logger.info(f"Querying USD/JPY exchange rate from {start_date} to {end_date}")
         
         # Get exchange rate data
         fx_data = usdjpy.history(start=start_date, end=end_date)
         
         if len(fx_data) == 0:
             logger.error(f"No USD/JPY data found in the last 7 days")
-            return None
+            return None, None
         
         # Get the most recent exchange rate
-        exchange_rate = fx_data['Close'].iloc[-1]
+        exchange_rate = float(fx_data['Close'].iloc[0])
+        rate_date = fx_data.index[-1]
         
         if pd.isna(exchange_rate) or exchange_rate <= 0:
             logger.error(f"Invalid exchange rate: {exchange_rate}")
-            return None
-            
-        rate_date = fx_data.index[-1].strftime('%Y-%m-%d')
-        logger.info(f"Most recent USD/JPY exchange rate: {exchange_rate:.2f} from {rate_date}")
+            return None, None
         
-        return exchange_rate
+        # Create details dictionary
+        rate_details = {
+            'rate': exchange_rate,
+            'timestamp': rate_date,
+            'source': 'USDJPY=X'
+        }
+            
+        logger.info(f"{label} USD/JPY exchange rate: {exchange_rate:.2f} from {rate_date}")
+        
+        return exchange_rate, rate_details
     
     except Exception as e:
         logger.error(f"Error getting exchange rate: {str(e)}")
         logger.error(traceback.format_exc())
-        return None
+        return None, None
 
-def calculate_basket_value(composition, futures_prices, exchange_rate):
+def calculate_basket_value(composition, futures_prices, exchange_rate, price_details, rate_details, label=""):
     """
     Calculate the value of the VIX futures basket in JPY.
     All inputs must be valid - fails otherwise.
+    
+    Args:
+        composition: Dictionary mapping futures tickers to weights
+        futures_prices: Dictionary mapping futures tickers to prices
+        exchange_rate: USD/JPY exchange rate
+        price_details: Dictionary with details about each price
+        rate_details: Dictionary with details about exchange rate
+        label: Optional label for logging (e.g., "Initial" or "Current")
+    
+    Returns:
+        float: Basket value in JPY or None if failure
     """
     if not composition or not futures_prices or not exchange_rate:
-        logger.error("Missing required data for basket value calculation")
+        logger.error(f"Missing required data for {label} basket value calculation")
         return None
     
     # Verify all futures in composition are in futures_prices
-    missing_futures = [ticker for ticker in composition.keys() if ticker not in futures_prices]
+    normalized_composition = {normalize_vix_ticker(k): v for k, v in composition.items()}
+    missing_futures = [ticker for ticker in normalized_composition.keys() if ticker not in futures_prices]
     if missing_futures:
-        logger.error(f"Missing prices for futures: {missing_futures}")
+        logger.error(f"Missing prices for futures in {label} basket: {missing_futures}")
         return None
     
     try:
+        # Log the basket composition and prices being used
+        logger.info(f"===== {label} Basket Calculation =====")
+        logger.info(f"Exchange Rate: {exchange_rate:.2f} JPY/USD (from {rate_details['source']} at {rate_details['timestamp']})")
+        
         basket_value_usd = 0
         total_weight = 0
         
-        for futures_ticker, weight in composition.items():
+        # Calculate component values
+        components = []
+        for futures_ticker, weight in normalized_composition.items():
             if futures_ticker in futures_prices:
                 # Validate inputs
                 if pd.isna(weight) or weight <= 0:
@@ -450,27 +507,65 @@ def calculate_basket_value(composition, futures_prices, exchange_rate):
                 
                 # VIX futures are 1000 times the index
                 contract_multiplier = 1000
-                basket_value_usd += price * weight * contract_multiplier
+                component_value_usd = price * weight * contract_multiplier
+                basket_value_usd += component_value_usd
                 total_weight += weight
+                
+                # Store component details for logging
+                components.append({
+                    'ticker': futures_ticker,
+                    'price': price,
+                    'weight': weight,
+                    'shares': weight,
+                    'multiplier': contract_multiplier,
+                    'value_usd': component_value_usd
+                })
         
         # Check if we have valid weights
         if total_weight == 0:
-            logger.error("Total weight of futures is zero. Cannot calculate basket value.")
+            logger.error(f"Total weight of futures in {label} basket is zero. Cannot calculate basket value.")
             return None
         
         # Convert to JPY
         basket_value_jpy = basket_value_usd * exchange_rate
         
-        logger.info(f"Calculated basket value: {basket_value_jpy:.2f} JPY (USD: {basket_value_usd:.2f})")
+        # Log detailed component breakdown
+        logger.info(f"Component breakdown for {label} basket:")
+        for comp in components:
+            source_info = price_details[comp['ticker']]['source'] if comp['ticker'] in price_details else "unknown"
+            timestamp_info = price_details[comp['ticker']]['timestamp'] if comp['ticker'] in price_details else "unknown"
+            logger.info(f"  {comp['ticker']} [{source_info} at {timestamp_info}]: price={comp['price']:.4f}, " + 
+                        f"shares={comp['shares']}, value=${comp['value_usd']:,.2f}")
+        
+        logger.info(f"Total {label} basket value: {basket_value_jpy:,.2f} JPY (${basket_value_usd:,.2f} USD)")
+        logger.info("===================================")
+        
         return basket_value_jpy
     
     except Exception as e:
-        logger.error(f"Error calculating basket value: {str(e)}")
+        logger.error(f"Error calculating {label} basket value: {str(e)}")
         logger.error(traceback.format_exc())
         return None
 
-def check_for_alerts(current_value, initial_value, price_limits, closing_price):
-    """Check if the basket value has changed beyond the allowed price limits."""
+def check_for_alerts(current_value, initial_value, price_limits, closing_price, 
+                    current_price_details, initial_price_details,
+                    current_rate_details, initial_rate_details):
+    """
+    Check if the basket value has changed beyond the allowed price limits.
+    
+    Args:
+        current_value: Current basket value
+        initial_value: Initial basket value
+        price_limits: Tuple of (lower_limit, upper_limit)
+        closing_price: ETF closing price
+        current_price_details: Details of current prices
+        initial_price_details: Details of initial prices
+        current_rate_details: Details of current exchange rate
+        initial_rate_details: Details of initial exchange rate
+        
+    Returns:
+        bool: True if alert condition is met, False otherwise
+    """
     if not current_value or not initial_value or not price_limits or not closing_price:
         logger.error("Missing required data for alert check")
         return False
@@ -483,83 +578,50 @@ def check_for_alerts(current_value, initial_value, price_limits, closing_price):
         allowed_lower_pct = (lower_limit - closing_price) / closing_price
         allowed_upper_pct = (upper_limit - closing_price) / closing_price
         
+        # Log the comparison details
+        logger.info("============ Price Limit Check ============")
+        logger.info(f"ETF closing price: {closing_price:.2f} JPY")
+        logger.info(f"Price limits: {lower_limit:.2f} JPY ({allowed_lower_pct:.2%}) to {upper_limit:.2f} JPY ({allowed_upper_pct:.2%})")
+        
+        # Log the initial basket details
+        logger.info("--- Initial Basket ---")
+        logger.info(f"Value: {initial_value:,.2f} JPY")
+        logger.info(f"Exchange Rate: {initial_rate_details['rate']:.2f} (from {initial_rate_details['timestamp']})")
+        for ticker, details in initial_price_details.items():
+            logger.info(f"  {ticker}: {details['price']:.4f} (from {details['source']} at {details['timestamp']})")
+        
+        # Log the current basket details
+        logger.info("--- Current Basket ---")
+        logger.info(f"Value: {current_value:,.2f} JPY")
+        logger.info(f"Exchange Rate: {current_rate_details['rate']:.2f} (from {current_rate_details['timestamp']})")
+        for ticker, details in current_price_details.items():
+            logger.info(f"  {ticker}: {details['price']:.4f} (from {details['source']} at {details['timestamp']})")
+        
+        # Log the comparison
+        logger.info("--- Comparison ---")
+        logger.info(f"Change: {value_pct_change:.2%} ({current_value - initial_value:,.2f} JPY)")
+        logger.info(f"Allowed range: {allowed_lower_pct:.2%} to {allowed_upper_pct:.2%}")
+        
         # Check if value change exceeds allowed ETF price change
         if value_pct_change < allowed_lower_pct or value_pct_change > allowed_upper_pct:
             message = (
                 f"ALERT: Basket value changed by {value_pct_change:.2%}, exceeding daily price limits!\n"
                 f"Allowed range: {allowed_lower_pct:.2%} to {allowed_upper_pct:.2%}\n"
-                f"Current basket value: {current_value:.2f} JPY\n"
-                f"Initial basket value: {initial_value:.2f} JPY"
+                f"Current basket value: {current_value:,.2f} JPY\n"
+                f"Initial basket value: {initial_value:,.2f} JPY"
             )
             logger.warning(message)
             print(f"\n*** ALERT ***\n{message}\n**************")
             return True
         
-        logger.info(f"No alert: Basket value change {value_pct_change:.2%} within limits ({allowed_lower_pct:.2%} to {allowed_upper_pct:.2%})")
+        logger.info(f"No alert: Basket value change {value_pct_change:.2%} is within allowed limits")
+        logger.info("=========================================")
         return False
     
     except Exception as e:
         logger.error(f"Error checking for alerts: {str(e)}")
         logger.error(traceback.format_exc())
         return False
-
-def monitor_basket_value(composition, initial_basket_value, price_limits, closing_price, check_interval=60):
-    """Start continuous monitoring of the basket value."""
-    logger.info(f"Starting monitoring. Will check every {check_interval} seconds.")
-    
-    try:
-        alert_counter = 0
-        max_alerts = 5
-        
-        while alert_counter < max_alerts:
-            current_time = datetime.now().astimezone(pytz.timezone('Asia/Tokyo'))
-            
-            # Get current futures prices and exchange rate
-            current_futures_prices = get_vix_futures_prices(composition, current_time)
-            if not current_futures_prices:
-                logger.error("Failed to get current futures prices. Aborting monitor.")
-                return
-                
-            current_exchange_rate = get_exchange_rate(current_time)
-            if not current_exchange_rate:
-                logger.error("Failed to get current exchange rate. Aborting monitor.")
-                return
-            
-            # Calculate current basket value
-            current_basket_value = calculate_basket_value(composition, current_futures_prices, current_exchange_rate)
-            
-            if not current_basket_value:
-                logger.error("Failed to calculate current basket value. Aborting monitor.")
-                return
-                
-            # Calculate percentage change
-            pct_change = (current_basket_value - initial_basket_value) / initial_basket_value
-            logger.info(f"Current basket value: {current_basket_value:.2f} JPY ({pct_change:.2%} change)")
-            
-            # Check for alerts
-            if check_for_alerts(current_basket_value, initial_basket_value, price_limits, closing_price):
-                alert_counter += 1
-                logger.warning(f"Alert {alert_counter} of {max_alerts}")
-                
-                # Save alert to file
-                alert_file = os.path.join(SAVE_DIR, f"price_alert_{datetime.now().strftime('%Y%m%d%H%M')}.log")
-                with open(alert_file, "w") as f:
-                    f.write(f"PRICE LIMIT ALERT\n")
-                    f.write(f"Time: {current_time}\n")
-                    f.write(f"Basket value: {current_basket_value:.2f} JPY\n")
-                    f.write(f"Initial value: {initial_basket_value:.2f} JPY\n")
-                    f.write(f"Change: {pct_change:.2%}\n")
-                    f.write(f"Price limits: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY\n")
-                    f.write(f"Allowed range: {(price_limits[0]-closing_price)/closing_price:.2%} to {(price_limits[1]-closing_price)/closing_price:.2%}\n")
-            
-            # Wait for next check
-            time.sleep(check_interval)
-    
-    except KeyboardInterrupt:
-        logger.info("Monitoring stopped by user.")
-    except Exception as e:
-        logger.error(f"Error in monitoring loop: {str(e)}")
-        logger.error(traceback.format_exc())
 
 def main():
     """Main function to analyze ETF price limits and underlying basket value."""
@@ -570,7 +632,9 @@ def main():
     parser.add_argument('--interval', type=int, default=60, help='Monitoring interval in seconds (default: 60)')
     args = parser.parse_args()
     
+    logger.info("==================================================")
     logger.info("Starting limits alerter with most recent available data")
+    logger.info("==================================================")
     
     # Get ETF closing data - the most recent data available
     closing_price, closing_time, price_limits = get_etf_closing_data()
@@ -588,82 +652,55 @@ def main():
             
     logger.info(f"ETF composition for {closing_time.strftime('%Y-%m-%d')}: {composition}")
     
-    # Get most recent futures prices and exchange rate
-    futures_prices = get_vix_futures_prices(composition, closing_time)
+    # Get most recent futures prices for the initial basket value
+    # This should be based on the closing prices used at closing_time
+    initial_futures_prices, initial_price_details = get_vix_futures_prices(composition, closing_time, label="INITIAL")
     
-    if not futures_prices:
-        logger.error("Could not get VIX futures prices. Exiting.")
+    if not initial_futures_prices or not initial_price_details:
+        logger.error("Could not get VIX futures prices for initial basket. Exiting.")
         return 1
     
-    exchange_rate = get_exchange_rate(closing_time)
+    # Get exchange rate at closing time
+    initial_exchange_rate, initial_rate_details = get_exchange_rate(closing_time, label="INITIAL")
     
-    if not exchange_rate:
-        logger.error("Could not get USD/JPY exchange rate. Exiting.")
+    if not initial_exchange_rate or not initial_rate_details:
+        logger.error("Could not get USD/JPY exchange rate for initial basket. Exiting.")
         return 1
     
-    # Calculate current basket value based on most recent data
-    current_basket_value = calculate_basket_value(composition, futures_prices, exchange_rate)
+    # Calculate initial basket value based on closing prices
+    initial_basket_value = calculate_basket_value(
+        composition, 
+        initial_futures_prices, 
+        initial_exchange_rate, 
+        initial_price_details, 
+        initial_rate_details, 
+        label="INITIAL"
+    )
     
-    if not current_basket_value:
-        logger.error("Could not calculate basket value. Exiting.")
+    if not initial_basket_value:
+        logger.error("Could not calculate initial basket value. Exiting.")
         return 1
     
-    logger.info(f"Current basket value: {current_basket_value:.2f} JPY")
-    logger.info(f"Price limits: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY")
+    # Get current futures prices (may be different from initial)
+    logger.info("--------------------------------------------------")
+    current_time = datetime.now()
+    current_futures_prices, current_price_details = get_vix_futures_prices(composition, current_time, label="CURRENT")
     
-    # Calculate shares outstanding from ETF characteristics
-    shares_outstanding = 0
-    try:
-        etf_file = os.path.join(SAVE_DIR, "etf_characteristics_master.csv")
-        if os.path.exists(etf_file):
-            df = pd.read_csv(etf_file)
-            if 'shares_outstanding' in df.columns and not df.empty:
-                shares_outstanding = df.iloc[-1]['shares_outstanding']
-                if shares_outstanding > 0:
-                    nav_per_share = current_basket_value / shares_outstanding
-                    logger.info(f"Estimated NAV per share: {nav_per_share:.2f} JPY")
-                else:
-                    logger.warning("Invalid shares_outstanding value (must be positive)")
-            else:
-                logger.warning("shares_outstanding column not found in ETF characteristics")
-        else:
-            logger.warning("ETF characteristics file not found")
-    except Exception as e:
-        logger.warning(f"Could not calculate NAV per share: {str(e)}")
+    if not current_futures_prices or not current_price_details:
+        logger.error("Could not get current VIX futures prices. Exiting.")
+        return 1
     
-    # Use actual ETF value rather than trying to derive it
-    initial_basket_value = closing_price * shares_outstanding if shares_outstanding > 0 else closing_price
+    # Get current exchange rate
+    current_exchange_rate, current_rate_details = get_exchange_rate(current_time, label="CURRENT")
     
-    # Check for alerts (compare current basket value to price limits)
-    is_alert = check_for_alerts(current_basket_value, initial_basket_value, price_limits, closing_price)
+    if not current_exchange_rate or not current_rate_details:
+        logger.error("Could not get current USD/JPY exchange rate. Exiting.")
+        return 1
     
-    # If any alert was detected, save it to a file
-    if is_alert:
-        pct_change = (current_basket_value - initial_basket_value) / initial_basket_value
-        current_time = datetime.now().astimezone(pytz.timezone('Asia/Tokyo'))
-            
-        # Save alert to file
-        alert_file = os.path.join(SAVE_DIR, f"price_alert_{datetime.now().strftime('%Y%m%d%H%M')}.log")
-        with open(alert_file, "w") as f:
-            f.write(f"PRICE LIMIT ALERT\n")
-            f.write(f"Time: {current_time}\n")
-            f.write(f"Basket value: {current_basket_value:.2f} JPY\n")
-            f.write(f"Initial value: {initial_basket_value:.2f} JPY\n")
-            f.write(f"Change: {pct_change:.2%}\n")
-            f.write(f"Price limits: {price_limits[0]:.2f} to {price_limits[1]:.2f} JPY\n")
-            f.write(f"Allowed range: {(price_limits[0]-closing_price)/closing_price:.2%} to {(price_limits[1]-closing_price)/closing_price:.2%}\n")
-            
-        logger.info("Price limit alert detected and saved to file")
-    else:
-        logger.info("No price limit alerts detected")
-    
-    # Start monitoring if requested
-    if args.monitor:
-        logger.info("Starting continuous monitoring")
-        monitor_basket_value(composition, initial_basket_value, price_limits, closing_price, args.interval)
-    
-    return 0
-
-if __name__ == "__main__":
-    exit_code = main()
-    sys.exit(exit_code)
+    # Calculate current basket value
+    current_basket_value = calculate_basket_value(
+        composition, 
+        current_futures_prices, 
+        current_exchange_rate, 
+        current_price_details, 
+        current_rate_details,
