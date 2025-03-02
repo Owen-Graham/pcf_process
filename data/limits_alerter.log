@@ -223,3 +223,83 @@ Allowed range: -16.20% to 16.20%
 Current basket value: 473138980.01 JPY
 Initial basket value: 666648017.58 JPY
 2025-03-02 03:45:21,675 - limits_alerter - INFO - Price limit alert detected and saved to file
+2025-03-02 04:17:07,241 - limits_alerter - INFO - ==================================================
+2025-03-02 04:17:07,242 - limits_alerter - INFO - Starting limits alerter with most recent available data
+2025-03-02 04:17:07,242 - limits_alerter - INFO - ==================================================
+2025-03-02 04:17:07,242 - limits_alerter - INFO - Getting ETF data for 318A.T from 2025-02-23 to 2025-03-02
+2025-03-02 04:17:07,465 - limits_alerter - INFO - Most recent closing price of 318A.T: 925.90 JPY at 2025-02-28 00:00:00+09:00
+2025-03-02 04:17:07,465 - limits_alerter - INFO - Daily price limits: 775.90 to 1075.90 JPY
+2025-03-02 04:17:07,469 - limits_alerter - INFO - Using ETF composition data from 2025-02-28 00:00:00 (latest available)
+2025-03-02 04:17:07,469 - limits_alerter - INFO - Found near future: VXH5
+2025-03-02 04:17:07,469 - limits_alerter - INFO - Found far future: VXJ5
+2025-03-02 04:17:07,469 - limits_alerter - INFO - Found near shares: 123.0
+2025-03-02 04:17:07,469 - limits_alerter - INFO - Found far shares: 44.0
+2025-03-02 04:17:07,469 - limits_alerter - INFO - ETF composition: {'VXH5': 123.0, 'VXJ5': 44.0}
+2025-03-02 04:17:07,469 - limits_alerter - INFO - ETF composition for 2025-02-28: {'VXH5': 123.0, 'VXJ5': 44.0}
+2025-03-02 04:17:07,469 - limits_alerter - INFO - ===== Getting INITIAL VIX Futures Prices =====
+2025-03-02 04:17:07,470 - limits_alerter - INFO - Reference time: 2025-02-28 00:00:00+09:00
+2025-03-02 04:17:07,470 - limits_alerter - INFO - Determined VXH5 is contract position 1
+2025-03-02 04:17:07,470 - limits_alerter - INFO - Determined VXJ5 is contract position 2
+2025-03-02 04:17:07,470 - limits_alerter - INFO - Trying to download ^VXIND1 for VXH5
+2025-03-02 04:17:07,545 - limits_alerter - INFO - Found price for VXH5 using ^VXIND1: 18.8291 (from 2025-02-28 00:00:00)
+2025-03-02 04:17:07,545 - limits_alerter - INFO - Trying to download ^VXIND2 for VXJ5
+2025-03-02 04:17:07,617 - limits_alerter - INFO - Found price for VXJ5 using ^VXIND2: 19.0461 (from 2025-02-28 00:00:00)
+2025-03-02 04:17:07,618 - limits_alerter - INFO - ===== INITIAL VIX Futures Prices Summary =====
+2025-03-02 04:17:07,618 - limits_alerter - INFO - VXH5 [^VXIND1]: 18.8291 at 2025-02-28 00:00:00
+2025-03-02 04:17:07,618 - limits_alerter - INFO - VXJ5 [^VXIND2]: 19.0461 at 2025-02-28 00:00:00
+2025-03-02 04:17:07,618 - limits_alerter - INFO - ==========================================
+2025-03-02 04:17:07,618 - limits_alerter - INFO - ===== Getting INITIAL USD/JPY Exchange Rate =====
+2025-03-02 04:17:07,618 - limits_alerter - INFO - Reference time: 2025-02-28 00:00:00+09:00
+2025-03-02 04:17:07,618 - limits_alerter - INFO - Querying USD/JPY exchange rate from 2025-02-23 to 2025-03-02
+2025-03-02 04:17:07,687 - limits_alerter - INFO - INITIAL USD/JPY exchange rate: 149.39 from 2025-02-28 00:00:00+00:00
+2025-03-02 04:17:07,687 - limits_alerter - INFO - ===== INITIAL Basket Calculation =====
+2025-03-02 04:17:07,687 - limits_alerter - INFO - Exchange Rate: 149.39 JPY/USD (from USDJPY=X at 2025-02-28 00:00:00+00:00)
+2025-03-02 04:17:07,687 - limits_alerter - INFO - Component breakdown for INITIAL basket:
+2025-03-02 04:17:07,687 - limits_alerter - INFO -   VXH5 [^VXIND1 at 2025-02-28 00:00:00]: price=18.8291, shares=123.0, value=$2,315,979.26
+2025-03-02 04:17:07,687 - limits_alerter - INFO -   VXJ5 [^VXIND2 at 2025-02-28 00:00:00]: price=19.0461, shares=44.0, value=$838,028.43
+2025-03-02 04:17:07,687 - limits_alerter - INFO - Total INITIAL basket value: 471,167,725.20 JPY ($3,154,007.68 USD)
+2025-03-02 04:17:07,687 - limits_alerter - INFO - ===================================
+2025-03-02 04:17:07,687 - limits_alerter - INFO - --------------------------------------------------
+2025-03-02 04:17:07,687 - limits_alerter - INFO - ===== Getting CURRENT VIX Futures Prices =====
+2025-03-02 04:17:07,688 - limits_alerter - INFO - Reference time: 2025-03-02 04:17:07.687961
+2025-03-02 04:17:07,688 - limits_alerter - INFO - Determined VXH5 is contract position 1
+2025-03-02 04:17:07,688 - limits_alerter - INFO - Determined VXJ5 is contract position 2
+2025-03-02 04:17:07,688 - limits_alerter - INFO - Trying to download ^VXIND1 for VXH5
+2025-03-02 04:17:07,712 - limits_alerter - INFO - Found price for VXH5 using ^VXIND1: 18.8291 (from 2025-02-28 00:00:00)
+2025-03-02 04:17:07,712 - limits_alerter - INFO - Trying to download ^VXIND2 for VXJ5
+2025-03-02 04:17:07,728 - limits_alerter - INFO - Found price for VXJ5 using ^VXIND2: 19.0461 (from 2025-02-28 00:00:00)
+2025-03-02 04:17:07,729 - limits_alerter - INFO - ===== CURRENT VIX Futures Prices Summary =====
+2025-03-02 04:17:07,729 - limits_alerter - INFO - VXH5 [^VXIND1]: 18.8291 at 2025-02-28 00:00:00
+2025-03-02 04:17:07,729 - limits_alerter - INFO - VXJ5 [^VXIND2]: 19.0461 at 2025-02-28 00:00:00
+2025-03-02 04:17:07,729 - limits_alerter - INFO - ==========================================
+2025-03-02 04:17:07,729 - limits_alerter - INFO - ===== Getting CURRENT USD/JPY Exchange Rate =====
+2025-03-02 04:17:07,729 - limits_alerter - INFO - Reference time: 2025-03-02 04:17:07.687961
+2025-03-02 04:17:07,729 - limits_alerter - INFO - Querying USD/JPY exchange rate from 2025-02-23 to 2025-03-02
+2025-03-02 04:17:07,738 - limits_alerter - INFO - CURRENT USD/JPY exchange rate: 149.39 from 2025-02-28 00:00:00+00:00
+2025-03-02 04:17:07,738 - limits_alerter - INFO - ===== CURRENT Basket Calculation =====
+2025-03-02 04:17:07,738 - limits_alerter - INFO - Exchange Rate: 149.39 JPY/USD (from USDJPY=X at 2025-02-28 00:00:00+00:00)
+2025-03-02 04:17:07,738 - limits_alerter - INFO - Component breakdown for CURRENT basket:
+2025-03-02 04:17:07,738 - limits_alerter - INFO -   VXH5 [^VXIND1 at 2025-02-28 00:00:00]: price=18.8291, shares=123.0, value=$2,315,979.26
+2025-03-02 04:17:07,738 - limits_alerter - INFO -   VXJ5 [^VXIND2 at 2025-02-28 00:00:00]: price=19.0461, shares=44.0, value=$838,028.43
+2025-03-02 04:17:07,738 - limits_alerter - INFO - Total CURRENT basket value: 471,167,725.20 JPY ($3,154,007.68 USD)
+2025-03-02 04:17:07,738 - limits_alerter - INFO - ===================================
+2025-03-02 04:17:07,740 - limits_alerter - INFO - Estimated NAV per share: 654.40 JPY (based on 720,000.0 shares outstanding)
+2025-03-02 04:17:07,740 - limits_alerter - INFO - ============ Price Limit Check ============
+2025-03-02 04:17:07,740 - limits_alerter - INFO - ETF closing price: 925.90 JPY
+2025-03-02 04:17:07,740 - limits_alerter - INFO - Price limits: 775.90 JPY (-16.20%) to 1075.90 JPY (16.20%)
+2025-03-02 04:17:07,740 - limits_alerter - INFO - --- Initial Basket ---
+2025-03-02 04:17:07,740 - limits_alerter - INFO - Value: 471,167,725.20 JPY
+2025-03-02 04:17:07,740 - limits_alerter - INFO - Exchange Rate: 149.39 (from 2025-02-28 00:00:00+00:00)
+2025-03-02 04:17:07,740 - limits_alerter - INFO -   VXH5: 18.8291 (from ^VXIND1 at 2025-02-28 00:00:00)
+2025-03-02 04:17:07,740 - limits_alerter - INFO -   VXJ5: 19.0461 (from ^VXIND2 at 2025-02-28 00:00:00)
+2025-03-02 04:17:07,740 - limits_alerter - INFO - --- Current Basket ---
+2025-03-02 04:17:07,741 - limits_alerter - INFO - Value: 471,167,725.20 JPY
+2025-03-02 04:17:07,741 - limits_alerter - INFO - Exchange Rate: 149.39 (from 2025-02-28 00:00:00+00:00)
+2025-03-02 04:17:07,741 - limits_alerter - INFO -   VXH5: 18.8291 (from ^VXIND1 at 2025-02-28 00:00:00)
+2025-03-02 04:17:07,741 - limits_alerter - INFO -   VXJ5: 19.0461 (from ^VXIND2 at 2025-02-28 00:00:00)
+2025-03-02 04:17:07,741 - limits_alerter - INFO - --- Comparison ---
+2025-03-02 04:17:07,741 - limits_alerter - INFO - Change: 0.00% (0.00 JPY)
+2025-03-02 04:17:07,741 - limits_alerter - INFO - Allowed range: -16.20% to 16.20%
+2025-03-02 04:17:07,741 - limits_alerter - INFO - No alert: Basket value change 0.00% is within allowed limits
+2025-03-02 04:17:07,741 - limits_alerter - INFO - =========================================
+2025-03-02 04:17:07,741 - limits_alerter - INFO - No price limit alerts detected
