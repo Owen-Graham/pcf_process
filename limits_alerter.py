@@ -299,71 +299,19 @@ def get_tse_closing_time(reference_date):
     logger.info(f"Using TSE closing time: {closing_time} for initial basket valuation")
     return closing_time
 
-def get_latest_us_market_time(reference_date):
-    """
-    Get the time of the most recent US market data available.
-    For weekends, that would be Friday 16:00 CT (close of CBOE).
-    
-    Args:
-        reference_date: The reference date to use
-        
-    Returns:
-        datetime: The latest market time as a timezone-aware datetime
-    """
-    # Central Time (US)
-    ct = pytz.timezone('US/Central')
-    
-    # If reference_date doesn't have a timezone, assume it's in UTC
-    if reference_date.tzinfo is None:
-        reference_date = pytz.utc.localize(reference_date)
-    
-    # Convert to Central Time
-    reference_ct = reference_date.astimezone(ct)
-    
-    # Determine the most recent trading day
-    weekday = reference_ct.weekday()
-    
-    # For weekends, use Friday (weekday 4)
-    # For Monday-Friday, use the current day if before 16:00 CT, otherwise previous day
-    if weekday == 5:  # Saturday
-        days_back = 1  # Go back to Friday
-    elif weekday == 6:  # Sunday
-        days_back = 2  # Go back to Friday
-    elif weekday == 0 and reference_ct.hour < 16:  # Monday before 16:00 CT
-        days_back = 3  # Go back to Friday
-    elif reference_ct.hour < 16:  # Weekday before 16:00 CT
-        days_back = 1  # Use previous day's close
-    else:
-        days_back = 0  # Use today's data
-    
-    # Calculate the date
-    trading_date = reference_ct.date() - timedelta(days=days_back)
-    
-    # Set the time to 16:00 CT (CBOE closing time)
-    trading_time = datetime.combine(
-        trading_date,
-        time(hour=16, minute=0, second=0)
-    )
-    trading_time = ct.localize(trading_time)
-    
-    logger.info(f"Using latest US market time: {trading_time} for current basket valuation")
-    return trading_time
-
 def get_vix_futures_prices(composition, reference_time, label=""):
     """
-    Get current VIX futures prices from Yahoo Finance.
+    Get the most current VIX futures prices from Yahoo Finance using fast_info.
     Focuses only on ^VXIND and ^VFTW ticker formats.
     No fallbacks - fails cleanly if prices can't be found.
     
     Args:
         composition: Dictionary mapping futures tickers to weights
-        reference_time: Reference time for price data
+        reference_time: Reference time (only used for logging and TSE closing time check)
         label: Optional label for logging (e.g., "Initial" or "Current")
         
     Returns:
         tuple: (prices_dict, details_dict) or (None, None) if failure
-        prices_dict: Dictionary mapping futures tickers to prices
-        details_dict: Dictionary with detailed metadata about each price
     """
     try:
         futures_prices = {}
@@ -372,14 +320,25 @@ def get_vix_futures_prices(composition, reference_time, label=""):
         logger.info(f"===== Getting {label} VIX Futures Prices =====")
         logger.info(f"Reference time: {reference_time}")
         
-        # Calculate a lookback period for the data
-        # For the initial basket (using TSE closing time), we need to look back
-        # For the current basket (using latest US market data), we need today's data
-        lookback_days = 7  # Always use at least 7 days lookback to ensure we get some data
-        
-        start_date = (reference_time - timedelta(days=lookback_days)).strftime('%Y-%m-%d')
-        end_date = reference_time.strftime('%Y-%m-%d')
-        logger.info(f"Data date range: {start_date} to {end_date}")
+        # For INITIAL prices (TSE closing), we need prices at exactly 15:00 JST
+        use_latest_price = True
+        if label == "INITIAL":
+            jst = pytz.timezone('Asia/Tokyo')
+            if reference_time.tzinfo is None:
+                reference_time = jst.localize(reference_time)
+            else:
+                reference_time = reference_time.astimezone(jst)
+                
+            # If this is exactly at 15:00 JST, it's TSE closing time
+            if reference_time.hour == 15 and reference_time.minute == 0:
+                logger.info("Using TSE closing time for initial prices - need historical data")
+                # For TSE closing, we'll need to get historical data (not latest price)
+                # For this case, we'll fall back to a date-based lookup
+                use_latest_price = False
+                lookback_days = 7
+                start_date = (reference_time - timedelta(days=lookback_days)).strftime('%Y-%m-%d')
+                end_date = reference_time.strftime('%Y-%m-%d')
+                logger.info(f"Historical data date range: {start_date} to {end_date}")
         
         # Use position-based tickers for contracts
         next_contracts = get_next_vix_contracts(6)  # Get up to 6 upcoming contracts
@@ -396,7 +355,7 @@ def get_vix_futures_prices(composition, reference_time, label=""):
                 logger.error(f"Could not determine position for {normalized_ticker}")
                 return None, None
         
-        # Download all futures prices using only the specific ticker formats
+        # Get prices for all futures in composition
         for normalized_ticker, position in position_map.items():
             # Only try positions 1-3 which are standard
             if position <= 3:
@@ -404,105 +363,98 @@ def get_vix_futures_prices(composition, reference_time, label=""):
                 specific_tickers = [f"^VXIND{position}", f"^VFTW{position}"]
                 
                 price_found = False
-                for ticker in specific_tickers:
+                for ticker_str in specific_tickers:
                     try:
-                        logger.info(f"Trying to download {ticker} for {normalized_ticker}")
+                        logger.info(f"Getting price for {normalized_ticker} using {ticker_str}")
                         
-                        # Use start and end dates for the lookup
-                        data = yf.download(ticker, start=start_date, end=end_date, progress=False)
-                        
-                        if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                            # Find the closest price to our reference time
-                            # Convert data index to the same timezone as reference_time for comparison
-                            if reference_time.tzinfo:
-                                data_tz = data.index.tz
-                                if data_tz is None:
-                                    # If data has no timezone, assume UTC
-                                    data_with_tz = data.copy()
-                                    data_with_tz.index = data.index.tz_localize('UTC')
-                                else:
-                                    data_with_tz = data
+                        if use_latest_price:
+                            # Get the most current price using fast_info
+                            ticker = yf.Ticker(ticker_str)
+                            price = ticker.fast_info.last_price
+                            # For latest prices, use current timestamp
+                            price_date = datetime.now()
+                        else:
+                            # For historical data (TSE closing time), use date-based lookup
+                            data = yf.download(ticker_str, start=start_date, end=end_date, progress=False)
+                            if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                                # Find the closest price to reference_time
+                                if data.index.tz is None:
+                                    data.index = data.index.tz_localize('UTC')
                                 
-                                # Convert all timestamps to the reference timezone
                                 ref_tz = reference_time.tzinfo
-                                data_in_ref_tz = data_with_tz.copy()
-                                data_in_ref_tz.index = data_with_tz.index.tz_convert(ref_tz)
+                                data.index = data.index.tz_convert(ref_tz)
                                 
-                                # Sort by timestamp distance from reference_time
-                                time_diffs = abs(data_in_ref_tz.index - reference_time)
+                                time_diffs = abs(data.index - reference_time)
                                 closest_idx = time_diffs.argmin()
-                                closest_time = data_in_ref_tz.index[closest_idx]
-                                price = float(data_in_ref_tz['Close'].iloc[closest_idx])
-                                price_date = closest_time
+                                price = float(data['Close'].iloc[closest_idx])
+                                price_date = data.index[closest_idx]
                             else:
-                                # If reference time has no timezone, just use the last available price
-                                price = float(data['Close'].iloc[-1])
-                                price_date = data.index[-1]
-                            
-                            # Validate price
-                            if pd.isna(price) or price <= 0:
-                                logger.warning(f"Invalid price for {ticker}: {price}")
+                                logger.warning(f"No historical data for {ticker_str}")
                                 continue
-                                
-                            futures_prices[normalized_ticker] = price
-                            # Store details about the price
-                            price_details[normalized_ticker] = {
-                                'price': price,
-                                'timestamp': price_date,
-                                'source': ticker,
-                                'position': position
-                            }
-                            logger.info(f"Found price for {normalized_ticker} using {ticker}: {price:.4f} (from {price_date})")
-                            price_found = True
-                            break
+                        
+                        # Validate price
+                        if pd.isna(price) or price <= 0:
+                            logger.warning(f"Invalid price for {ticker_str}: {price}")
+                            continue
+                            
+                        futures_prices[normalized_ticker] = price
+                        # Store details about the price
+                        price_details[normalized_ticker] = {
+                            'price': price,
+                            'timestamp': price_date,
+                            'source': ticker_str,
+                            'position': position
+                        }
+                        logger.info(f"Found price for {normalized_ticker} using {ticker_str}: {price:.4f} (from {price_date})")
+                        price_found = True
+                        break
                     except Exception as e:
-                        logger.warning(f"Failed to download {ticker}: {str(e)}")
+                        logger.warning(f"Failed to get price for {ticker_str}: {str(e)}")
                 
                 # If no price found with specific tickers, try VIX index but only for front month
                 if not price_found and position == 1:
                     try:
                         logger.info(f"Trying VIX index for front-month {normalized_ticker}")
-                        data = yf.download("^VIX", start=start_date, end=end_date, progress=False)
                         
-                        if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                            # Find the closest price to our reference time, same as above
-                            if reference_time.tzinfo:
-                                data_tz = data.index.tz
-                                if data_tz is None:
-                                    data_with_tz = data.copy()
-                                    data_with_tz.index = data.index.tz_localize('UTC')
-                                else:
-                                    data_with_tz = data
+                        if use_latest_price:
+                            # Get current VIX index price
+                            vix = yf.Ticker("^VIX")
+                            price = vix.fast_info.last_price
+                            price_date = datetime.now()
+                        else:
+                            # For historical data, use date-based lookup
+                            data = yf.download("^VIX", start=start_date, end=end_date, progress=False)
+                            if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                                if data.index.tz is None:
+                                    data.index = data.index.tz_localize('UTC')
                                 
                                 ref_tz = reference_time.tzinfo
-                                data_in_ref_tz = data_with_tz.copy()
-                                data_in_ref_tz.index = data_with_tz.index.tz_convert(ref_tz)
+                                data.index = data.index.tz_convert(ref_tz)
                                 
-                                time_diffs = abs(data_in_ref_tz.index - reference_time)
+                                time_diffs = abs(data.index - reference_time)
                                 closest_idx = time_diffs.argmin()
-                                closest_time = data_in_ref_tz.index[closest_idx]
-                                price = float(data_in_ref_tz['Close'].iloc[closest_idx])
-                                price_date = closest_time
+                                price = float(data['Close'].iloc[closest_idx])
+                                price_date = data.index[closest_idx]
                             else:
-                                price = float(data['Close'].iloc[-1])
-                                price_date = data.index[-1]
-                            
-                            # Validate price
-                            if pd.isna(price) or price <= 0:
-                                logger.warning(f"Invalid VIX index price: {price}")
-                            else:
-                                futures_prices[normalized_ticker] = price
-                                # Store details about the price
-                                price_details[normalized_ticker] = {
-                                    'price': price,
-                                    'timestamp': price_date,
-                                    'source': "^VIX (index price)",
-                                    'position': position
-                                }
-                                logger.info(f"Using VIX index price for {normalized_ticker}: {price:.4f} (from {price_date})")
-                                price_found = True
+                                logger.warning("No historical VIX data")
+                                continue
+                        
+                        # Validate price
+                        if pd.isna(price) or price <= 0:
+                            logger.warning(f"Invalid VIX index price: {price}")
+                        else:
+                            futures_prices[normalized_ticker] = price
+                            # Store details about the price
+                            price_details[normalized_ticker] = {
+                                'price': price,
+                                'timestamp': price_date,
+                                'source': "^VIX (index price)",
+                                'position': position
+                            }
+                            logger.info(f"Using VIX index price for {normalized_ticker}: {price:.4f} (from {price_date})")
+                            price_found = True
                     except Exception as e:
-                        logger.warning(f"Failed to download VIX index: {str(e)}")
+                        logger.warning(f"Failed to get VIX index price: {str(e)}")
                 
                 # If we still don't have a price, fail
                 if not price_found:
@@ -533,11 +485,11 @@ def get_vix_futures_prices(composition, reference_time, label=""):
 
 def get_exchange_rate(reference_time, label=""):
     """
-    Get USD/JPY exchange rate at the specified time.
+    Get the most current USD/JPY exchange rate using fast_info.
     No fallbacks - fails cleanly if current rate cannot be found.
     
     Args:
-        reference_time: Reference time for exchange rate
+        reference_time: Reference time (only used for logging and TSE closing time check)
         label: Optional label for logging (e.g., "Initial" or "Current")
         
     Returns:
@@ -547,48 +499,50 @@ def get_exchange_rate(reference_time, label=""):
         logger.info(f"===== Getting {label} USD/JPY Exchange Rate =====")
         logger.info(f"Reference time: {reference_time}")
         
+        # For INITIAL prices (TSE closing), we need prices at exactly 15:00 JST
+        use_latest_price = True
+        if label == "INITIAL":
+            jst = pytz.timezone('Asia/Tokyo')
+            if reference_time.tzinfo is None:
+                reference_time = jst.localize(reference_time)
+            else:
+                reference_time = reference_time.astimezone(jst)
+                
+            # If this is exactly at 15:00 JST, it's TSE closing time
+            if reference_time.hour == 15 and reference_time.minute == 0:
+                logger.info("Using TSE closing time for initial rate - need historical data")
+                # For TSE closing, we'll need to get historical data (not latest price)
+                use_latest_price = False
+                lookback_days = 7
+                start_date = (reference_time - timedelta(days=lookback_days)).strftime('%Y-%m-%d')
+                end_date = reference_time.strftime('%Y-%m-%d')
+                logger.info(f"Historical data date range: {start_date} to {end_date}")
+        
         usdjpy = yf.Ticker("USDJPY=X")
         
-        # Calculate lookback period - similar to the futures price function
-        lookback_days = 7
-        start_date = (reference_time - timedelta(days=lookback_days)).strftime('%Y-%m-%d')
-        end_date = reference_time.strftime('%Y-%m-%d')
-        
-        logger.info(f"Querying USD/JPY exchange rate from {start_date} to {end_date}")
-        
-        # Get exchange rate data
-        fx_data = usdjpy.history(start=start_date, end=end_date)
-        
-        if len(fx_data) == 0:
-            logger.error(f"No USD/JPY data found for the specified period")
-            return None, None
-        
-        # Find the closest rate to our reference time
-        if reference_time.tzinfo:
-            # Convert data index to the same timezone as reference_time
-            data_tz = fx_data.index.tz
-            if data_tz is None:
-                # If data has no timezone, assume UTC
-                fx_data_with_tz = fx_data.copy()
-                fx_data_with_tz.index = fx_data.index.tz_localize('UTC')
-            else:
-                fx_data_with_tz = fx_data
-            
-            # Convert to reference timezone
-            ref_tz = reference_time.tzinfo
-            fx_data_in_ref_tz = fx_data_with_tz.copy()
-            fx_data_in_ref_tz.index = fx_data_with_tz.index.tz_convert(ref_tz)
-            
-            # Find closest time
-            time_diffs = abs(fx_data_in_ref_tz.index - reference_time)
-            closest_idx = time_diffs.argmin()
-            closest_time = fx_data_in_ref_tz.index[closest_idx]
-            exchange_rate = float(fx_data_in_ref_tz['Close'].iloc[closest_idx])
-            rate_date = closest_time
+        if use_latest_price:
+            # Get the most current exchange rate using fast_info
+            exchange_rate = usdjpy.fast_info.last_price
+            rate_date = datetime.now()
         else:
-            # If reference time has no timezone, use the last available rate
-            exchange_rate = float(fx_data['Close'].iloc[-1])
-            rate_date = fx_data.index[-1]
+            # For historical data (TSE closing time), use date-based lookup
+            fx_data = usdjpy.history(start=start_date, end=end_date)
+            
+            if len(fx_data) == 0:
+                logger.error(f"No USD/JPY data found for the specified period")
+                return None, None
+            
+            # Find the closest rate to reference_time
+            if fx_data.index.tz is None:
+                fx_data.index = fx_data.index.tz_localize('UTC')
+            
+            ref_tz = reference_time.tzinfo
+            fx_data.index = fx_data.index.tz_convert(ref_tz)
+            
+            time_diffs = abs(fx_data.index - reference_time)
+            closest_idx = time_diffs.argmin()
+            exchange_rate = float(fx_data['Close'].iloc[closest_idx])
+            rate_date = fx_data.index[closest_idx]
         
         if pd.isna(exchange_rate) or exchange_rate <= 0:
             logger.error(f"Invalid exchange rate: {exchange_rate}")
@@ -609,6 +563,7 @@ def get_exchange_rate(reference_time, label=""):
         logger.error(f"Error getting exchange rate: {str(e)}")
         logger.error(traceback.format_exc())
         return None, None
+
 
 def calculate_basket_value(composition, futures_prices, exchange_rate, price_details, rate_details, label=""):
     """
@@ -932,14 +887,16 @@ def main():
         logger.error("Could not calculate initial basket value. Exiting.")
         return 1
     
-    # Get current futures prices - determine the most recent valid US market time
+    # Get current futures prices - now using the most current price available
     logger.info("--------------------------------------------------")
+    logger.info("Getting CURRENT futures prices (most recent available)")
+    
+    # Just use current time as reference, but the function will use fast_info.last_price
     current_time = datetime.now()
-    us_market_time = get_latest_us_market_time(current_time)
     
     current_futures_prices, current_price_details = get_vix_futures_prices(
         composition, 
-        us_market_time, 
+        current_time, 
         label="CURRENT"
     )
     
@@ -947,9 +904,9 @@ def main():
         logger.error("Could not get current VIX futures prices. Exiting.")
         return 1
     
-    # Get current exchange rate
+    # Get current exchange rate - also using fast_info.last_price
     current_exchange_rate, current_rate_details = get_exchange_rate(
-        us_market_time, 
+        current_time, 
         label="CURRENT"
     )
     
@@ -1037,7 +994,7 @@ def main():
             f.write(f"\n")
             
             f.write(f"=== Current Futures Prices ===\n")
-            f.write(f"Current Reference Time: {us_market_time}\n")
+            f.write(f"Current Reference Time: {current_time}\n")
             for ticker, details in current_price_details.items():
                 f.write(f"  {ticker}: {details['price']:.4f} (from {details['source']} at {details['timestamp']})\n")
             f.write(f"\n")
