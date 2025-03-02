@@ -42,8 +42,24 @@ def format_vix_data_for_output(cboe_data, yfinance_data, simplex_data):
     # Current timestamp in desired format
     timestamp = datetime.now().strftime("%Y%m%d%H%M")
     
-    # Current date used for pricing date (could be modified if needed)
-    price_date = datetime.now().strftime("%Y-%m-%d")
+    # Initialize price_date - we require this from one of the data sources
+    price_date = None
+    
+    # Use the date from the data source
+    if yfinance_data and 'date' in yfinance_data:
+        price_date = yfinance_data['date']
+        logger.info(f"Using Yahoo data date: {price_date}")
+    elif cboe_data and 'date' in cboe_data:
+        price_date = cboe_data['date']
+        logger.info(f"Using CBOE data date: {price_date}")
+    elif simplex_data and 'date' in simplex_data:
+        price_date = simplex_data['date']
+        logger.info(f"Using PCF data date: {price_date}")
+    
+    # If no valid date is found, we cannot proceed
+    if not price_date:
+        logger.error("No valid price date found in any data source")
+        return pd.DataFrame()  # Return empty DataFrame
     
     # List to store all rows
     all_rows = []
@@ -167,6 +183,7 @@ def save_vix_data(df, save_dir=SAVE_DIR):
     Save the VIX futures data to CSV files
     """
     if df.empty:
+        logger.error("Cannot save empty dataframe")
         return False
         
     timestamp = df['timestamp'].iloc[0]
@@ -199,8 +216,8 @@ def save_vix_data(df, save_dir=SAVE_DIR):
             combined_df.to_csv(master_csv_path, index=False)
         except Exception as e:
             logger.error(f"Error updating master CSV: {str(e)}")
-            # If error reading/updating master, just overwrite with new file
-            df.to_csv(master_csv_path, index=False)
+            logger.error("Cannot proceed with saving data")
+            return False
     else:
         # Create new master file
         df.to_csv(master_csv_path, index=False)
@@ -217,7 +234,12 @@ def download_vix_futures():
     
     # Try to get PCF data from the ETF files
     logger.info("Attempting to get VIX futures from PCF data")
-    simplex_data = extract_vix_futures_from_pcf(find_latest_etf_file())
+    latest_etf_file = find_latest_etf_file()
+    if latest_etf_file:
+        simplex_data = extract_vix_futures_from_pcf(latest_etf_file)
+    else:
+        logger.error("No ETF file found for PCF extraction")
+        simplex_data = None
     
     # Log summary of results from each source
     logger.info("=== SOURCE SUMMARY ===")
@@ -241,41 +263,42 @@ def download_vix_futures():
     
     logger.info("=====================")
     
-    if cboe_data or yfinance_data or simplex_data:
-        # Format data into new structure
-        df = format_vix_data_for_output(cboe_data, yfinance_data, simplex_data)
+    # Check if we got data from any source
+    if not cboe_data and not yfinance_data and not simplex_data:
+        logger.error("Failed to get data from all sources")
+        return False
+    
+    # Format data into new structure
+    df = format_vix_data_for_output(cboe_data, yfinance_data, simplex_data)
+    
+    if df.empty:
+        logger.error("No valid price data could be formatted. Not saving empty files.")
+        return False
+    
+    # Save the data
+    save_success = save_vix_data(df, SAVE_DIR)
+    
+    if save_success:
+        # Log results
+        logger.info(f"Saved VIX futures data with {len(df)} price records")
+        logger.info("Data sample:")
+        logger.info(df.head(10).to_string())
         
-        if not df.empty:
-            # Save the data
-            save_success = save_vix_data(df, SAVE_DIR)
-            
-            if save_success:
-                # Log results
-                logger.info(f"Saved VIX futures data with {len(df)} price records")
-                logger.info("Data sample:")
-                logger.info(df.head(10).to_string())
-                
-                # Log any duplicate prices for the same future to highlight discrepancies
-                futures = df['vix_future'].unique()
-                for future in futures:
-                    future_df = df[df['vix_future'] == future]
-                    if len(future_df) > 1:
-                        prices = future_df['price'].tolist()
-                        max_diff = max(prices) - min(prices)
-                        if max_diff > 0.1:  # Threshold for significant difference
-                            logger.warning(f"Price discrepancy for {future}: max diff = {max_diff:.4f}")
-                            logger.warning(future_df[['source', 'symbol', 'price']].to_string())
-                
-                logger.info(f"Total processing time: {time.time() - overall_start_time:.2f}s")
-                return True
-            else:
-                logger.warning("Failed to save VIX futures data")
-                return False
-        else:
-            logger.warning("No valid price data collected. Not saving empty files.")
-            return False
+        # Log any duplicate prices for the same future to highlight discrepancies
+        futures = df['vix_future'].unique()
+        for future in futures:
+            future_df = df[df['vix_future'] == future]
+            if len(future_df) > 1:
+                prices = future_df['price'].tolist()
+                max_diff = max(prices) - min(prices)
+                if max_diff > 0.1:  # Threshold for significant difference
+                    logger.warning(f"Price discrepancy for {future}: max diff = {max_diff:.4f}")
+                    logger.warning(future_df[['source', 'symbol', 'price']].to_string())
+        
+        logger.info(f"Total processing time: {time.time() - overall_start_time:.2f}s")
+        return True
     else:
-        logger.error("Failed to get data from all sources.")
+        logger.error("Failed to save VIX futures data")
         return False
 
 if __name__ == "__main__":
