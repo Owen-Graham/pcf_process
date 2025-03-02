@@ -10409,3 +10409,1399 @@
 2025-03-02 04:18:22,578 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
 2025-03-02 04:18:22,582 - INFO - Saved estimated NAVs to data/estimated_navs.csv
 2025-03-02 04:18:22,582 - INFO - NAV calculations completed successfully
+2025-03-02 04:31:53,884 - INFO - Starting estimated NAV calculations
+2025-03-02 04:31:53,884 - INFO - Starting NAV calculations
+2025-03-02 04:31:53,886 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202503010442.csv
+2025-03-02 04:31:53,887 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202503010442.csv
+2025-03-02 04:31:53,888 - INFO - Updated ETF characteristics file: data/etf_characteristics_202503010442.csv
+2025-03-02 04:31:53,889 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202503010149.csv
+2025-03-02 04:31:53,890 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202503010149.csv
+2025-03-02 04:31:53,890 - INFO - Updated ETF characteristics file: data/etf_characteristics_202503010149.csv
+2025-03-02 04:31:53,896 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202503010452.csv
+2025-03-02 04:31:53,896 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202503010452.csv
+2025-03-02 04:31:53,897 - INFO - Updated ETF characteristics file: data/etf_characteristics_202503010452.csv
+2025-03-02 04:31:53,902 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202502280746.csv
+2025-03-02 04:31:53,903 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202502280746.csv
+2025-03-02 04:31:53,903 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502280746.csv
+2025-03-02 04:31:53,905 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202503010129.csv
+2025-03-02 04:31:53,905 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202503010129.csv
+2025-03-02 04:31:53,906 - INFO - Updated ETF characteristics file: data/etf_characteristics_202503010129.csv
+2025-03-02 04:31:53,909 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202502282350.csv
+2025-03-02 04:31:53,910 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202502282350.csv
+2025-03-02 04:31:53,910 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502282350.csv
+2025-03-02 04:31:53,914 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202503010122.csv
+2025-03-02 04:31:53,915 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202503010122.csv
+2025-03-02 04:31:53,915 - INFO - Updated ETF characteristics file: data/etf_characteristics_202503010122.csv
+2025-03-02 04:31:53,928 - INFO - Renamed near_future_code to near_future in data/etf_characteristics_202502282139.csv
+2025-03-02 04:31:53,928 - INFO - Renamed far_future_code to far_future in data/etf_characteristics_202502282139.csv
+2025-03-02 04:31:53,929 - INFO - Updated ETF characteristics file: data/etf_characteristics_202502282139.csv
+2025-03-02 04:31:53,930 - INFO - Fixed 8 ETF characteristic files
+2025-03-02 04:31:53,930 - INFO - Listing all files in data directory:
+2025-03-02 04:31:53,930 - INFO -   vix_futures_202503020132.csv - Size: 308 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,930 - INFO -   etf_characteristics_202503010442.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:53.887646
+2025-03-02 04:31:53,930 - INFO -   318A-CSV-20250228-202502280724.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,930 - INFO -   price_alert_202503011101.log - Size: 205 bytes, Modified: 2025-03-02 04:31:52.563636
+2025-03-02 04:31:53,930 - INFO -   318A-CSV-20250227-202502271020.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,931 - INFO -   vix_futures_202502262332.csv - Size: 66 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,931 - INFO -   vix_futures_202503020338.csv - Size: 308 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,931 - INFO -   etf_characteristics_202503010149.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:53.889646
+2025-03-02 04:31:53,931 - INFO -   vix_futures_202502282139.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,931 - INFO -   cboe_debug.html - Size: 303444 bytes, Modified: 2025-03-02 04:31:52.547636
+2025-03-02 04:31:53,931 - INFO -   vix_futures_202503010556.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,931 - INFO -   etf_characteristics_202503020430.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,931 - INFO -   vix_futures_202502280705.csv - Size: 834 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,931 - INFO -   vix_futures_202503010442.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,931 - INFO -   vix_futures_yahoo_202502282327.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,931 - INFO -   vix_futures_202503010130.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,931 - INFO -   fx_data_202502280701.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.501643
+2025-03-02 04:31:53,931 - INFO -   fx_data_202503010247.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,931 - INFO -   vix_futures_202503020410.csv - Size: 308 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,932 - INFO -   nav_data_202502280717.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,932 - INFO -   vix_futures_202502270229.csv - Size: 1090 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,932 - INFO -   318A-CSV-20250228-202502280651.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,932 - INFO -   318A-CSV-20250227-202502271117.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,932 - INFO -   etf_characteristics_202502280704.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,932 - INFO -   318A-CSV-20250228-202503010548.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,932 - INFO -   vix_futures_yahoo_202502271102.csv - Size: 482 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,932 - INFO -   fx_data_202502280607.csv - Size: 781 bytes, Modified: 2025-03-02 04:31:53.501643
+2025-03-02 04:31:53,932 - INFO -   nav_data_202502282139.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,932 - INFO -   fx_data_master.csv - Size: 23250 bytes, Modified: 2025-03-02 04:31:53.504643
+2025-03-02 04:31:53,932 - INFO -   vix_futures_yahoo_202502280717.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,932 - INFO -   nav_data_202503011101.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,932 - INFO -   vix_futures_yahoo_202502280607.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,932 - INFO -   vix_futures_202502270005.csv - Size: 183 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,933 - INFO -   318A-CSV-20250228-202502280548.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,933 - INFO -   vix_futures_202502270133.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,933 - INFO -   318A-CSV-20250228-202503020410.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,933 - INFO -   vix_futures_202503020431.csv - Size: 308 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,933 - INFO -   318A-CSV-20250228-202503011107.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,933 - INFO -   vix_futures_202502270550.csv - Size: 1090 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,933 - INFO -   318A-CSV-20250227-202502271032.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,933 - INFO -   vix_futures_yahoo_202503010452.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,933 - INFO -   etf_characteristics_202503010503.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,933 - INFO -   etf_characteristics_202502280548.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.538636
+2025-03-02 04:31:53,933 - INFO -   nav_data_202503011107.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,933 - INFO -   fx_data_202503011106.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,933 - INFO -   vix_futures_202502280607.csv - Size: 408 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,934 - INFO -   vix_downloader.log - Size: 6316688 bytes, Modified: 2025-03-02 04:31:52.630637
+2025-03-02 04:31:53,934 - INFO -   nav_data_202503020116.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,934 - INFO -   vix_futures_yahoo_202502280651.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,934 - INFO -   vix_futures_yahoo_202503020132.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,934 - INFO -   nav_data_202503010129.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,934 - INFO -   fx_data_202503020338.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,934 - INFO -   vix_futures_yahoo_202502280548.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,934 - INFO -   318A-CSV-20250228-202502280615.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,934 - INFO -   etf_characteristics_202502280556.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.538636
+2025-03-02 04:31:53,934 - INFO -   vix_futures_yahoo_202503010129.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,934 - INFO -   vix_futures_202502271047.csv - Size: 1970 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,934 - INFO -   etf_characteristics_202503010452.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:53.896646
+2025-03-02 04:31:53,934 - INFO -   vix_futures_yahoo_202503020338.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,934 - INFO -   vix_futures_yahoo_202502271203.csv - Size: 482 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,935 - INFO -   mufg_fx_raw.csv - Size: 5350 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,935 - INFO -   318A-CSV-20250228-202503010149.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,935 - INFO -   vix_futures_202502282350.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,935 - INFO -   318A-CSV-20250228-202502280701.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,935 - INFO -   vix_futures_yahoo_202503010516.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,935 - INFO -   nav_data_202503010149.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,935 - INFO -   vix_futures_202502280702.csv - Size: 834 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,935 - INFO -   fx_data_202503020345.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,935 - INFO -   etf_characteristics_202502280651.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,935 - INFO -   vix_futures_202503020056.csv - Size: 308 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,935 - INFO -   vix_futures_202503010122.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,935 - INFO -   fx_data_202503020054.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,935 - INFO -   vix_futures_202502282327.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,935 - INFO -   fx_data_202502282138.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,936 - INFO -   318A-CSV-20250227-202502271047.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,936 - INFO -   vix_futures_yahoo_202502280702.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,936 - INFO -   vix_futures_yahoo_202503010556.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,936 - INFO -   318A-CSV-20250228-202503011101.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,936 - INFO -   fx_data_202503010148.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,936 - INFO -   etf_characteristics_202502280532.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.538636
+2025-03-02 04:31:53,936 - INFO -   etf_characteristics.log - Size: 75992 bytes, Modified: 2025-03-02 04:31:52.546636
+2025-03-02 04:31:53,936 - INFO -   etf_characteristics_202503010555.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,936 - INFO -   vix_futures_yahoo_202502271047.csv - Size: 482 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,936 - INFO -   etf_characteristics_202502271126.csv - Size: 161 bytes, Modified: 2025-03-02 04:31:52.538636
+2025-03-02 04:31:53,936 - INFO -   318A-CSV-20250228-202503020417.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,936 - INFO -   vix_futures_yahoo_202502272353.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,936 - INFO -   mufg_fx_downloader.log - Size: 50314 bytes, Modified: 2025-03-02 04:31:53.505643
+2025-03-02 04:31:53,937 - INFO -   318A-CSV-20250228-202503020055.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,937 - INFO -   vix_futures_yahoo_202502271127.csv - Size: 482 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,937 - INFO -   etf_characteristics_202503020055.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,937 - INFO -   vix_futures_yahoo_202503010442.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,937 - INFO -   vix_futures_master.csv - Size: 34609 bytes, Modified: 2025-03-02 04:31:52.686637
+2025-03-02 04:31:53,937 - INFO -   fx_data_202503020430.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,937 - INFO -   vix_futures_202502270216.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,937 - INFO -   etf_characteristics_202502280746.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:53.902646
+2025-03-02 04:31:53,937 - INFO -   vix_futures_202502272353.csv - Size: 834 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,937 - INFO -   etf_characteristics_202503010129.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:53.904646
+2025-03-02 04:31:53,937 - INFO -   vix_futures_202503010149.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,937 - INFO -   pcf_vix_extractor.log - Size: 12024 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,937 - INFO -   vix_futures_yahoo_202503020055.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,938 - INFO -   vix_futures_yahoo_202503010149.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,938 - INFO -   318A-CSV-20250228-202502280556.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,938 - INFO -   etf_downloader.log - Size: 32409 bytes, Modified: 2025-03-02 04:31:52.544636
+2025-03-02 04:31:53,938 - INFO -   simplex_nav_parser.log - Size: 215480 bytes, Modified: 2025-03-02 04:31:52.568636
+2025-03-02 04:31:53,938 - INFO -   vix_futures_yahoo_202502280556.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,938 - INFO -   fx_data_202502282350.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,938 - INFO -   yahoo_vix_downloader.log - Size: 981036 bytes, Modified: 2025-03-02 04:31:52.695637
+2025-03-02 04:31:53,938 - INFO -   nav_data_202502272353.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,938 - INFO -   nav_data_202503020430.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,938 - INFO -   318A-CSV-20250227-202502271102.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,938 - INFO -   cboe_vix_downloader.log - Size: 8728694 bytes, Modified: 2025-03-02 04:31:52.516636
+2025-03-02 04:31:53,938 - INFO -   vix_futures_202502271203.csv - Size: 838 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,938 - INFO -   vix_futures_202502280556.csv - Size: 834 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,938 - INFO -   318A-CSV-20250228-202503020116.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,938 - INFO -   etf_characteristics_202503010548.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,939 - INFO -   fx_data_202502280615.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.501643
+2025-03-02 04:31:53,939 - INFO -   318A-CSV-20250228-202502272352.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,939 - INFO -   etf_characteristics_202503020410.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,939 - INFO -   nav_data_202503010531.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,939 - INFO -   etf_characteristics_202502271142.csv - Size: 154 bytes, Modified: 2025-03-02 04:31:52.538636
+2025-03-02 04:31:53,939 - INFO -   fx_data_202503010516.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,939 - INFO -   nav_data_202502280651.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,939 - INFO -   318A-CSV-20250228-202502282139.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,939 - INFO -   vix_futures_202503010549.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,939 - INFO -   fx_data_202503020416.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,939 - INFO -   nav_data_202503010548.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,939 - INFO -   nav_data_202503020132.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,939 - INFO -   vix_futures_202502270150.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,939 - INFO -   price_alert_202503020055.log - Size: 205 bytes, Modified: 2025-03-02 04:31:52.563636
+2025-03-02 04:31:53,939 - INFO -   vix_futures_202502270549.csv - Size: 1090 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,940 - INFO -   etf_characteristics_202502282350.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:53.909646
+2025-03-02 04:31:53,940 - INFO -   318A-CSV-20250228-202502280716.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,940 - INFO -   318A-CSV-20250228-202502280704.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,940 - INFO -   fx_data_202503010129.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,940 - INFO -   318A-CSV-20250228-202503010555.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,940 - INFO -   vix_futures_yahoo_202503020410.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.682637
+2025-03-02 04:31:53,940 - INFO -   vix_futures_yahoo_202503010122.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,940 - INFO -   fx_data_202502280704.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.501643
+2025-03-02 04:31:53,940 - INFO -   vix_futures_202503020346.csv - Size: 308 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,940 - INFO -   vix_futures_202502271143.csv - Size: 838 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,940 - INFO -   nav_data_202502280548.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,940 - INFO -   etf_characteristics_202502280724.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,940 - INFO -   vix_futures_yahoo_202502271117.csv - Size: 482 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,940 - INFO -   vix_futures_202502270236.csv - Size: 1090 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,941 - INFO -   318A-CSV-20250227-202502271126.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,941 - INFO -   nav_data_202502280725.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,941 - INFO -   vix_futures_202502271117.csv - Size: 838 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,941 - INFO -   vix_futures_yahoo_202503020116.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,941 - INFO -   fx_data_202503011100.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,941 - INFO -   nav_data_202503010122.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,941 - INFO -   vix_futures_202503020117.csv - Size: 308 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,941 - INFO -   vix_futures_202502270559.csv - Size: 1090 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,941 - INFO -   fx_data_202502280724.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,941 - INFO -   estimated_navs_calculator.log - Size: 1017024 bytes, Modified: 2025-03-02 04:31:53.940646
+2025-03-02 04:31:53,941 - INFO -   318A-CSV-20250227-202502271027.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,941 - INFO -   fx_data_202503010548.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,941 - INFO -   fx_data_202503020116.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,941 - INFO -   318A-CSV-20250228-202503010516.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,942 - INFO -   price_alert_202503011107.log - Size: 205 bytes, Modified: 2025-03-02 04:31:52.563636
+2025-03-02 04:31:53,942 - INFO -   price_alert_202503010442.log - Size: 205 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,942 - INFO -   vix_futures_202502270152.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,942 - INFO -   fx_data_202503020409.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,942 - INFO -   fx_data_202503020246.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,942 - INFO -   fx_data_202503020131.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,942 - INFO -   318A-CSV-20250227-202502271142.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,942 - INFO -   fx_data_202503010452.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,942 - INFO -   etf_characteristics_202502271203.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.538636
+2025-03-02 04:31:53,942 - INFO -   nav_data_202503020417.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,942 - INFO -   vix_futures_202502270100.csv - Size: 1095 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,942 - INFO -   etf_characteristics_202502280607.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.538636
+2025-03-02 04:31:53,942 - INFO -   nav_data_202502280607.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,942 - INFO -   vix_futures_yahoo_202502282139.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,943 - INFO -   vix_futures_202502280746.csv - Size: 834 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,943 - INFO -   etf_characteristics_202503010122.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:53.914646
+2025-03-02 04:31:53,943 - INFO -   nav_data_202503010503.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,943 - INFO -   318A-CSV-20250228-202503020131.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,943 - INFO -   fx_data_202503010555.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,943 - INFO -   nav_data_202502280532.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,943 - INFO -   318A-CSV-20250228-202503010530.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,943 - INFO -   fx_data_202503010503.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,943 - INFO -   nav_data_202503010442.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,943 - INFO -   etf_characteristics_202503020116.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,943 - INFO -   price_alert_202503010556.log - Size: 205 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,943 - INFO -   vix_futures_202502270605.csv - Size: 1090 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,943 - INFO -   vix_futures_yahoo_202503011107.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,943 - INFO -   vix_futures_yahoo_202502271143.csv - Size: 481 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,944 - INFO -   nav_data_202502280702.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,944 - INFO -   etf_characteristics_202503020417.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,944 - INFO -   318A-CSV-20250228-202502280532.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,944 - INFO -   etf_characteristics_202502272352.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.538636
+2025-03-02 04:31:53,944 - INFO -   318A-CSV-20250228-202503020430.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,944 - INFO -   318A-CSV-20250228-202502280746.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,944 - INFO -   nav_data_202502282350.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,944 - INFO -   vix_futures_202502280548.csv - Size: 834 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,944 - INFO -   vix_futures_202503011107.csv - Size: 308 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,944 - INFO -   318A-CSV-20250228-202503010122.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,944 - INFO -   318A-CSV-20250228-202503020338.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,944 - INFO -   vix_futures_202502270625.csv - Size: 1090 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,944 - INFO -   vix_futures_202502270225.csv - Size: 1090 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,944 - INFO -   etf_characteristics_202503020338.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,945 - INFO -   etf_characteristics_202502280701.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,945 - INFO -   318A-CSV-20250227-202502271203.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,945 - INFO -   etf_characteristics_202503010516.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,945 - INFO -   etf_characteristics_202502271117.csv - Size: 161 bytes, Modified: 2025-03-02 04:31:52.538636
+2025-03-02 04:31:53,945 - INFO -   vix_futures_202502270006.csv - Size: 183 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,945 - INFO -   nav_data_202502280556.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,945 - INFO -   vix_futures_yahoo_202503020345.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.682637
+2025-03-02 04:31:53,945 - INFO -   vix_futures_yahoo_202502280746.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,945 - INFO -   etf_characteristics_master.csv - Size: 1063 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,945 - INFO -   vix_futures_202502271102.csv - Size: 838 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,945 - INFO -   318A-CSV-20250228-202502282350.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,945 - INFO -   vix_futures_202502280725.csv - Size: 834 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,945 - INFO -   vix_futures_202503020417.csv - Size: 308 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,945 - INFO -   vix_futures_yahoo_202502280705.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,946 - INFO -   vix_futures_yahoo_202502280724.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,946 - INFO -   etf_characteristics_202503020131.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,946 - INFO -   etf_characteristics_202503010530.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,946 - INFO -   vix_futures_yahoo_202503020430.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.682637
+2025-03-02 04:31:53,946 - INFO -   nav_data_202503010516.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,946 - INFO -   fx_data_202502280548.csv - Size: 108 bytes, Modified: 2025-03-02 04:31:53.501643
+2025-03-02 04:31:53,946 - INFO -   vix_futures_yahoo_202503020417.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.682637
+2025-03-02 04:31:53,946 - INFO -   vix_futures_yahoo_202503010503.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,946 - INFO -   nav_data_202502280615.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,946 - INFO -   318A-CSV-20250228-202503010503.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,946 - INFO -   pcf_vix_extractor.py - Size: 37479 bytes, Modified: 2025-03-02 04:31:40.628553
+2025-03-02 04:31:53,946 - INFO -   vix_futures_202502280717.csv - Size: 408 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,946 - INFO -   nav_data_202503020055.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,946 - INFO -   vix_futures_202503010503.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,947 - INFO -   nav_data_202503020410.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,947 - INFO -   vix_futures_202502280615.csv - Size: 834 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,947 - INFO -   vix_futures_202502271127.csv - Size: 838 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,947 - INFO -   price_alert_202503020345.log - Size: 205 bytes, Modified: 2025-03-02 04:31:52.563636
+2025-03-02 04:31:53,947 - INFO -   limits_alerter.log - Size: 29045 bytes, Modified: 2025-03-02 04:31:52.544636
+2025-03-02 04:31:53,947 - INFO -   318A-CSV-20250228-202502280607.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,947 - INFO -   fx_data_202502280650.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.501643
+2025-03-02 04:31:53,947 - INFO -   vix_futures_yahoo_202503010548.csv - Size: 288 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,947 - INFO -   etf_characteristics_202503011101.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,947 - INFO -   318A-CSV-20250228-202503010442.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,947 - INFO -   fx_data_202502280716.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.501643
+2025-03-02 04:31:53,947 - INFO -   fx_data_202503010121.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,947 - INFO -   nav_data_202502280704.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,947 - INFO -   318A-CSV-20250228-202503010129.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,948 - INFO -   318A-CSV-20250227-202502270703.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.636623
+2025-03-02 04:31:53,948 - INFO -   fx_data_202502280745.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,948 - INFO -   nav_data_202503010556.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,948 - INFO -   nav_data_202503010452.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,948 - INFO -   vix_futures_202503010453.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,948 - INFO -   vix_futures_202502270505.csv - Size: 1090 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,948 - INFO -   etf_characteristics_202502280716.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,948 - INFO -   etf_characteristics_202502280615.csv - Size: 160 bytes, Modified: 2025-03-02 04:31:52.539636
+2025-03-02 04:31:53,948 - INFO -   nav_data_202502280746.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.541636
+2025-03-02 04:31:53,948 - INFO -   nav_data_master.csv - Size: 3100 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,948 - INFO -   318A-CSV-20250228-202503010452.csv - Size: 290 bytes, Modified: 2025-03-02 04:31:50.637623
+2025-03-02 04:31:53,948 - INFO -   etf_characteristics_202502282139.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:53.927646
+2025-03-02 04:31:53,948 - INFO -   vix_futures_202502280651.csv - Size: 834 bytes, Modified: 2025-03-02 04:31:52.679637
+2025-03-02 04:31:53,948 - INFO -   estimated_navs.csv - Size: 32264 bytes, Modified: 2025-03-02 04:31:51.096626
+2025-03-02 04:31:53,949 - INFO -   vix_futures_yahoo_202502282350.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,949 - INFO -   vix_futures_202503010517.csv - Size: 836 bytes, Modified: 2025-03-02 04:31:52.680637
+2025-03-02 04:31:53,949 - INFO -   nav_data_202503020338.csv - Size: 139 bytes, Modified: 2025-03-02 04:31:52.562636
+2025-03-02 04:31:53,949 - INFO -   vix_futures_yahoo_202502280615.csv - Size: 484 bytes, Modified: 2025-03-02 04:31:52.681637
+2025-03-02 04:31:53,949 - INFO -   vix_futures_202502262349.csv - Size: 183 bytes, Modified: 2025-03-02 04:31:52.628637
+2025-03-02 04:31:53,949 - INFO -   etf_characteristics_202503011107.csv - Size: 193 bytes, Modified: 2025-03-02 04:31:52.540636
+2025-03-02 04:31:53,949 - INFO -   fx_data_202503010442.csv - Size: 784 bytes, Modified: 2025-03-02 04:31:53.502643
+2025-03-02 04:31:53,949 - INFO - Total files found: 263
+2025-03-02 04:31:53,949 - INFO - Looking for files matching: data/vix_futures_*.csv
+2025-03-02 04:31:53,950 - INFO - Found 95 matching files: ['data/vix_futures_202503020132.csv', 'data/vix_futures_202502262332.csv', 'data/vix_futures_202503020338.csv', 'data/vix_futures_202502282139.csv', 'data/vix_futures_202503010556.csv', 'data/vix_futures_202502280705.csv', 'data/vix_futures_202503010442.csv', 'data/vix_futures_yahoo_202502282327.csv', 'data/vix_futures_202503010130.csv', 'data/vix_futures_202503020410.csv', 'data/vix_futures_202502270229.csv', 'data/vix_futures_yahoo_202502271102.csv', 'data/vix_futures_yahoo_202502280717.csv', 'data/vix_futures_yahoo_202502280607.csv', 'data/vix_futures_202502270005.csv', 'data/vix_futures_202502270133.csv', 'data/vix_futures_202503020431.csv', 'data/vix_futures_202502270550.csv', 'data/vix_futures_yahoo_202503010452.csv', 'data/vix_futures_202502280607.csv', 'data/vix_futures_yahoo_202502280651.csv', 'data/vix_futures_yahoo_202503020132.csv', 'data/vix_futures_yahoo_202502280548.csv', 'data/vix_futures_yahoo_202503010129.csv', 'data/vix_futures_202502271047.csv', 'data/vix_futures_yahoo_202503020338.csv', 'data/vix_futures_yahoo_202502271203.csv', 'data/vix_futures_202502282350.csv', 'data/vix_futures_yahoo_202503010516.csv', 'data/vix_futures_202502280702.csv', 'data/vix_futures_202503020056.csv', 'data/vix_futures_202503010122.csv', 'data/vix_futures_202502282327.csv', 'data/vix_futures_yahoo_202502280702.csv', 'data/vix_futures_yahoo_202503010556.csv', 'data/vix_futures_yahoo_202502271047.csv', 'data/vix_futures_yahoo_202502272353.csv', 'data/vix_futures_yahoo_202502271127.csv', 'data/vix_futures_yahoo_202503010442.csv', 'data/vix_futures_master.csv', 'data/vix_futures_202502270216.csv', 'data/vix_futures_202502272353.csv', 'data/vix_futures_202503010149.csv', 'data/vix_futures_yahoo_202503020055.csv', 'data/vix_futures_yahoo_202503010149.csv', 'data/vix_futures_yahoo_202502280556.csv', 'data/vix_futures_202502271203.csv', 'data/vix_futures_202502280556.csv', 'data/vix_futures_202503010549.csv', 'data/vix_futures_202502270150.csv', 'data/vix_futures_202502270549.csv', 'data/vix_futures_yahoo_202503020410.csv', 'data/vix_futures_yahoo_202503010122.csv', 'data/vix_futures_202503020346.csv', 'data/vix_futures_202502271143.csv', 'data/vix_futures_yahoo_202502271117.csv', 'data/vix_futures_202502270236.csv', 'data/vix_futures_202502271117.csv', 'data/vix_futures_yahoo_202503020116.csv', 'data/vix_futures_202503020117.csv', 'data/vix_futures_202502270559.csv', 'data/vix_futures_202502270152.csv', 'data/vix_futures_202502270100.csv', 'data/vix_futures_yahoo_202502282139.csv', 'data/vix_futures_202502280746.csv', 'data/vix_futures_202502270605.csv', 'data/vix_futures_yahoo_202503011107.csv', 'data/vix_futures_yahoo_202502271143.csv', 'data/vix_futures_202502280548.csv', 'data/vix_futures_202503011107.csv', 'data/vix_futures_202502270625.csv', 'data/vix_futures_202502270225.csv', 'data/vix_futures_202502270006.csv', 'data/vix_futures_yahoo_202503020345.csv', 'data/vix_futures_yahoo_202502280746.csv', 'data/vix_futures_202502271102.csv', 'data/vix_futures_202502280725.csv', 'data/vix_futures_202503020417.csv', 'data/vix_futures_yahoo_202502280705.csv', 'data/vix_futures_yahoo_202502280724.csv', 'data/vix_futures_yahoo_202503020430.csv', 'data/vix_futures_yahoo_202503020417.csv', 'data/vix_futures_yahoo_202503010503.csv', 'data/vix_futures_202502280717.csv', 'data/vix_futures_202503010503.csv', 'data/vix_futures_202502280615.csv', 'data/vix_futures_202502271127.csv', 'data/vix_futures_yahoo_202503010548.csv', 'data/vix_futures_202503010453.csv', 'data/vix_futures_202502270505.csv', 'data/vix_futures_202502280651.csv', 'data/vix_futures_yahoo_202502282350.csv', 'data/vix_futures_202503010517.csv', 'data/vix_futures_yahoo_202502280615.csv', 'data/vix_futures_202502262349.csv']
+2025-03-02 04:31:53,951 - INFO - Reading file: data/vix_futures_master.csv
+2025-03-02 04:31:53,952 - INFO - Looking for files matching: data/etf_characteristics_*.csv
+2025-03-02 04:31:53,953 - INFO - Found 38 matching files: ['data/etf_characteristics_202503010442.csv', 'data/etf_characteristics_202503010149.csv', 'data/etf_characteristics_202503020430.csv', 'data/etf_characteristics_202502280704.csv', 'data/etf_characteristics_202503010503.csv', 'data/etf_characteristics_202502280548.csv', 'data/etf_characteristics_202502280556.csv', 'data/etf_characteristics_202503010452.csv', 'data/etf_characteristics_202502280651.csv', 'data/etf_characteristics_202502280532.csv', 'data/etf_characteristics_202503010555.csv', 'data/etf_characteristics_202502271126.csv', 'data/etf_characteristics_202503020055.csv', 'data/etf_characteristics_202502280746.csv', 'data/etf_characteristics_202503010129.csv', 'data/etf_characteristics_202503010548.csv', 'data/etf_characteristics_202503020410.csv', 'data/etf_characteristics_202502271142.csv', 'data/etf_characteristics_202502282350.csv', 'data/etf_characteristics_202502280724.csv', 'data/etf_characteristics_202502271203.csv', 'data/etf_characteristics_202502280607.csv', 'data/etf_characteristics_202503010122.csv', 'data/etf_characteristics_202503020116.csv', 'data/etf_characteristics_202503020417.csv', 'data/etf_characteristics_202502272352.csv', 'data/etf_characteristics_202503020338.csv', 'data/etf_characteristics_202502280701.csv', 'data/etf_characteristics_202503010516.csv', 'data/etf_characteristics_202502271117.csv', 'data/etf_characteristics_master.csv', 'data/etf_characteristics_202503020131.csv', 'data/etf_characteristics_202503010530.csv', 'data/etf_characteristics_202503011101.csv', 'data/etf_characteristics_202502280716.csv', 'data/etf_characteristics_202502280615.csv', 'data/etf_characteristics_202502282139.csv', 'data/etf_characteristics_202503011107.csv']
+2025-03-02 04:31:53,953 - INFO - Reading file: data/etf_characteristics_202502282139.csv
+2025-03-02 04:31:53,955 - INFO - Looking for files matching: data/nav_data_*.csv
+2025-03-02 04:31:53,955 - INFO - Found 34 matching files: ['data/nav_data_202502280717.csv', 'data/nav_data_202502282139.csv', 'data/nav_data_202503011101.csv', 'data/nav_data_202503011107.csv', 'data/nav_data_202503020116.csv', 'data/nav_data_202503010129.csv', 'data/nav_data_202503010149.csv', 'data/nav_data_202502272353.csv', 'data/nav_data_202503020430.csv', 'data/nav_data_202503010531.csv', 'data/nav_data_202502280651.csv', 'data/nav_data_202503010548.csv', 'data/nav_data_202503020132.csv', 'data/nav_data_202502280548.csv', 'data/nav_data_202502280725.csv', 'data/nav_data_202503010122.csv', 'data/nav_data_202503020417.csv', 'data/nav_data_202502280607.csv', 'data/nav_data_202503010503.csv', 'data/nav_data_202502280532.csv', 'data/nav_data_202503010442.csv', 'data/nav_data_202502280702.csv', 'data/nav_data_202502282350.csv', 'data/nav_data_202502280556.csv', 'data/nav_data_202503010516.csv', 'data/nav_data_202502280615.csv', 'data/nav_data_202503020055.csv', 'data/nav_data_202503020410.csv', 'data/nav_data_202502280704.csv', 'data/nav_data_202503010556.csv', 'data/nav_data_202503010452.csv', 'data/nav_data_202502280746.csv', 'data/nav_data_master.csv', 'data/nav_data_202503020338.csv']
+2025-03-02 04:31:53,956 - INFO - Reading file: data/nav_data_202503011101.csv
+2025-03-02 04:31:53,957 - INFO - Looking for files matching: data/fx_data_*.csv
+2025-03-02 04:31:53,958 - INFO - Found 33 matching files: ['data/fx_data_202502280701.csv', 'data/fx_data_202503010247.csv', 'data/fx_data_202502280607.csv', 'data/fx_data_master.csv', 'data/fx_data_202503011106.csv', 'data/fx_data_202503020338.csv', 'data/fx_data_202503020345.csv', 'data/fx_data_202503020054.csv', 'data/fx_data_202502282138.csv', 'data/fx_data_202503010148.csv', 'data/fx_data_202503020430.csv', 'data/fx_data_202502282350.csv', 'data/fx_data_202502280615.csv', 'data/fx_data_202503010516.csv', 'data/fx_data_202503020416.csv', 'data/fx_data_202503010129.csv', 'data/fx_data_202502280704.csv', 'data/fx_data_202503011100.csv', 'data/fx_data_202502280724.csv', 'data/fx_data_202503010548.csv', 'data/fx_data_202503020116.csv', 'data/fx_data_202503020409.csv', 'data/fx_data_202503020246.csv', 'data/fx_data_202503020131.csv', 'data/fx_data_202503010452.csv', 'data/fx_data_202503010555.csv', 'data/fx_data_202503010503.csv', 'data/fx_data_202502280548.csv', 'data/fx_data_202502280650.csv', 'data/fx_data_202502280716.csv', 'data/fx_data_202503010121.csv', 'data/fx_data_202502280745.csv', 'data/fx_data_202503010442.csv']
+2025-03-02 04:31:53,958 - INFO - Reading file: data/fx_data_master.csv
+2025-03-02 04:31:53,960 - INFO - Found FX Rate: T.T.S. = 1.0
+2025-03-02 04:31:53,960 - INFO - Found FX Rate: ACC. = 150.67
+2025-03-02 04:31:53,961 - INFO - Found FX Rate: CASH S. = 151.1
+2025-03-02 04:31:53,961 - INFO - Found FX Rate: T.T.B. = 152.47
+2025-03-02 04:31:53,961 - INFO - Found FX Rate: A/S = 148.67
+2025-03-02 04:31:53,961 - INFO - Found FX Rate: D/PED/A = 148.24
+2025-03-02 04:31:53,961 - INFO - Found FX Rate: CASH B. = 147.94
+2025-03-02 04:31:53,961 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,962 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,962 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,962 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,962 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,962 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,962 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,963 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,963 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,963 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,963 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,963 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,963 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,964 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,964 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,964 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,964 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,964 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,964 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,964 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,965 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,965 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,965 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,965 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,965 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,965 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,965 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,966 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,966 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,966 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,966 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,966 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,966 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,966 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,967 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,967 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,967 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,967 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,967 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,967 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,967 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,968 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,968 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,968 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,968 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,968 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,968 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,968 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,968 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,969 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,969 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,969 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,969 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,969 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,969 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,969 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,970 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,970 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,970 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,970 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,970 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,970 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,970 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,971 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,971 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,971 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,971 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,971 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,971 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,971 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,972 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,972 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,972 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,972 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,972 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,972 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,972 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,972 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,973 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,973 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,973 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,973 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,973 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,973 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,973 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,974 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,974 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,974 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,974 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,974 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,974 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,974 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,975 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,975 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,975 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,975 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,975 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,975 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,975 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,976 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,976 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,976 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,976 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,976 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,976 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,976 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,977 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,977 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,977 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,977 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,977 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,977 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,977 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,977 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,978 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,978 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,978 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,978 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,978 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,978 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,978 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,979 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,979 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,979 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,979 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,979 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,979 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,979 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,980 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,980 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,980 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,980 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,980 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,980 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,980 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,980 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,981 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,981 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,981 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,981 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,981 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,981 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,981 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,982 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,982 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,982 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,982 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,982 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,982 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,982 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,983 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,983 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,983 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,983 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,983 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,983 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,983 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,984 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,984 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,984 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,984 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,984 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,984 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,984 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,985 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,985 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,985 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,985 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,985 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,986 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,986 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,986 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,986 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,986 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,987 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,987 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,987 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,987 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,987 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,988 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,988 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,988 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,988 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,988 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,988 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,989 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,989 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,989 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,989 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,989 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,990 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,990 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,990 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,990 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,991 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,991 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,991 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,991 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,991 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,992 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,992 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,992 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,992 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,992 - INFO - Found FX Rate: T.T.S. = 150.67
+2025-03-02 04:31:53,993 - INFO - Found FX Rate: ACC. = 151.1
+2025-03-02 04:31:53,993 - INFO - Found FX Rate: CASH S. = 152.47
+2025-03-02 04:31:53,993 - INFO - Found FX Rate: T.T.B. = 148.67
+2025-03-02 04:31:53,993 - INFO - Found FX Rate: A/S = 148.24
+2025-03-02 04:31:53,993 - INFO - Found FX Rate: D/PED/A = 147.94
+2025-03-02 04:31:53,993 - INFO - Found FX Rate: CASH B. = 146.67
+2025-03-02 04:31:53,994 - INFO - ETF Characteristics: shares_outstanding=720000, near_shares=123 (VXH5), far_shares=44 (VXJ5), cash=628124809.0
+2025-03-02 04:31:53,994 - INFO - Latest published NAV: 927.0
+2025-03-02 04:31:54,037 - INFO - All available futures contracts: ['VIX', 'VXH5', 'VXJ5', 'VXK5', 'VXM5', 'VXN5', 'VXQ5', 'VXU5', 'VXV5', 'VXX5']
+2025-03-02 04:31:54,037 - INFO - Found price for near future VXH5: 18.1337 (CBOE)
+2025-03-02 04:31:54,037 - INFO - Found price for far future VXJ5: 18.6034 (CBOE)
+2025-03-02 04:31:54,037 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,037 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,037 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,037 - INFO - Estimated NAV with T.T.S.: 876.63 JPY per share
+2025-03-02 04:31:54,037 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,037 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,037 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,037 - INFO - Estimated NAV with ACC.: 132,081.88 JPY per share
+2025-03-02 04:31:54,037 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,038 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,038 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,038 - INFO - Estimated NAV with CASH S.: 132,458.84 JPY per share
+2025-03-02 04:31:54,038 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,038 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,038 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,038 - INFO - Estimated NAV with T.T.B.: 133,659.82 JPY per share
+2025-03-02 04:31:54,038 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,038 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,038 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,038 - INFO - Estimated NAV with A/S: 130,328.62 JPY per share
+2025-03-02 04:31:54,038 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,038 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,038 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,038 - INFO - Estimated NAV with D/PED/A: 129,951.67 JPY per share
+2025-03-02 04:31:54,038 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,039 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,039 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,039 - INFO - Estimated NAV with CASH B.: 129,688.68 JPY per share
+2025-03-02 04:31:54,039 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,039 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,039 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,039 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,039 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,039 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,039 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,039 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,039 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,039 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,039 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,039 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,039 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,040 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,040 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,040 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,040 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,040 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,040 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,040 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,040 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,040 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,040 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,040 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,040 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,040 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,040 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,040 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,040 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,040 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,041 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,041 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,041 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,041 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,041 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,041 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,041 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,041 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,041 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,041 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,041 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,041 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,041 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,041 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,041 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,041 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,042 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,042 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,042 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,042 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,042 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,042 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,042 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,042 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,042 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,042 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,042 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,042 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,042 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,042 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,042 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,042 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,042 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,043 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,043 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,043 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,043 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,043 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,043 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,043 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,043 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,043 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,043 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,043 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,043 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,043 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,043 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,043 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,043 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,044 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,044 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,044 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,044 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,044 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,044 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,044 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,044 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,044 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,044 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,044 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,044 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,044 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,044 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,044 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,044 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,045 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,045 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,045 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,045 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,045 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,045 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,045 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,045 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,045 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,045 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,045 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,045 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,045 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,045 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,045 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,045 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,045 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,046 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,046 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,046 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,046 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,046 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,046 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,046 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,046 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,046 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,046 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,046 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,046 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,046 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,046 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,046 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,046 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,047 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,047 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,047 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,047 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,047 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,047 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,047 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,047 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,047 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,047 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,047 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,047 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,047 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,047 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,047 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,047 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,047 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,048 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,048 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,048 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,048 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,048 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,048 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,048 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,048 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,048 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,048 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,048 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,048 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,048 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,048 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,048 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,048 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,049 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,049 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,049 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,049 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,049 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,049 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,049 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,049 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,049 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,049 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,049 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,049 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,049 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,049 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,049 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,049 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,049 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,050 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,050 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,050 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,050 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,050 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,050 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,050 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,050 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,050 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,050 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,050 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,050 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,050 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,050 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,050 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,050 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,050 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,051 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,051 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,051 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,051 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,051 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,051 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,051 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,051 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,051 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,051 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,051 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,051 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,051 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,051 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,051 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,051 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,052 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,052 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,052 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,052 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,052 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,052 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,052 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,052 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,052 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,052 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,052 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,052 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,052 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,052 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,052 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,052 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,052 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,053 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,053 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,053 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,053 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,053 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,053 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,053 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,053 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,053 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,053 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,053 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,053 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,053 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,053 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,053 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,053 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,053 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,053 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,053 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,053 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,053 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,053 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,053 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,054 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,054 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,054 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,054 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,054 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,054 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,054 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,054 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,054 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,054 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,054 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,054 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,054 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,054 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,054 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,054 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,054 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,054 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,054 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,054 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,054 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,054 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,055 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,055 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,055 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,055 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,055 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,055 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,055 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,055 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,055 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,055 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,055 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,055 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,055 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,056 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,056 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,056 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,056 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,056 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,056 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,056 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,056 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,056 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,056 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,056 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,056 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,056 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,056 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,056 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,056 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,056 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,057 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,057 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,057 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,057 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,057 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,057 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,057 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,057 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,057 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,057 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,057 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,057 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,057 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,057 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,057 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,057 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,057 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,058 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,058 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,058 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,058 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,058 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,058 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,058 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,058 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,058 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,058 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,058 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,058 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,058 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,058 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,058 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,058 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,058 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,058 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,059 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,059 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,059 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,059 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,059 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,059 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,059 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,059 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,059 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,059 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,059 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,059 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,059 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,059 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,059 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,059 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,059 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,059 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,060 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,060 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,060 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,060 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,060 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,060 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,060 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,060 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,060 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,060 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,060 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,060 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,060 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,060 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,060 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,060 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,061 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,061 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,061 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,061 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,061 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,061 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,061 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,061 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,061 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,061 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,061 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,061 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,061 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,061 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,061 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,061 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,061 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,062 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,062 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,062 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,062 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,062 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,062 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,062 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,062 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,062 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,062 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,062 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,062 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,062 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,062 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,062 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,062 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,063 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,063 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,063 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,063 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,063 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,063 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,063 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,063 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,063 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,063 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,063 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,063 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,063 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,063 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,063 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,063 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,063 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,064 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,064 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,064 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,064 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,064 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,064 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,064 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,064 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,064 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,064 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,064 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,064 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,064 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,064 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,064 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,064 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,064 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,065 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,065 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,065 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,065 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,065 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,065 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,065 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,065 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,065 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,065 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,065 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,065 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,065 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,065 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,065 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,065 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,066 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,066 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,066 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,066 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,066 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,066 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,066 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,066 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,066 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,066 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,066 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,066 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,066 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,066 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,066 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,066 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,066 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,067 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,067 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,067 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,067 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,067 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,067 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,067 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,067 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,067 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,067 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,067 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,067 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,067 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,067 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,067 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,067 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,067 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,068 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,068 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,068 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,068 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,068 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,068 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,068 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,068 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,068 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,068 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,068 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,068 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,068 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,068 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,068 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,068 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,068 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,069 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,069 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,069 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,069 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,069 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,069 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,069 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,069 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,069 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,069 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,069 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,069 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,069 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,069 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,069 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,069 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,070 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,070 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,070 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,070 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,070 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,070 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,070 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,070 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,070 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,070 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,070 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,070 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,070 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,070 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,070 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,070 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,070 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,071 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,071 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,071 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,071 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,071 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,071 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,071 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,071 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,071 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,071 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,071 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,071 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,071 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,071 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,071 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,071 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,071 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,072 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,072 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,072 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,072 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,072 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,072 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,072 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,072 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,072 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,072 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,072 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,072 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,072 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,072 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,072 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,072 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,072 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,073 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,073 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,073 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,073 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,073 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,073 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,073 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,073 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,073 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,073 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,073 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,073 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,073 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,073 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,073 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,073 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,073 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,074 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,074 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,074 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,074 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,074 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,074 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,074 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,074 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,074 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,074 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,074 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,074 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,074 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,074 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,074 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,074 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,074 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,075 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,075 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,075 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,075 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,075 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,075 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,075 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,075 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,075 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,075 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,075 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,075 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,075 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,075 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,075 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,075 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,076 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,076 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,076 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,076 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,076 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,076 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,076 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,076 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,076 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,076 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,076 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,076 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,076 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,076 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,076 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,076 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,076 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,077 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,077 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,077 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,077 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,077 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,077 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,077 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,077 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,077 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,077 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,077 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,077 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,077 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,077 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,077 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,077 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,077 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,077 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,077 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,078 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,078 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,078 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,078 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,078 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,078 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,078 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,078 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,078 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,078 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,078 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,078 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,078 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,078 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,078 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,078 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,078 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,079 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,079 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,079 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,079 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,079 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,079 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,079 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,079 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,079 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,079 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,079 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,079 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,079 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,079 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,079 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,079 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,079 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,080 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,080 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,080 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,080 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,080 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,080 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,080 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,080 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,080 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,080 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,080 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,080 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,080 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,080 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,080 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,080 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,080 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,081 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,081 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,081 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,081 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,081 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,081 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,081 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,081 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,081 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,081 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,081 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,081 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,081 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,081 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,081 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,081 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,081 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,081 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,082 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,082 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,082 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,082 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,082 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,082 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,082 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,082 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,082 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,082 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,082 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,082 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,082 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,082 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,082 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,082 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,082 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,083 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,083 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,083 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,083 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,083 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,083 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,083 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,083 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,083 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,083 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,083 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,083 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,083 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,083 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,083 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,083 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,083 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,084 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,084 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,084 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,084 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,084 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,084 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,084 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,084 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,084 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,084 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,084 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,084 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,084 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,084 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,084 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,084 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,084 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,084 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,085 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,085 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,085 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,085 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,085 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,085 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,085 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,085 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,085 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,085 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,085 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,085 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,085 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,085 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,085 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,085 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,085 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,086 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,086 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,086 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,086 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,086 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,086 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,086 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,086 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,086 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,086 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,086 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,086 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,086 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,086 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,086 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,086 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,086 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,087 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,087 - INFO - Estimated NAV with T.T.S.: 132,081.88 JPY per share
+2025-03-02 04:31:54,087 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,087 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,087 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,087 - INFO - Estimated NAV with ACC.: 132,458.84 JPY per share
+2025-03-02 04:31:54,087 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,087 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,087 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,087 - INFO - Estimated NAV with CASH S.: 133,659.82 JPY per share
+2025-03-02 04:31:54,087 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,087 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,087 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,087 - INFO - Estimated NAV with T.T.B.: 130,328.62 JPY per share
+2025-03-02 04:31:54,087 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,087 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,087 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,087 - INFO - Estimated NAV with A/S: 129,951.67 JPY per share
+2025-03-02 04:31:54,088 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,088 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,088 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,088 - INFO - Estimated NAV with D/PED/A: 129,688.68 JPY per share
+2025-03-02 04:31:54,088 - INFO - Near future value: 2,230,445.10 USD
+2025-03-02 04:31:54,088 - INFO - Far future value: 818,549.60 USD
+2025-03-02 04:31:54,088 - INFO - Cash component: 628,124,809.00 USD
+2025-03-02 04:31:54,088 - INFO - Estimated NAV with CASH B.: 128,575.36 JPY per share
+2025-03-02 04:31:54,095 - INFO - Saved estimated NAVs to data/estimated_navs.csv
+2025-03-02 04:31:54,095 - INFO - NAV calculations completed successfully
