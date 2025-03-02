@@ -272,6 +272,7 @@ def get_etf_closing_data():
 def get_vix_futures_prices(composition, reference_time):
     """
     Get current VIX futures prices from Yahoo Finance.
+    Focuses only on ^VXIND and ^VFTW ticker formats.
     No fallbacks - fails cleanly if prices can't be found.
     
     Args:
@@ -283,12 +284,6 @@ def get_vix_futures_prices(composition, reference_time):
     """
     try:
         futures_prices = {}
-        
-        # For current prices, use a short recent window
-        end_date = datetime.now().strftime('%Y-%m-%d')
-        start_date = (datetime.now() - timedelta(days=4)).strftime('%Y-%m-%d')
-        
-        logger.info(f"Getting current VIX futures prices from {start_date} to {end_date}")
         
         # Use position-based tickers for contracts
         next_contracts = get_next_vix_contracts(6)  # Get up to 6 upcoming contracts
@@ -305,20 +300,15 @@ def get_vix_futures_prices(composition, reference_time):
                 logger.error(f"Could not determine position for {normalized_ticker}")
                 return None
         
-        # Download all futures prices using unified approach
+        # Download all futures prices using only the specific ticker formats
         for normalized_ticker, position in position_map.items():
-            # For VIX futures, use the industry-standard position-based tickers
-            if position <= 3:  # Only standard symbols for first 3 positions
-                # Different ticker formats to try
-                ticker_formats = [
-                    f"/VX{normalized_ticker[2:]}", # /VXH5
-                    f"/VIX{normalized_ticker[2:]}", # /VIXH5
-                    f"VX{normalized_ticker[2:]}=F", # VXH5=F
-                    f"^VX{position}" # ^VX1 for front month
-                ]
+            # Only try positions 1-3 which are standard
+            if position <= 3:
+                # Focused on just these two ticker formats
+                specific_tickers = [f"^VXIND{position}", f"^VFTW{position}"]
                 
                 price_found = False
-                for ticker in ticker_formats:
+                for ticker in specific_tickers:
                     try:
                         logger.info(f"Trying to download {ticker} for {normalized_ticker}")
                         
@@ -326,6 +316,7 @@ def get_vix_futures_prices(composition, reference_time):
                         data = yf.download(ticker, period="5d", progress=False)
                         
                         if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                            # Fix the warning about float on single element Series
                             price = float(data['Close'].iloc[-1])
                             
                             # Validate price
@@ -340,55 +331,14 @@ def get_vix_futures_prices(composition, reference_time):
                     except Exception as e:
                         logger.warning(f"Failed to download {ticker}: {str(e)}")
                 
-                # If position-based tickers didn't work, try direct format
-                if not price_found:
-                    # Try to get it via the VIX futures standard format
-                    month_letter = normalized_ticker[2]  # Extract 'H' from 'VXH5'
-                    year_digit = normalized_ticker[3]  # Extract '5' from 'VXH5'
-                    
-                    # Map month letter to month number
-                    month_map = {
-                        'F': '01', 'G': '02', 'H': '03', 'J': '04', 'K': '05', 'M': '06',
-                        'N': '07', 'Q': '08', 'U': '09', 'V': '10', 'X': '11', 'Z': '12'
-                    }
-                    
-                    if month_letter in month_map:
-                        month_num = month_map[month_letter]
-                        current_year = datetime.now().year
-                        decade = int(current_year / 10) * 10
-                        full_year = decade + int(year_digit)
-                        
-                        # If the resulting year is in the past, assume next decade
-                        if full_year < current_year:
-                            full_year += 10
-                            
-                        # Yahoo-specific format for VIX futures
-                        yahoo_ticker = f"^VIX{month_num}.{full_year}"
-                        
-                        try:
-                            logger.info(f"Trying Yahoo-specific format {yahoo_ticker} for {normalized_ticker}")
-                            data = yf.download(yahoo_ticker, period="5d", progress=False)
-                            
-                            if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                                price = float(data['Close'].iloc[-1])
-                                
-                                # Validate price
-                                if pd.isna(price) or price <= 0:
-                                    logger.warning(f"Invalid price for {yahoo_ticker}: {price}")
-                                else:
-                                    futures_prices[normalized_ticker] = price
-                                    logger.info(f"Found price for {normalized_ticker} using {yahoo_ticker}: {price}")
-                                    price_found = True
-                        except Exception as e:
-                            logger.warning(f"Failed to download {yahoo_ticker}: {str(e)}")
-                
-                # For the very first contract (front month), try VIX directly if all else fails
+                # If no price found with specific tickers, try VIX index but only for front month
                 if not price_found and position == 1:
                     try:
                         logger.info(f"Trying VIX index for front-month {normalized_ticker}")
                         data = yf.download("^VIX", period="5d", progress=False)
                         
                         if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                            # Fix the warning about float on single element Series
                             price = float(data['Close'].iloc[-1])
                             
                             # Validate price
@@ -410,7 +360,7 @@ def get_vix_futures_prices(composition, reference_time):
                 return None
         
         # Check if we have all the prices we need
-        missing_futures = [ticker for ticker in composition.keys() if ticker not in futures_prices]
+        missing_futures = [ticker for ticker in composition.keys() if normalize_vix_ticker(ticker) not in futures_prices]
         if missing_futures:
             logger.error(f"Missing prices for futures: {missing_futures}")
             return None
@@ -422,7 +372,7 @@ def get_vix_futures_prices(composition, reference_time):
         logger.error(f"Error getting VIX futures prices: {str(e)}")
         logger.error(traceback.format_exc())
         return None
-
+        
 def get_exchange_rate(reference_time):
     """
     Get USD/JPY exchange rate at the specified time.
