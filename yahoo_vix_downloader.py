@@ -106,8 +106,10 @@ def download_vix_futures_from_yfinance():
                 logger.info(f"Yahoo data timestamp: {data_timestamp}")
             else:
                 logger.warning("Could not download ^VIX data from Yahoo Finance")
+                return None  # Return None if we can't get VIX data - no fallback
         except Exception as e:
             logger.error(f"Error downloading ^VIX: {str(e)}")
+            return None  # Return None on error - no fallback
         
         # Try different ticker patterns for VIX futures
         vix_patterns = [
@@ -177,109 +179,24 @@ def download_vix_futures_from_yfinance():
                         logger.warning(f"No data found for ticker {ticker}")
                 except Exception as e:
                     logger.warning(f"Error downloading {ticker} from Yahoo: {str(e)}")
-                    # Try downloading with a different period or interval
-                    try:
-                        logger.debug(f"Retrying {ticker} with different parameters")
-                        data = yf.download(ticker, period="5d", interval="1d", progress=False)
-                        
-                        if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                            # Extract numeric value properly
-                            settlement_price = float(data['Close'].iloc[-1])
-                            
-                            # Update data timestamp if not already set
-                            if data_timestamp is None:
-                                data_timestamp = data.index[-1]
-                                logger.info(f"Yahoo data timestamp from {ticker} (retry): {data_timestamp}")
-                            
-                            # Map to the corresponding VIX contract ticker format
-                            if i in position_to_contract:
-                                # Standard format
-                                contract_ticker = position_to_contract[i]
-                                # Get the month code and year digit from the standard format
-                                month_code = contract_ticker[3:4]  # Extract 'H' from '/VXH5'
-                                year_digit = contract_ticker[4:5]  # Extract '5' from '/VXH5'
-                                
-                                # Store with standard format
-                                futures_data[contract_ticker] = settlement_price
-                                
-                                # Store with the standardized source prefix
-                                yahoo_ticker = f"YAHOO:VX{month_code}{year_digit}"
-                                futures_data[yahoo_ticker] = settlement_price
-                                
-                                logger.info(f"Yahoo (retry): {ticker} → {yahoo_ticker} = {settlement_price}")
-                                futures_found = True
-                            
-                            # Also store with the original Yahoo ticker
-                            futures_data[f"YAHOO:{ticker}"] = settlement_price
-                    except Exception as retry_e:
-                        logger.warning(f"Retry for {ticker} also failed: {str(retry_e)}")
+                    # No retry attempts - we remove the fallback
         
         # If we have a timestamp, determine the trading date
         if data_timestamp is not None:
             trading_date = determine_yahoo_trading_date(data_timestamp)
             logger.info(f"Determined trading date for Yahoo data: {trading_date}")
             futures_data['date'] = trading_date
+        else:
+            # We need a valid trading date
+            logger.error("No valid timestamp found for Yahoo data")
+            return None
         
         if futures_found:
             logger.info(f"Successfully retrieved VIX futures data from Yahoo Finance (processing took {time.time() - start_time:.2f}s)")
             return futures_data
         else:
-            # As a fallback, try the original contract notation
-            logger.debug("Trying direct contract notation as a fallback")
-            
-            futures_tickers = [position_to_contract[i] for i in range(1, 4) if i in position_to_contract]
-            
-            for ticker in futures_tickers:
-                try:
-                    data = yf.download(ticker, period="1d", progress=False)
-                    
-                    if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                        # Extract numeric value properly
-                        settlement_price = float(data['Close'].iloc[-1])
-                        
-                        # Update data timestamp if not already set
-                        if data_timestamp is None:
-                            data_timestamp = data.index[-1]
-                            logger.info(f"Yahoo data timestamp from direct {ticker}: {data_timestamp}")
-                        
-                        # Standard format (already in the correct format)
-                        futures_data[ticker] = settlement_price
-                        
-                        # Get the month code and year digit from the standard format
-                        month_code = ticker[3:4]  # Extract 'H' from '/VXH5'
-                        year_digit = ticker[4:5]  # Extract '5' from '/VXH5'
-                        
-                        # Store with the standardized source prefix
-                        yahoo_ticker = f"YAHOO:VX{month_code}{year_digit}"
-                        futures_data[yahoo_ticker] = settlement_price
-                        
-                        logger.info(f"Yahoo (direct): {ticker} → {yahoo_ticker} = {settlement_price}")
-                        futures_found = True
-                except Exception as e:
-                    logger.warning(f"Error downloading {ticker} directly: {str(e)}")
-            
-            # If we have a timestamp now, determine the trading date
-            if data_timestamp is not None and 'date' not in futures_data:
-                trading_date = determine_yahoo_trading_date(data_timestamp)
-                logger.info(f"Determined trading date for Yahoo data (fallback): {trading_date}")
-                futures_data['date'] = trading_date
-            
-            if futures_found:
-                logger.info(f"Successfully retrieved some VIX futures using direct contract notation (processing took {time.time() - start_time:.2f}s)")
-                return futures_data
-            else:
-                logger.warning("Could not retrieve any VIX futures data from Yahoo Finance")
-                
-                # If we have at least the VIX index, return what we have
-                if 'VX=F' in futures_data or 'YAHOO:VIX' in futures_data:
-                    # If we still don't have a date, use current date
-                    if 'date' not in futures_data and data_timestamp is not None:
-                        trading_date = determine_yahoo_trading_date(data_timestamp)
-                        logger.info(f"Determined trading date for VIX index: {trading_date}")
-                        futures_data['date'] = trading_date
-                    return futures_data
-                else:
-                    return None
+            logger.warning("Could not retrieve any VIX futures contracts from Yahoo Finance")
+            return None  # No fallbacks - return None if no futures contracts found
     
     except Exception as e:
         logger.error(f"Error in Yahoo Finance download: {str(e)}")
