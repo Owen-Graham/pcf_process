@@ -271,8 +271,8 @@ def get_etf_closing_data():
 
 def get_vix_futures_prices(composition, reference_time):
     """
-    Get VIX futures prices from Yahoo Finance.
-    Requires all futures in composition to be available - fails otherwise.
+    Get current VIX futures prices from Yahoo Finance.
+    No fallbacks - fails cleanly if prices can't be found.
     
     Args:
         composition: Dictionary mapping futures tickers to weights
@@ -284,69 +284,138 @@ def get_vix_futures_prices(composition, reference_time):
     try:
         futures_prices = {}
         
-        # Format date for yfinance
+        # For current prices, use a short recent window
         end_date = datetime.now().strftime('%Y-%m-%d')
-        start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        start_date = (datetime.now() - timedelta(days=4)).strftime('%Y-%m-%d')
         
-        logger.info(f"Getting VIX futures prices from {start_date} to {end_date}")
+        logger.info(f"Getting current VIX futures prices from {start_date} to {end_date}")
         
         # Use position-based tickers for contracts
         next_contracts = get_next_vix_contracts(6)  # Get up to 6 upcoming contracts
         
+        # First, determine position mapping for the futures we need
+        position_map = {}
         for futures_ticker in composition.keys():
-            # Normalize to handle different formats
             normalized_ticker = normalize_vix_ticker(futures_ticker)
-            
-            # Determine the position if it's one of the upcoming contracts
-            position = None
             if normalized_ticker in next_contracts:
                 position = next_contracts.index(normalized_ticker) + 1  # 1-indexed
+                position_map[normalized_ticker] = position
                 logger.info(f"Determined {normalized_ticker} is contract position {position}")
-            
-            # Try position-based tickers if available
-            found_price = False
-            if position is not None and position <= 3:  # Only for the first 3 positions
-                position_tickers = [f"^VFTW{position}", f"^VXIND{position}"]
-                
-                for ticker in position_tickers:
-                    try:
-                        logger.info(f"Trying position ticker {ticker} for {normalized_ticker}")
-                        data = yf.download(ticker, start=start_date, end=end_date, progress=False)
-                        
-                        if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                            futures_prices[normalized_ticker] = float(data['Close'].iloc[-1])
-                            logger.info(f"Found price for {normalized_ticker} using {ticker}: {futures_prices[normalized_ticker]}")
-                            found_price = True
-                            break
-                    except Exception as e:
-                        logger.warning(f"Error trying {ticker}: {str(e)}")
-            
-            # Try direct approach if position-based ticker didn't work
-            if not found_price:
-                try:
-                    yahoo_ticker = get_yfinance_ticker_for_vix_future(normalized_ticker)
-                    logger.info(f"Trying direct ticker {yahoo_ticker} for {normalized_ticker}")
-                    
-                    data = yf.download(yahoo_ticker, start=start_date, end=end_date, progress=False)
-                    
-                    if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                        futures_prices[normalized_ticker] = float(data['Close'].iloc[-1])
-                        logger.info(f"Found price for {normalized_ticker} using {yahoo_ticker}: {futures_prices[normalized_ticker]}")
-                        found_price = True
-                except Exception as e:
-                    logger.warning(f"Error trying {normalized_ticker} directly: {str(e)}")
-            
-            # If we still can't find a price, fail
-            if not found_price:
-                logger.error(f"Could not find price for required future: {normalized_ticker}")
+            else:
+                logger.error(f"Could not determine position for {normalized_ticker}")
                 return None
         
-        # Verify all tickers have prices
-        if len(futures_prices) != len(composition):
-            logger.error(f"Not all required futures have prices: found {len(futures_prices)}, need {len(composition)}")
+        # Download all futures prices using unified approach
+        for normalized_ticker, position in position_map.items():
+            # For VIX futures, use the industry-standard position-based tickers
+            if position <= 3:  # Only standard symbols for first 3 positions
+                # Different ticker formats to try
+                ticker_formats = [
+                    f"/VX{normalized_ticker[2:]}", # /VXH5
+                    f"/VIX{normalized_ticker[2:]}", # /VIXH5
+                    f"VX{normalized_ticker[2:]}=F", # VXH5=F
+                    f"^VX{position}" # ^VX1 for front month
+                ]
+                
+                price_found = False
+                for ticker in ticker_formats:
+                    try:
+                        logger.info(f"Trying to download {ticker} for {normalized_ticker}")
+                        
+                        # Use period parameter for better compatibility
+                        data = yf.download(ticker, period="5d", progress=False)
+                        
+                        if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                            price = float(data['Close'].iloc[-1])
+                            
+                            # Validate price
+                            if pd.isna(price) or price <= 0:
+                                logger.warning(f"Invalid price for {ticker}: {price}")
+                                continue
+                                
+                            futures_prices[normalized_ticker] = price
+                            logger.info(f"Found price for {normalized_ticker} using {ticker}: {price}")
+                            price_found = True
+                            break
+                    except Exception as e:
+                        logger.warning(f"Failed to download {ticker}: {str(e)}")
+                
+                # If position-based tickers didn't work, try direct format
+                if not price_found:
+                    # Try to get it via the VIX futures standard format
+                    month_letter = normalized_ticker[2]  # Extract 'H' from 'VXH5'
+                    year_digit = normalized_ticker[3]  # Extract '5' from 'VXH5'
+                    
+                    # Map month letter to month number
+                    month_map = {
+                        'F': '01', 'G': '02', 'H': '03', 'J': '04', 'K': '05', 'M': '06',
+                        'N': '07', 'Q': '08', 'U': '09', 'V': '10', 'X': '11', 'Z': '12'
+                    }
+                    
+                    if month_letter in month_map:
+                        month_num = month_map[month_letter]
+                        current_year = datetime.now().year
+                        decade = int(current_year / 10) * 10
+                        full_year = decade + int(year_digit)
+                        
+                        # If the resulting year is in the past, assume next decade
+                        if full_year < current_year:
+                            full_year += 10
+                            
+                        # Yahoo-specific format for VIX futures
+                        yahoo_ticker = f"^VIX{month_num}.{full_year}"
+                        
+                        try:
+                            logger.info(f"Trying Yahoo-specific format {yahoo_ticker} for {normalized_ticker}")
+                            data = yf.download(yahoo_ticker, period="5d", progress=False)
+                            
+                            if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                                price = float(data['Close'].iloc[-1])
+                                
+                                # Validate price
+                                if pd.isna(price) or price <= 0:
+                                    logger.warning(f"Invalid price for {yahoo_ticker}: {price}")
+                                else:
+                                    futures_prices[normalized_ticker] = price
+                                    logger.info(f"Found price for {normalized_ticker} using {yahoo_ticker}: {price}")
+                                    price_found = True
+                        except Exception as e:
+                            logger.warning(f"Failed to download {yahoo_ticker}: {str(e)}")
+                
+                # For the very first contract (front month), try VIX directly if all else fails
+                if not price_found and position == 1:
+                    try:
+                        logger.info(f"Trying VIX index for front-month {normalized_ticker}")
+                        data = yf.download("^VIX", period="5d", progress=False)
+                        
+                        if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
+                            price = float(data['Close'].iloc[-1])
+                            
+                            # Validate price
+                            if pd.isna(price) or price <= 0:
+                                logger.warning(f"Invalid VIX index price: {price}")
+                            else:
+                                futures_prices[normalized_ticker] = price
+                                logger.info(f"Using VIX index price for {normalized_ticker}: {price}")
+                                price_found = True
+                    except Exception as e:
+                        logger.warning(f"Failed to download VIX index: {str(e)}")
+                
+                # If we still don't have a price, fail
+                if not price_found:
+                    logger.error(f"Could not find price for {normalized_ticker} using any ticker format")
+                    return None
+            else:
+                logger.error(f"Position {position} for {normalized_ticker} is beyond supported range")
+                return None
+        
+        # Check if we have all the prices we need
+        missing_futures = [ticker for ticker in composition.keys() if ticker not in futures_prices]
+        if missing_futures:
+            logger.error(f"Missing prices for futures: {missing_futures}")
             return None
-            
-        logger.info(f"Successfully retrieved all futures prices: {futures_prices}")
+        
+        logger.info(f"Successfully retrieved all current futures prices: {futures_prices}")
         return futures_prices
     
     except Exception as e:
