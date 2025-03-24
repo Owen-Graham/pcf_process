@@ -10293,3 +10293,30 @@ yfinance.exceptions.YFPricesMissingError: possibly delisted; no price data found
 2025-03-21 23:28:05,894 - yahoo_vix_downloader - INFO - Yahoo: ^VXIND3 → YAHOO:VXM5 = 19.475000381469727
 2025-03-21 23:28:05,895 - yahoo_vix_downloader - INFO - Determined trading date for Yahoo data: 2025-03-21
 2025-03-21 23:28:05,895 - yahoo_vix_downloader - INFO - Successfully retrieved VIX futures data from Yahoo Finance (processing took 1.50s)
+2025-03-24 23:29:57,298 - yahoo_vix_downloader - INFO - Downloading VIX futures data from Yahoo Finance...
+2025-03-24 23:29:58,486 - yahoo_vix_downloader - INFO - Yahoo: ^VIX = 17.479999542236328
+2025-03-24 23:29:58,486 - yahoo_vix_downloader - INFO - Yahoo data timestamp: 2025-03-24 00:00:00
+2025-03-24 23:29:58,486 - yahoo_vix_downloader - INFO - Trying ticker pattern group: ['^VFTW1', '^VFTW2', '^VFTW3']
+2025-03-24 23:29:58,583 - yahoo_vix_downloader - INFO - Yahoo: ^VFTW1 → YAHOO:VXJ5 = 18.1200008392334
+2025-03-24 23:29:58,678 - yahoo_vix_downloader - INFO - Yahoo: ^VFTW2 → YAHOO:VXK5 = 18.520000457763672
+2025-03-24 23:30:00,422 - yahoo_vix_downloader - WARNING - No data found for ticker ^VFTW3
+2025-03-24 23:30:00,422 - yahoo_vix_downloader - INFO - Trying ticker pattern group: ['^VXIND1', '^VXIND2', '^VXIND3']
+2025-03-24 23:30:00,493 - yahoo_vix_downloader - INFO - Yahoo: ^VXIND1 → YAHOO:VXJ5 = 18.063499450683594
+2025-03-24 23:30:00,570 - yahoo_vix_downloader - INFO - Yahoo: ^VXIND2 → YAHOO:VXK5 = 18.498899459838867
+2025-03-24 23:30:00,655 - yahoo_vix_downloader - INFO - Yahoo: ^VXIND3 → YAHOO:VXM5 = 18.662799835205078
+2025-03-24 23:30:00,656 - yahoo_vix_downloader - INFO - Determined trading date for Yahoo data: 2025-03-24
+2025-03-24 23:30:00,656 - yahoo_vix_downloader - INFO - Successfully retrieved VIX futures data from Yahoo Finance (processing took 3.36s)
+2025-03-24 23:30:00,658 - yahoo_vix_downloader - INFO - Saved Yahoo futures data to data/vix_futures_yahoo_202503242330.csv
+2025-03-24 23:30:05,158 - yahoo_vix_downloader - INFO - Downloading VIX futures data from Yahoo Finance...
+2025-03-24 23:30:05,293 - yahoo_vix_downloader - INFO - Yahoo: ^VIX = 17.479999542236328
+2025-03-24 23:30:05,293 - yahoo_vix_downloader - INFO - Yahoo data timestamp: 2025-03-24 00:00:00
+2025-03-24 23:30:05,293 - yahoo_vix_downloader - INFO - Trying ticker pattern group: ['^VFTW1', '^VFTW2', '^VFTW3']
+2025-03-24 23:30:05,338 - yahoo_vix_downloader - INFO - Yahoo: ^VFTW1 → YAHOO:VXJ5 = 18.1200008392334
+2025-03-24 23:30:05,381 - yahoo_vix_downloader - INFO - Yahoo: ^VFTW2 → YAHOO:VXK5 = 18.520000457763672
+2025-03-24 23:30:07,024 - yahoo_vix_downloader - WARNING - No data found for ticker ^VFTW3
+2025-03-24 23:30:07,024 - yahoo_vix_downloader - INFO - Trying ticker pattern group: ['^VXIND1', '^VXIND2', '^VXIND3']
+2025-03-24 23:30:07,137 - yahoo_vix_downloader - INFO - Yahoo: ^VXIND1 → YAHOO:VXJ5 = 18.063499450683594
+2025-03-24 23:30:07,209 - yahoo_vix_downloader - INFO - Yahoo: ^VXIND2 → YAHOO:VXK5 = 18.498899459838867
+2025-03-24 23:30:07,303 - yahoo_vix_downloader - INFO - Yahoo: ^VXIND3 → YAHOO:VXM5 = 18.662799835205078
+2025-03-24 23:30:07,304 - yahoo_vix_downloader - INFO - Determined trading date for Yahoo data: 2025-03-24
+2025-03-24 23:30:07,304 - yahoo_vix_downloader - INFO - Successfully retrieved VIX futures data from Yahoo Finance (processing took 2.15s)
