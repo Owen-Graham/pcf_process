@@ -1239,3 +1239,21 @@
 2025-04-05 05:32:55,792 - etf_characteristics - INFO - Far future: VXK5 with 246 shares
 2025-04-05 05:32:55,795 - etf_characteristics - INFO - Saved ETF characteristics to data/etf_characteristics_202504050532.csv and data/etf_characteristics_master.csv
 2025-04-05 05:32:55,796 - etf_characteristics - INFO - Successfully saved ETF characteristics to data/etf_characteristics_202504050532.csv
+2025-04-06 05:31:53,304 - etf_characteristics - INFO - Starting ETF characteristics processing
+2025-04-06 05:31:53,306 - etf_characteristics - INFO - Found latest Simplex ETF file: data/318A-CSV-20250404-202504060531.csv
+2025-04-06 05:31:53,306 - etf_characteristics - INFO - Parsing ETF characteristics from PCF file: data/318A-CSV-20250404-202504060531.csv
+2025-04-06 05:31:53,308 - etf_characteristics - INFO - Header columns: ['ETF Code', 'ETF Name  ', 'Fund Cash Component', 'Shares Outstanding', 'Fund Date', 'Unnamed: 5', 'Unnamed: 6']
+2025-04-06 05:31:53,309 - etf_characteristics - INFO - Found fund date: 20250404.0
+2025-04-06 05:31:53,309 - etf_characteristics - INFO - Found shares outstanding: 1310000
+2025-04-06 05:31:53,309 - etf_characteristics - INFO - Found fund cash component: 1274577954.0
+2025-04-06 05:31:53,310 - etf_characteristics - INFO - Holdings columns: ['Code', 'Name  ', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-04-06 05:31:53,311 - etf_characteristics - INFO - Using 'Code' as code column
+2025-04-06 05:31:53,311 - etf_characteristics - WARNING - Missing one or more required columns, attempting to scan all columns
+2025-04-06 05:31:53,311 - etf_characteristics - INFO - Using 'Shares Amount' as likely shares column
+2025-04-06 05:31:53,312 - etf_characteristics - INFO - Found future through scan: VXJ5, shares: 224
+2025-04-06 05:31:53,312 - etf_characteristics - INFO - Found future through scan: VXK5, shares: 246
+2025-04-06 05:31:53,313 - etf_characteristics - INFO - Sorted futures: [('VXJ5', 224, 'Unknown', 'Unknown'), ('VXK5', 246, 'Unknown', 'Unknown')]
+2025-04-06 05:31:53,313 - etf_characteristics - INFO - Near future: VXJ5 with 224 shares
+2025-04-06 05:31:53,313 - etf_characteristics - INFO - Far future: VXK5 with 246 shares
+2025-04-06 05:31:53,317 - etf_characteristics - INFO - Saved ETF characteristics to data/etf_characteristics_202504060531.csv and data/etf_characteristics_master.csv
+2025-04-06 05:31:53,317 - etf_characteristics - INFO - Successfully saved ETF characteristics to data/etf_characteristics_202504060531.csv
