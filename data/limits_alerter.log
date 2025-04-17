@@ -303,3 +303,126 @@ Initial basket value: 666648017.58 JPY
 2025-03-02 04:17:07,741 - limits_alerter - INFO - No alert: Basket value change 0.00% is within allowed limits
 2025-03-02 04:17:07,741 - limits_alerter - INFO - =========================================
 2025-03-02 04:17:07,741 - limits_alerter - INFO - No price limit alerts detected
+2025-04-08 10:11:31,491 - limits_alerter - INFO - ==================================================
+2025-04-08 10:11:31,491 - limits_alerter - INFO - Starting limits alerter with most recent available data
+2025-04-08 10:11:31,492 - limits_alerter - INFO - ==================================================
+2025-04-08 10:11:31,492 - limits_alerter - INFO - Getting ETF data for 318A.T from 2025-04-01 to 2025-04-08
+2025-04-08 10:11:33,499 - limits_alerter - INFO - Most recent closing price of 318A.T: 1497.50 JPY at 2025-04-07 00:00:00+09:00
+2025-04-08 10:11:33,499 - limits_alerter - INFO - Daily price limits: 1197.50 to 1797.50 JPY
+2025-04-08 10:11:33,526 - limits_alerter - INFO - Using ETF composition data from 2025-04-07 00:00:00 (latest available)
+2025-04-08 10:11:33,526 - limits_alerter - INFO - Found near future: VXJ5
+2025-04-08 10:11:33,527 - limits_alerter - INFO - Found far future: VXK5
+2025-04-08 10:11:33,528 - limits_alerter - INFO - Found near shares: 204.0
+2025-04-08 10:11:33,528 - limits_alerter - INFO - Found far shares: 272.0
+2025-04-08 10:11:33,528 - limits_alerter - INFO - ETF composition: {'VXJ5': 204.0, 'VXK5': 272.0}
+2025-04-08 10:11:33,529 - limits_alerter - INFO - ETF composition for 2025-04-07: {'VXJ5': 204.0, 'VXK5': 272.0}
+2025-04-08 10:11:33,530 - limits_alerter - INFO - Using TSE closing time: 2025-04-07 15:00:00+09:00 for initial basket valuation
+2025-04-08 10:11:33,530 - limits_alerter - INFO - Getting futures prices for INITIAL basket value at TSE closing time
+2025-04-08 10:11:33,531 - limits_alerter - INFO - ===== Getting INITIAL VIX Futures Prices =====
+2025-04-08 10:11:33,531 - limits_alerter - INFO - Reference time: 2025-04-07 15:00:00+09:00
+2025-04-08 10:11:33,532 - limits_alerter - INFO - Using TSE closing time for initial prices - need historical data
+2025-04-08 10:11:33,532 - limits_alerter - INFO - Historical data date range: 2025-03-31 to 2025-04-07
+2025-04-08 10:11:33,533 - limits_alerter - INFO - Determined VXJ5 is contract position 1
+2025-04-08 10:11:33,533 - limits_alerter - INFO - Determined VXK5 is contract position 2
+2025-04-08 10:11:33,533 - limits_alerter - INFO - Getting price for VXJ5 using ^VXIND1
+2025-04-08 10:11:33,973 - limits_alerter - WARNING - No historical data for ^VXIND1
+2025-04-08 10:11:33,975 - limits_alerter - INFO - Getting price for VXJ5 using ^VFTW1
+2025-04-08 10:11:35,056 - limits_alerter - WARNING - No historical data for ^VFTW1
+2025-04-08 10:11:35,056 - limits_alerter - INFO - Trying VIX index for front-month VXJ5
+2025-04-08 10:11:35,541 - limits_alerter - INFO - Using VIX index price for VXJ5: 45.3100 (from 2025-04-04 09:00:00+09:00)
+2025-04-08 10:11:35,542 - limits_alerter - INFO - Getting price for VXK5 using ^VXIND2
+2025-04-08 10:11:35,984 - limits_alerter - WARNING - No historical data for ^VXIND2
+2025-04-08 10:11:35,985 - limits_alerter - INFO - Getting price for VXK5 using ^VFTW2
+2025-04-08 10:11:36,440 - limits_alerter - WARNING - No historical data for ^VFTW2
+2025-04-08 10:11:36,440 - limits_alerter - ERROR - Could not find price for VXK5 using any ticker format
+2025-04-08 10:11:36,441 - limits_alerter - ERROR - Could not get VIX futures prices for initial basket. Exiting.
+2025-04-13 23:57:55,910 - limits_alerter - INFO - ==================================================
+2025-04-13 23:57:55,911 - limits_alerter - INFO - Starting limits alerter with most recent available data
+2025-04-13 23:57:55,911 - limits_alerter - INFO - ==================================================
+2025-04-13 23:57:55,911 - limits_alerter - INFO - Getting closing data for 318A.T from 2025-04-06 to 2025-04-13
+2025-04-13 23:57:56,884 - limits_alerter - INFO - Most recent closing price of 318A.T: 1465.00 at 2025-04-11
+2025-04-13 23:57:56,885 - limits_alerter - INFO - Daily price limits: 1165.00 to 1765.00
+2025-04-13 23:57:56,886 - limits_alerter - INFO - Most recent closing price of 318A.T: 1465.00 JPY at 2025-04-11 00:00:00+09:00
+2025-04-13 23:57:56,886 - limits_alerter - INFO - Daily price limits: 1165.00 to 1765.00 JPY
+2025-04-13 23:57:56,906 - limits_alerter - INFO - Using ETF composition data from 2025-04-07 00:00:00 (latest available)
+2025-04-13 23:57:56,906 - limits_alerter - INFO - Found near future: VXJ5
+2025-04-13 23:57:56,907 - limits_alerter - INFO - Found far future: VXK5
+2025-04-13 23:57:56,908 - limits_alerter - INFO - Found near shares: 204.0
+2025-04-13 23:57:56,908 - limits_alerter - INFO - Found far shares: 272.0
+2025-04-13 23:57:56,908 - limits_alerter - INFO - ETF composition: {'VXJ5': 204.0, 'VXK5': 272.0}
+2025-04-13 23:57:56,909 - limits_alerter - INFO - ETF composition for 2025-04-11: {'VXJ5': 204.0, 'VXK5': 272.0}
+2025-04-13 23:57:56,909 - limits_alerter - INFO - Getting futures prices for INITIAL basket value at TSE closing time
+2025-04-13 23:57:56,909 - limits_alerter - INFO - ===== Getting INITIAL VIX Futures Prices =====
+2025-04-13 23:57:56,910 - limits_alerter - INFO - Reference time: 2025-04-11 15:00:00+09:00
+2025-04-13 23:57:56,910 - limits_alerter - INFO - Using TSE closing time for initial prices - need historical data
+2025-04-13 23:57:56,910 - limits_alerter - INFO - Historical data date range: 2025-04-04 to 2025-04-11
+2025-04-13 23:57:56,910 - limits_alerter - INFO - Determined VXJ5 is contract position 1
+2025-04-13 23:57:56,911 - limits_alerter - INFO - Determined VXK5 is contract position 2
+2025-04-13 23:57:56,911 - limits_alerter - INFO - Getting price for VXJ5 using ^VXIND1
+2025-04-13 23:57:57,134 - limits_alerter - WARNING - No historical data for ^VXIND1
+2025-04-13 23:57:57,142 - limits_alerter - INFO - Getting price for VXJ5 using ^VFTW1
+2025-04-13 23:57:57,333 - limits_alerter - WARNING - No historical data for ^VFTW1
+2025-04-13 23:57:57,333 - limits_alerter - INFO - Trying VIX index for front-month VXJ5
+2025-04-13 23:57:57,600 - limits_alerter - INFO - Using VIX index price for VXJ5: 40.7200 (from 2025-04-10 09:00:00+09:00)
+2025-04-13 23:57:57,601 - limits_alerter - INFO - Getting price for VXK5 using ^VXIND2
+2025-04-13 23:57:57,783 - limits_alerter - WARNING - No historical data for ^VXIND2
+2025-04-13 23:57:57,783 - limits_alerter - INFO - Getting price for VXK5 using ^VFTW2
+2025-04-13 23:57:57,967 - limits_alerter - WARNING - No historical data for ^VFTW2
+2025-04-13 23:57:57,971 - limits_alerter - ERROR - Could not find price for VXK5 using any ticker format
+2025-04-13 23:57:57,971 - limits_alerter - ERROR - Could not get VIX futures prices for initial basket. Exiting.
+2025-04-14 00:04:28,166 - limits_alerter - INFO - ==================================================
+2025-04-14 00:04:28,179 - limits_alerter - INFO - Starting limits alerter with most recent available data
+2025-04-14 00:04:28,179 - limits_alerter - INFO - ==================================================
+2025-04-14 00:04:28,179 - limits_alerter - INFO - Getting closing data for 318A.T from 2025-04-07 to 2025-04-14
+2025-04-14 00:04:29,065 - limits_alerter - INFO - Most recent closing price of 318A.T: 1465.00 at 2025-04-11
+2025-04-14 00:04:29,066 - limits_alerter - INFO - Daily price limits: 1165.00 to 1765.00
+2025-04-14 00:04:29,067 - limits_alerter - INFO - Most recent closing price of 318A.T: 1465.00 JPY at 2025-04-11 00:00:00+09:00
+2025-04-14 00:04:29,068 - limits_alerter - INFO - Daily price limits: 1165.00 to 1765.00 JPY
+2025-04-14 00:04:29,095 - limits_alerter - INFO - Using ETF composition data from 2025-04-07 00:00:00 (latest available)
+2025-04-14 00:04:29,096 - limits_alerter - INFO - Found near future: VXJ5
+2025-04-14 00:04:29,096 - limits_alerter - INFO - Found far future: VXK5
+2025-04-14 00:04:29,098 - limits_alerter - INFO - Found near shares: 204.0
+2025-04-14 00:04:29,099 - limits_alerter - INFO - Found far shares: 272.0
+2025-04-14 00:04:29,099 - limits_alerter - INFO - ETF composition: {'VXJ5': 204.0, 'VXK5': 272.0}
+2025-04-14 00:04:29,100 - limits_alerter - INFO - ETF composition for 2025-04-11: {'VXJ5': 204.0, 'VXK5': 272.0}
+2025-04-14 00:04:29,101 - limits_alerter - INFO - Getting futures prices for INITIAL basket value at TSE closing time
+2025-04-14 00:04:29,101 - limits_alerter - INFO - ===== Getting INITIAL VIX Futures Prices =====
+2025-04-14 00:04:29,102 - limits_alerter - INFO - Reference time: 2025-04-11 15:00:00+09:00
+2025-04-14 00:04:29,102 - limits_alerter - INFO - Using TSE closing time for initial prices - need historical data
+2025-04-14 00:04:29,103 - limits_alerter - INFO - Historical data date range: 2025-04-04 to 2025-04-11
+2025-04-14 00:04:29,103 - limits_alerter - INFO - Determined VXJ5 is contract position 1
+2025-04-14 00:04:29,103 - limits_alerter - INFO - Determined VXK5 is contract position 2
+2025-04-14 00:04:29,104 - limits_alerter - INFO - Getting price for VXJ5 using ^VXIND1
+2025-04-14 00:04:29,336 - limits_alerter - WARNING - No historical data for ^VXIND1
+2025-04-14 00:04:29,342 - limits_alerter - INFO - Getting price for VXJ5 using ^VFTW1
+2025-04-14 00:04:29,559 - limits_alerter - WARNING - No historical data for ^VFTW1
+2025-04-14 00:04:29,560 - limits_alerter - ERROR - Could not find price for VXJ5 using any ticker format
+2025-04-14 00:04:29,561 - limits_alerter - ERROR - Could not get VIX futures prices for initial basket. Exiting.
+2025-04-14 01:22:18,428 - limits_alerter - INFO - ==================================================
+2025-04-14 01:22:18,428 - limits_alerter - INFO - Starting limits alerter with most recent available data
+2025-04-14 01:22:18,428 - limits_alerter - INFO - ==================================================
+2025-04-14 01:22:18,428 - limits_alerter - INFO - Getting closing data for 318A.T from 2025-04-07 to 2025-04-14
+2025-04-14 01:22:19,083 - limits_alerter - INFO - Most recent closing price of 318A.T: 1465.00 at 2025-04-11
+2025-04-14 01:22:19,083 - limits_alerter - INFO - Daily price limits: 1165.00 to 1765.00
+2025-04-14 01:22:19,083 - limits_alerter - INFO - Most recent closing price of 318A.T: 1465.00 JPY at 2025-04-11 00:00:00+09:00
+2025-04-14 01:22:19,083 - limits_alerter - INFO - Daily price limits: 1165.00 to 1765.00 JPY
+2025-04-14 01:22:19,093 - limits_alerter - INFO - Using ETF composition data from 2025-04-07 00:00:00 (latest available)
+2025-04-14 01:22:19,093 - limits_alerter - INFO - Found near future: VXJ5
+2025-04-14 01:22:19,093 - limits_alerter - INFO - Found far future: VXK5
+2025-04-14 01:22:19,093 - limits_alerter - INFO - Found near shares: 204.0
+2025-04-14 01:22:19,093 - limits_alerter - INFO - Found far shares: 272.0
+2025-04-14 01:22:19,093 - limits_alerter - INFO - ETF composition: {'VXJ5': 204.0, 'VXK5': 272.0}
+2025-04-14 01:22:19,093 - limits_alerter - INFO - ETF composition for 2025-04-11: {'VXJ5': 204.0, 'VXK5': 272.0}
+2025-04-14 01:22:19,094 - limits_alerter - INFO - Getting futures prices for INITIAL basket value at TSE closing time
+2025-04-14 01:22:19,094 - limits_alerter - INFO - ===== Getting INITIAL VIX Futures Prices =====
+2025-04-14 01:22:19,094 - limits_alerter - INFO - Reference time: 2025-04-11 15:00:00+09:00
+2025-04-14 01:22:19,094 - limits_alerter - INFO - Using TSE closing time for initial prices - need historical data
+2025-04-14 01:22:19,094 - limits_alerter - INFO - Historical data date range: 2025-04-04 to 2025-04-11
+2025-04-14 01:22:19,094 - limits_alerter - INFO - Determined VXJ5 is contract position 1
+2025-04-14 01:22:19,094 - limits_alerter - INFO - Determined VXK5 is contract position 2
+2025-04-14 01:22:19,094 - limits_alerter - INFO - Getting price for VXJ5 using ^VXIND1
+2025-04-14 01:22:19,297 - limits_alerter - WARNING - No historical data for ^VXIND1
+2025-04-14 01:22:19,301 - limits_alerter - INFO - Getting price for VXJ5 using ^VFTW1
+2025-04-14 01:22:19,484 - limits_alerter - WARNING - No historical data for ^VFTW1
+2025-04-14 01:22:19,484 - limits_alerter - ERROR - Could not find price for VXJ5 using any ticker format
+2025-04-14 01:22:19,484 - limits_alerter - ERROR - Could not get VIX futures prices for initial basket. Exiting.
