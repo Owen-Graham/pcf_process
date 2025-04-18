@@ -296,3 +296,8 @@ TypeError: read_csv() got an unexpected keyword argument 'errors'
 2025-04-17 23:29:41,789 - pcf_vix_extractor - INFO - Found raw Fund Date: 20250416.0
 2025-04-17 23:29:41,790 - pcf_vix_extractor - ERROR - Could not parse Fund Date: 20250416.0
 2025-04-17 23:29:41,790 - pcf_vix_extractor - ERROR - Could not extract Fund Date. Aborting extraction.
+2025-04-18 23:29:53,456 - pcf_vix_extractor - INFO - Found latest Simplex ETF file: data/318A-CSV-20250416-202504160533.csv
+2025-04-18 23:29:53,456 - pcf_vix_extractor - INFO - Extracting VIX futures from PCF file: data/318A-CSV-20250416-202504160533.csv
+2025-04-18 23:29:53,458 - pcf_vix_extractor - INFO - Found raw Fund Date: 20250416.0
+2025-04-18 23:29:53,459 - pcf_vix_extractor - ERROR - Could not parse Fund Date: 20250416.0
+2025-04-18 23:29:53,459 - pcf_vix_extractor - ERROR - Could not extract Fund Date. Aborting extraction.
