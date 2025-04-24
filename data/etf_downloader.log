@@ -424,3 +424,6 @@
 2025-04-23 05:34:09,803 - etf_downloader - INFO - Downloading Simplex ETF 318A data
 2025-04-23 05:34:10,794 - etf_downloader - INFO - Downloading CSV from URL: https://www.simplexasset.com/etf//doc/318A.csv
 2025-04-23 05:34:11,545 - etf_downloader - INFO - ETF CSV file saved successfully to: data/318A-CSV-20250423-202504230534.csv
+2025-04-24 05:34:33,035 - etf_downloader - INFO - Downloading Simplex ETF 318A data
+2025-04-24 05:34:33,913 - etf_downloader - INFO - Downloading CSV from URL: https://www.simplexasset.com/etf//doc/318A.csv
+2025-04-24 05:34:34,512 - etf_downloader - INFO - ETF CSV file saved successfully to: data/318A-CSV-20250424-202504240534.csv
