@@ -1,0 +1,8 @@
+timestamp,date,source,pair,label,rate
+202504290259,2025-04-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,T.T.S.,144.66
+202504290259,2025-04-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,ACC.,145.07
+202504290259,2025-04-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,CASH S.,146.46
+202504290259,2025-04-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,T.T.B.,142.66
+202504290259,2025-04-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,A/S,142.25
+202504290259,2025-04-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,D/PED/A,141.95
+202504290259,2025-04-28,https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv,USDJPY,CASH B.,140.66
