@@ -247,16 +247,16 @@ def parse_etf_characteristics(file_path=None):
                 name = row[name_col] if not pd.isna(row[name_col]) else ""
                 
                 # Check if this is a VIX future
-                    is_vix_future = False
-                    name_str = str(name).upper()
-                    code_str = str(code).upper()
-                    
-                    if ('VIX' in name_str or 'CBOEVIX' in name_str or 'VIX' in code_str or 
-                        'FUTURE' in name_str or 'FUT' in name_str):
-                        is_vix_future = True
-                    
-                    if is_vix_future:
-                        # Extract the VIX future code
+                is_vix_future = False
+                name_str = str(name).upper()
+                code_str = str(code).upper()
+                
+                if ('VIX' in name_str or 'CBOEVIX' in name_str or 'VIX' in code_str or 
+                    'FUTURE' in name_str or 'FUT' in name_str):
+                    is_vix_future = True
+                
+                if is_vix_future:
+                    # Extract the VIX future code
                         future_code = extract_vix_future_code(code, name)
                         
                         # Get the shares amount
