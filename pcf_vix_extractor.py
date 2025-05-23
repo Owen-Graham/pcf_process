@@ -5,7 +5,8 @@ import pandas as pd
 import traceback
 from datetime import datetime
 import logging
-from common import setup_logging, SAVE_DIR, format_vix_data
+from common import setup_logging, SAVE_DIR, format_vix_data, normalize_vix_ticker, MissingCriticalDataError, InvalidDataError
+from etf_characteristics_parser import find_latest_etf_file
 
 # Set up logging
 logger = setup_logging('pcf_vix_extractor')
@@ -15,45 +16,6 @@ PCF_COLUMNS = [
     'ETF Code', 'ETF Name', 'Fund Cash Component', 
     'Shares Outstanding', 'Fund Date', 'Unnamed: 5', 'Unnamed: 6'
 ]
-
-def find_latest_etf_file():
-    """Find the latest Simplex ETF 318A file in the data directory."""
-    file_patterns = [
-        os.path.join(SAVE_DIR, "318A-*.csv"),
-        os.path.join(SAVE_DIR, "318A*.csv")
-    ]
-    
-    all_files = []
-    for pattern in file_patterns:
-        all_files.extend(glob.glob(pattern))
-    
-    if not all_files:
-        logger.error("No Simplex ETF 318A files found")
-        return None
-    
-    # Get the most recent file based on the timestamp in the filename
-    latest_file = max(all_files, key=os.path.getmtime)
-    logger.info(f"Found latest Simplex ETF file: {latest_file}")
-    return latest_file
-
-def normalize_vix_ticker(ticker):
-    """
-    Normalize VIX futures ticker to standard format (VXM5 instead of VXM25)
-    
-    Args:
-        ticker: VIX futures ticker (e.g., VXM25, VXM5)
-    
-    Returns:
-        Normalized ticker (e.g., VXM5)
-    """
-    # If ticker is in format VX<letter><2-digit-year>
-    match = re.match(r'(VX[A-Z])(\d{2})$', ticker)
-    if match:
-        prefix = match.group(1)
-        year = match.group(2)
-        # Take only the last digit of the year
-        return f"{prefix}{year[-1]}"
-    return ticker
 
 def extract_fund_date_from_pcf(file_path):
     """
@@ -67,8 +29,7 @@ def extract_fund_date_from_pcf(file_path):
     """
     try:
         if not file_path or not os.path.exists(file_path):
-            logger.error(f"PCF file not found: {file_path}")
-            return None
+            raise MissingCriticalDataError(f"PCF file not found: {file_path}")
         
         # Read just the header rows where Fund Date is typically located
         header_df = pd.read_csv(file_path, nrows=2)
@@ -85,9 +46,8 @@ def extract_fund_date_from_pcf(file_path):
                     if len(date_parts) == 3:
                         month, day, year = date_parts
                         return f"{year}-{month.zfill(2)}-{day.zfill(2)}"
-                except:
-                    logger.error(f"Failed to parse date with / format: {fund_date}")
-                    return None
+                except Exception: # Catch specific error if possible, otherwise general
+                    raise InvalidDataError(f"Could not parse Fund Date string '{fund_date}' (MM/DD/YYYY format) to YYYY-MM-DD.")
             
             # Try to handle YYYYMMDD format
             if fund_date.isdigit() and len(fund_date) == 8:
@@ -96,25 +56,25 @@ def extract_fund_date_from_pcf(file_path):
                     month = fund_date[4:6]
                     day = fund_date[6:]
                     return f"{year}-{month}-{day}"
-                except:
-                    logger.error(f"Failed to parse date with YYYYMMDD format: {fund_date}")
-                    return None
+                except Exception:
+                    raise InvalidDataError(f"Could not parse Fund Date string '{fund_date}' (YYYYMMDD format) to YYYY-MM-DD.")
                     
             # Try general date parsing
             try:
                 parsed_date = pd.to_datetime(fund_date)
                 return parsed_date.strftime("%Y-%m-%d")
-            except:
-                logger.error(f"Could not parse Fund Date: {fund_date}")
-                return None
+            except Exception:
+                raise InvalidDataError(f"Could not parse Fund Date string '{fund_date}' (general format) to YYYY-MM-DD.")
         
-        logger.error("Fund Date not found in PCF file")
-        return None
+        raise MissingCriticalDataError("Fund Date column not found or empty in PCF file.")
     
     except Exception as e:
-        logger.error(f"Error extracting Fund Date: {str(e)}")
+        logger.error(f"Error extracting Fund Date: {str(e)}") # Keep logging for context
         logger.error(traceback.format_exc())
-        return None
+        # Re-raise as InvalidDataError or MissingCriticalDataError if it's one of those, else wrap
+        if isinstance(e, (MissingCriticalDataError, InvalidDataError)):
+            raise
+        raise InvalidDataError(f"Error extracting Fund Date from {file_path}: {str(e)}") from e
 
 def extract_vix_futures_from_pcf(file_path=None):
     """
@@ -131,21 +91,23 @@ def extract_vix_futures_from_pcf(file_path=None):
         if file_path is None:
             file_path = find_latest_etf_file()
             if file_path is None:
-                logger.error("No PCF file found")
-                return None
+                raise MissingCriticalDataError("No PCF file found for VIX futures extraction.")
         
         logger.info(f"Extracting VIX futures from PCF file: {file_path}")
         
         # Check if file exists
-        if not os.path.exists(file_path):
-            logger.error(f"PCF file not found: {file_path}")
-            return None
+        if not os.path.exists(file_path): # This check is somewhat redundant if find_latest_etf_file works correctly
+            raise MissingCriticalDataError(f"PCF file not found: {file_path}")
         
         # Extract Fund Date first - this is critical for price_date accuracy
-        fund_date = extract_fund_date_from_pcf(file_path)
-        if not fund_date:
-            logger.error("Could not extract Fund Date. Aborting extraction.")
-            return None
+        try:
+            fund_date = extract_fund_date_from_pcf(file_path)
+        except (MissingCriticalDataError, InvalidDataError) as e:
+            logger.error(f"Critical error extracting fund date: {str(e)}")
+            raise # Re-raise the specific error from extract_fund_date_from_pcf
+        
+        if not fund_date: # Should be caught by exception now, but as a safeguard
+            raise MissingCriticalDataError("Could not extract Fund Date, which is critical for PCF VIX futures extraction.")
         
         logger.info(f"Using Fund Date: {fund_date}")
         
@@ -196,12 +158,10 @@ def extract_vix_futures_from_pcf(file_path=None):
                             holdings_found = True
                             break
                         except Exception as e:
-                            logger.error(f"Failed to parse holdings section: {str(e)}")
-                            return None
+                            raise InvalidDataError(f"Failed to parse holdings section from PCF file {file_path}: {str(e)}") from e
                 
                 if not holdings_found:
-                    logger.error("Could not locate securities section in PCF file")
-                    return None
+                    raise MissingCriticalDataError("Could not locate securities/holdings section in PCF file.")
                 
                 # Process the holdings section
                 logger.info("Processing holdings section")
@@ -219,8 +179,7 @@ def extract_vix_futures_from_pcf(file_path=None):
                 if desc_col and holdings_df[desc_col].dtype == object:
                     logger.info(f"Using '{desc_col}' as description column")
                 else:
-                    logger.error("Could not determine description column")
-                    return None
+                    raise MissingCriticalDataError("Could not determine description column in PCF holdings.")
                 
                 # For price column, check if it has numeric-like values
                 if price_col:
@@ -228,17 +187,15 @@ def extract_vix_futures_from_pcf(file_path=None):
                         # Convert a sample to float to check if it's a price column
                         sample = holdings_df[price_col].dropna().head(1)
                         if len(sample) > 0:
-                            float(str(sample.iloc[0]).replace(',', ''))
+                            float(str(sample.iloc[0]).replace(',', '')) # Check if convertible
                             logger.info(f"Using '{price_col}' as price column")
                         else:
-                            logger.error("Price column contains no valid samples")
-                            return None
-                    except:
-                        logger.error("Could not validate price column")
-                        return None
+                            # This case means the column exists but has no valid (non-NA) data to sample
+                            raise MissingCriticalDataError(f"Price column '{price_col}' contains no valid samples to confirm it's numeric.")
+                    except Exception as e: # Catch issues from float conversion or other problems
+                        raise MissingCriticalDataError(f"Could not validate price column '{price_col}': {str(e)}")
                 else:
-                    logger.error("Could not determine price column")
-                    return None
+                    raise MissingCriticalDataError("Could not determine or validate price column in PCF holdings.")
                 
                 # Define patterns to match VIX futures
                 patterns = [
@@ -341,27 +298,29 @@ def extract_vix_futures_from_pcf(file_path=None):
                                 futures_found += 1
                                 logger.info(f"Extracted: {vix_future} = {price} (from {desc})")
                             except (ValueError, TypeError) as e:
-                                logger.warning(f"Could not convert price '{row[price_col]}' to float: {str(e)}")
+                                raise InvalidDataError(f"Could not convert price '{row[price_col]}' to float for VIX future '{desc}': {str(e)}") from e
                             
                             break  # Move to next row after finding a match
                 
-                if futures_found > 0:
-                    logger.info(f"Successfully extracted {futures_found} VIX futures from PCF")
-                    return futures_data
-                else:
-                    logger.error("No VIX futures contracts found in PCF file")
-                    return None
+                if futures_found == 0: # Changed from futures_found > 0
+                    raise MissingCriticalDataError(f"No VIX futures contracts found in PCF file {file_path}.")
                 
-            else:
-                logger.error("File format does not match expected PCF structure")
-                return None
+                logger.info(f"Successfully extracted {futures_found} VIX futures from PCF")
+                return futures_data
+                
+            else: # Corresponds to: if all(col in df.columns for col in ['ETF Code', 'ETF Name']):
+                raise InvalidDataError(f"File {file_path} does not match expected PCF structure (missing 'ETF Code' or 'ETF Name' columns).")
         
-        except Exception as e:
-            logger.error(f"Error parsing PCF file: {str(e)}")
+        except Exception as e: # Catches errors from pd.read_csv for the main df
+            logger.error(f"Error parsing main PCF CSV file {file_path}: {str(e)}")
             logger.error(traceback.format_exc())
-            return None
+            if isinstance(e, (MissingCriticalDataError, InvalidDataError)): # Re-raise if already custom
+                raise
+            raise InvalidDataError(f"Error parsing main PCF CSV file {file_path}: {str(e)}") from e
         
     except Exception as e:
-        logger.error(f"Error extracting VIX futures from PCF: {str(e)}")
+        logger.error(f"Overall error extracting VIX futures from PCF {file_path}: {str(e)}")
         logger.error(traceback.format_exc())
-        return None
+        if isinstance(e, (MissingCriticalDataError, InvalidDataError)): # Re-raise if already custom
+            raise
+        raise InvalidDataError(f"Overall error extracting VIX futures from PCF {file_path}: {str(e)}") from e

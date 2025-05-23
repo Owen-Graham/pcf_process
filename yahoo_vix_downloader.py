@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 import pandas as pd
 import os
 import pytz
-from common import setup_logging, SAVE_DIR, format_vix_data
+from common import setup_logging, SAVE_DIR, format_vix_data, MissingCriticalDataError, InvalidDataError
+import requests # For requests.exceptions.RequestException
 
 # Set up logging
 logger = setup_logging('yahoo_vix_downloader')
@@ -21,7 +22,7 @@ def determine_yahoo_trading_date(timestamp):
         str: Trading date in YYYY-MM-DD format
     """
     if timestamp is None:
-        return None
+        raise InvalidDataError("Timestamp cannot be None for determining Yahoo trading date.")
     
     # Convert to Central Time (CBOE's timezone)
     central = pytz.timezone('US/Central')
@@ -106,10 +107,10 @@ def download_vix_futures_from_yfinance():
                 logger.info(f"Yahoo data timestamp: {data_timestamp}")
             else:
                 logger.warning("Could not download ^VIX data from Yahoo Finance")
-                return None  # Return None if we can't get VIX data - no fallback
+                raise MissingCriticalDataError("Could not download ^VIX index data from Yahoo Finance, which is essential (empty or no 'Close' column).")
         except Exception as e:
             logger.error(f"Error downloading ^VIX: {str(e)}")
-            return None  # Return None on error - no fallback
+            raise MissingCriticalDataError(f"Could not download ^VIX index data from Yahoo Finance due to error: {str(e)}") from e
         
         # Try different ticker patterns for VIX futures
         vix_patterns = [
@@ -183,31 +184,35 @@ def download_vix_futures_from_yfinance():
         
         # If we have a timestamp, determine the trading date
         if data_timestamp is not None:
-            trading_date = determine_yahoo_trading_date(data_timestamp)
-            logger.info(f"Determined trading date for Yahoo data: {trading_date}")
-            futures_data['date'] = trading_date
+            try:
+                trading_date = determine_yahoo_trading_date(data_timestamp)
+                logger.info(f"Determined trading date for Yahoo data: {trading_date}")
+                futures_data['date'] = trading_date
+            except InvalidDataError as e: # Catch error from determine_yahoo_trading_date
+                logger.error(f"Failed to determine trading date: {str(e)}")
+                raise MissingCriticalDataError(f"Failed to determine Yahoo trading date: {str(e)}") from e
         else:
             # We need a valid trading date
-            logger.error("No valid timestamp found for Yahoo data")
-            return None
+            raise MissingCriticalDataError("No valid data timestamp obtained from Yahoo Finance to determine trading date.")
         
-        if futures_found:
-            logger.info(f"Successfully retrieved VIX futures data from Yahoo Finance (processing took {time.time() - start_time:.2f}s)")
-            return futures_data
-        else:
-            logger.warning("Could not retrieve any VIX futures contracts from Yahoo Finance")
-            return None  # No fallbacks - return None if no futures contracts found
+        if not futures_found:
+            raise MissingCriticalDataError("No VIX futures contracts (e.g., ^VFTW1) were successfully retrieved from Yahoo Finance.")
+            
+        logger.info(f"Successfully retrieved VIX futures data from Yahoo Finance (processing took {time.time() - start_time:.2f}s)")
+        return futures_data
     
-    except Exception as e:
-        logger.error(f"Error in Yahoo Finance download: {str(e)}")
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        logger.error(f"Yahoo Finance download failed: {str(e)}")
+        raise # Re-raise known critical errors
+    except Exception as e: # Catch other yfinance/network issues
+        logger.error(f"Unexpected error in Yahoo Finance download: {str(e)}")
         logger.error(traceback.format_exc())
-        return None
+        raise MissingCriticalDataError(f"An unexpected error occurred with Yahoo Finance VIX downloader: {str(e)}") from e
 
 def save_yahoo_data(futures_data, save_dir=SAVE_DIR):
     """Save Yahoo futures data as CSV"""
-    if not futures_data or len(futures_data) <= 2:
-        logger.warning("No Yahoo futures data to save")
-        return None
+    if not futures_data or len(futures_data) <= 2: # Check if only contains timestamp/date
+        raise MissingCriticalDataError("No actual futures data provided to save_yahoo_data.")
     
     try:
         # Format data into standardized records
@@ -232,17 +237,26 @@ def save_yahoo_data(futures_data, save_dir=SAVE_DIR):
         return None
 
 if __name__ == "__main__":
-    # Download VIX futures from Yahoo Finance
-    yahoo_data = download_vix_futures_from_yfinance()
-    
-    # Save to CSV if data was found
-    if yahoo_data:
-        csv_path = save_yahoo_data(yahoo_data)
-        if csv_path:
-            print(f"✅ Yahoo VIX futures data saved to: {csv_path}")
+    try:
+        # Download VIX futures from Yahoo Finance
+        yahoo_data = download_vix_futures_from_yfinance()
+        
+        # Save to CSV if data was found (should be true if no exception)
+        if yahoo_data:
+            csv_path = save_yahoo_data(yahoo_data)
+            if csv_path:
+                print(f"✅ Yahoo VIX futures data saved to: {csv_path}")
+            else:
+                # This path should ideally not be reached if save_yahoo_data raises MissingCriticalDataError
+                print("❌ Failed to save Yahoo data (no path returned, though no direct error caught).")
+                exit(1)
         else:
-            print("❌ Failed to save Yahoo data")
+            # This path should also ideally not be reached
+            print("❌ No VIX futures data found from Yahoo Finance (no data returned, though no direct error caught).")
             exit(1)
-    else:
-        print("❌ No VIX futures data found from Yahoo Finance")
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        print(f"❌ Yahoo VIX Downloader Error: {e}")
+        exit(1)
+    except Exception as e: # Catch any other unexpected errors
+        print(f"❌ An unexpected error occurred: {e}")
         exit(1)

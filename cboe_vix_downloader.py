@@ -11,7 +11,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pytz
-from common import setup_logging, SAVE_DIR
+from common import setup_logging, SAVE_DIR, InvalidDataError, MissingCriticalDataError
 
 # Set up logging
 logger = setup_logging('cboe_vix_downloader')
@@ -175,7 +175,7 @@ def download_vix_futures_from_cboe():
                                     try:
                                         settlement_price = float(settlement_text.replace(',', ''))
                                     except ValueError:
-                                        pass
+                                        raise InvalidDataError(f"Could not convert settlement text '{settlement_text}' to float for symbol '{symbol}'.")
                             
                             # If no settlement price, try last price
                             if (settlement_price is None or settlement_price == 0) and 'last' in col_map:
@@ -184,7 +184,7 @@ def download_vix_futures_from_cboe():
                                     try:
                                         settlement_price = float(last_text.replace(',', ''))
                                     except ValueError:
-                                        pass
+                                        raise InvalidDataError(f"Could not convert last price text '{last_text}' to float for symbol '{symbol}'.")
                             
                             if not symbol or settlement_price is None or settlement_price == 0:
                                 continue
@@ -247,12 +247,14 @@ def download_vix_futures_from_cboe():
                         break  # Stop after finding a valid table
         
         # Check if we found any futures data
-        if len(futures_data) > 2:  # More than just date and timestamp
-            logger.info(f"Successfully extracted {len(futures_data)-2} VIX futures from CBOE (processing took {time.time() - start_time:.2f}s)")
-            return futures_data
-        else:
+                        if len(futures_data) <= 2: # Only contains 'date' and 'timestamp'
+                            logger.error("No VIX futures contracts were successfully extracted from CBOE.")
+                            raise MissingCriticalDataError("No VIX futures contracts found on CBOE website after parsing.")
+                        logger.info(f"Successfully extracted {len(futures_data)-2} VIX futures from CBOE (processing took {time_module.time() - start_time:.2f}s)")
+                        return futures_data
             # Try direct extraction from page using driver
-            logger.info("Attempting direct extraction from browser elements")
+            # This block is reached if BeautifulSoup parsing didn't find enough contracts
+            logger.info("Attempting direct extraction from browser elements as primary parsing failed or found insufficient data.")
             try:
                 # Find the VIX futures table
                 tables = browser.find_elements(By.TAG_NAME, "table")
@@ -278,7 +280,7 @@ def download_vix_futures_from_cboe():
                                     try:
                                         settlement_price = float(settlement_text.replace(',', ''))
                                     except ValueError:
-                                        pass
+                                        raise InvalidDataError(f"Could not convert settlement text '{settlement_text}' to float for symbol '{symbol}' (direct extraction).")
                                 
                                 # If no settlement price, try last price
                                 if settlement_price is None or settlement_price == 0:
@@ -287,7 +289,7 @@ def download_vix_futures_from_cboe():
                                         try:
                                             settlement_price = float(last_text.replace(',', ''))
                                         except ValueError:
-                                            pass
+                                            raise InvalidDataError(f"Could not convert last price text '{last_text}' to float for symbol '{symbol}' (direct extraction).")
                                 
                                 if not symbol or settlement_price is None or settlement_price == 0:
                                     continue
@@ -343,19 +345,31 @@ def download_vix_futures_from_cboe():
                             except Exception as e:
                                 logger.warning(f"Error in direct extraction: {str(e)}")
                         
-                        if contracts_found > 0:
+                        if contracts_found > 0: # Check if direct extraction found anything
                             logger.info(f"Successfully extracted {contracts_found} contracts via direct browser access")
+                            # Final check on futures_data length after direct extraction
+                            if len(futures_data) <= 2:
+                                logger.error("Direct extraction populated contracts, but futures_data is still too short.")
+                                raise MissingCriticalDataError("Direct extraction failed to populate futures_data correctly.")
+                            logger.info(f"Successfully extracted {len(futures_data)-2} VIX futures from CBOE (processing took {time_module.time() - start_time:.2f}s)")
                             return futures_data
-            except Exception as e:
+            except Exception as e: # Catch errors during direct extraction
                 logger.warning(f"Direct extraction failed: {str(e)}")
+                # Do not re-raise here, let it fall through to the final check
             
-            logger.warning("Could not extract VIX futures data from CBOE website")
-            return None
-    
+            # Final check if any data was extracted by either method
+            if len(futures_data) <= 2: # Only contains 'date' and 'timestamp'
+                logger.error("No VIX futures contracts were successfully extracted from CBOE by any method.")
+                raise MissingCriticalDataError("No VIX futures contracts found on CBOE website after all parsing attempts.")
+            # This part should ideally not be reached if the logic above is correct,
+            # but as a fallback:
+            logger.info(f"Successfully extracted {len(futures_data)-2} VIX futures from CBOE (processing took {time_module.time() - start_time:.2f}s)")
+            return futures_data
+
     except Exception as e:
         logger.error(f"Error downloading from CBOE: {str(e)}")
         logger.error(traceback.format_exc())
-        return None
+        raise MissingCriticalDataError(f"Failed to download or parse CBOE VIX data: {str(e)}")
     
     finally:
         # Always close the browser

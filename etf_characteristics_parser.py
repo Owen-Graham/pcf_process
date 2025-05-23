@@ -4,7 +4,7 @@ import glob
 import re
 from datetime import datetime
 import logging
-from common import setup_logging, SAVE_DIR, MONTH_CODES
+from common import setup_logging, SAVE_DIR, MONTH_CODES, normalize_vix_ticker, MissingCriticalDataError, InvalidDataError
 
 # Set up logging
 logger = setup_logging('etf_characteristics')
@@ -28,28 +28,6 @@ def find_latest_etf_file():
     latest_file = max(all_files, key=os.path.getmtime)
     logger.info(f"Found latest Simplex ETF file: {latest_file}")
     return latest_file
-
-def normalize_vix_ticker(ticker):
-    """
-    Normalize VIX futures ticker to standard format (VXH5 instead of VXH25)
-    
-    Args:
-        ticker: VIX futures ticker (e.g., VXH25, VXH5)
-    
-    Returns:
-        Normalized ticker (e.g., VXH5)
-    """
-    if not ticker or not isinstance(ticker, str):
-        return None
-        
-    # If ticker is in format VX<letter><2-digit-year>
-    match = re.match(r'(VX[A-Z])(\d{2})$', ticker)
-    if match:
-        prefix = match.group(1)
-        year = match.group(2)
-        # Take only the last digit of the year
-        return f"{prefix}{year[-1]}"
-    return ticker
 
 def extract_vix_future_code(code, name):
     """
@@ -143,15 +121,13 @@ def parse_etf_characteristics(file_path=None):
         if file_path is None:
             file_path = find_latest_etf_file()
             if file_path is None:
-                logger.error("No PCF file found")
-                return None
+                raise MissingCriticalDataError("No Simplex ETF 318A file found.")
         
         logger.info(f"Parsing ETF characteristics from PCF file: {file_path}")
         
         # Check if file exists
         if not os.path.exists(file_path):
-            logger.error(f"PCF file not found: {file_path}")
-            return None
+            raise MissingCriticalDataError(f"PCF file not found: {file_path}")
         
         # Initialize characteristics
         characteristics = {
@@ -181,6 +157,8 @@ def parse_etf_characteristics(file_path=None):
                         fund_date = f"{date_parts[2]}{date_parts[0].zfill(2)}{date_parts[1].zfill(2)}"
                 characteristics['fund_date'] = fund_date
                 logger.info(f"Found fund date: {fund_date}")
+            else:
+                raise MissingCriticalDataError("Fund Date not found in PCF header.")
             
             # Extract shares outstanding
             if 'Shares Outstanding' in header_df.columns and not header_df['Shares Outstanding'].isna().all():
@@ -194,7 +172,9 @@ def parse_etf_characteristics(file_path=None):
                         characteristics['shares_outstanding'] = int(float(shares_str))
                     logger.info(f"Found shares outstanding: {characteristics['shares_outstanding']}")
                 except (ValueError, TypeError):
-                    logger.warning(f"Could not convert shares outstanding to integer: {shares_value}")
+                    raise InvalidDataError(f"Could not convert Shares Outstanding '{shares_value}' to integer.")
+            else:
+                raise MissingCriticalDataError("Shares Outstanding not found in PCF header.")
             
             # Extract fund cash component
             if 'Fund Cash Component' in header_df.columns and not header_df['Fund Cash Component'].isna().all():
@@ -203,9 +183,11 @@ def parse_etf_characteristics(file_path=None):
                     characteristics['fund_cash_component'] = float(cash_str)
                     logger.info(f"Found fund cash component: {cash_str}")
                 except ValueError:
-                    logger.warning(f"Could not convert fund cash component to float: {cash_str}")
+                    raise InvalidDataError(f"Could not convert Fund Cash Component '{cash_str}' to float.")
+            else:
+                raise MissingCriticalDataError("Fund Cash Component not found in PCF header.")
         except Exception as e:
-            logger.warning(f"Error parsing PCF header: {str(e)}")
+            raise InvalidDataError(f"Error parsing PCF header: {str(e)}")
         
         # 2. Read the holding section (starting from row 4)
         try:
@@ -228,6 +210,8 @@ def parse_etf_characteristics(file_path=None):
                     name_col = col
                     logger.info(f"Using '{name_col}' as name column")
                     break
+            if name_col is None:
+                raise MissingCriticalDataError("Could not identify the instrument Name/Description column in PCF holdings.")
             
             # Find the actual code column
             code_col = None
@@ -236,23 +220,28 @@ def parse_etf_characteristics(file_path=None):
                     code_col = col
                     logger.info(f"Using '{code_col}' as code column")
                     break
+            if code_col is None:
+                raise MissingCriticalDataError("Could not identify the instrument Code/Ticker column in PCF holdings.")
             
             # Check if we have the required columns
             shares_col = 'Shares Amount' if 'Shares Amount' in holdings_df.columns else None
             
             if not shares_col:
-                logger.warning("Missing 'Shares Amount' column in holdings section")
+                logger.info("Standard 'Shares Amount' column not found, trying alternatives.")
                 # Try to find an alternative column
                 for col in holdings_df.columns:
                     if 'shares' in col.lower() and 'amount' in col.lower():
                         shares_col = col
                         logger.info(f"Using alternative shares column: {shares_col}")
                         break
+            if shares_col is None:
+                raise MissingCriticalDataError("Could not identify the Shares Amount column in PCF holdings.")
             
-            if name_col and code_col and shares_col:
-                logger.info(f"Found all required columns: Name='{name_col}', Code='{code_col}', Shares='{shares_col}'")
-                
-                # Find rows with VIX futures
+            # This part of the original if condition (name_col and code_col) is now guaranteed by checks above
+            # if name_col and code_col and shares_col:
+            logger.info(f"Found all required columns: Name='{name_col}', Code='{code_col}', Shares='{shares_col}'")
+            
+            # Find rows with VIX futures
                 for _, row in holdings_df.iterrows():
                     code = row[code_col] if not pd.isna(row[code_col]) else ""
                     name = row[name_col] if not pd.isna(row[name_col]) else ""
@@ -276,16 +265,19 @@ def parse_etf_characteristics(file_path=None):
                             try:
                                 shares_amount = int(float(row[shares_col]))
                             except (ValueError, TypeError):
-                                logger.warning(f"Could not convert shares amount to integer: {row[shares_col]}")
+                                raise InvalidDataError(f"Could not convert shares amount '{row[shares_col]}' to integer for instrument '{row[name_col]}'.")
                         
                         if future_code:
                             futures_rows.append((future_code, shares_amount, name, code))
                             logger.info(f"Found future: {future_code}, shares: {shares_amount}, name: {name}, code: {code}")
-                        else:
-                            logger.warning(f"Could not extract future code from: name='{name}', code='{code}'")
-            else:
-                # Try to scan all text columns for VIX futures references
-                logger.warning("Missing one or more required columns, attempting to scan all columns")
+                        elif is_vix_future: # future_code is None but it was identified as a VIX future
+                            raise InvalidDataError(f"Could not extract VIX future code from identified VIX future row: name='{name}', code='{code}'.")
+                        # else: # Not a VIX future or not parsable and not identified as VIX, so we just skip.
+                            # logger.warning(f"Could not extract future code from: name='{name}', code='{code}'")
+            else: # This 'else' block corresponds to the 'if name_col and code_col and shares_col:' which is now handled by raising errors.
+                  # So this block relating to scanning all columns should ideally not be reached if columns are missing.
+                  # However, to adhere to the plan of modifying the fallback:
+                logger.warning("Attempting to scan all columns as primary column identification failed (this path should ideally not be taken).")
                 
                 # Find a likely shares column
                 shares_col = None
@@ -299,8 +291,7 @@ def parse_etf_characteristics(file_path=None):
                             break
                 
                 if not shares_col:
-                    logger.warning("Could not identify a shares column")
-                    return None
+                    raise MissingCriticalDataError("Could not identify a suitable shares column even after scanning all columns.")
                 
                 # Scan all text columns for VIX futures
                 for _, row in holdings_df.iterrows():
@@ -385,12 +376,22 @@ def parse_etf_characteristics(file_path=None):
             logger.warning(f"Error parsing VIX futures holdings: {str(e)}")
             logger.warning(f"Exception details: {str(e)}", exc_info=True)
         
+        # Final Validation
+        if characteristics.get('fund_date') is None:
+            raise MissingCriticalDataError("Fund date was not successfully parsed.")
+        if characteristics.get('shares_outstanding') is None or characteristics.get('shares_outstanding') <= 0:
+            raise MissingCriticalDataError(f"Shares outstanding is missing or invalid: {characteristics.get('shares_outstanding')}.")
+        if characteristics.get('fund_cash_component') is None: # Assuming 0 is a valid cash component
+            raise MissingCriticalDataError("Fund cash component was not successfully parsed.")
+        if characteristics.get('near_future') is None:
+            raise MissingCriticalDataError("Near future contract code was not determined.")
+            
         return characteristics
     
     except Exception as e:
         logger.error(f"Error parsing ETF characteristics: {str(e)}")
         logger.error(f"Exception details:", exc_info=True)
-        return None
+        raise InvalidDataError(f"Overall error parsing ETF characteristics from {file_path}: {str(e)}") from e
 
 def save_etf_characteristics(characteristics, save_dir=SAVE_DIR):
     """
@@ -443,18 +444,19 @@ def process_etf_characteristics():
     """Main function to process ETF characteristics"""
     logger.info("Starting ETF characteristics processing")
     
-    # Parse characteristics
-    characteristics = parse_etf_characteristics()
-    
-    if characteristics:
-        # Save to CSV
-        file_path = save_etf_characteristics(characteristics)
-        if file_path:
-            logger.info(f"Successfully saved ETF characteristics to {file_path}")
-            return True
-    
-    logger.warning("ETF characteristics processing failed")
-    return False
+    try:
+        characteristics = parse_etf_characteristics()
+        if characteristics: # Should always be true if no exception
+            file_path = save_etf_characteristics(characteristics)
+            if file_path:
+                logger.info(f"Successfully saved ETF characteristics to {file_path}")
+                return True
+        # This part might be unreachable if parse_etf_characteristics is guaranteed to raise or return valid data
+        logger.warning("ETF characteristics processing resulted in no data, though no direct error was raised.") 
+        return False
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        logger.error(f"ETF characteristics processing failed: {str(e)}")
+        return False
 
 if __name__ == "__main__":
     success = process_etf_characteristics()

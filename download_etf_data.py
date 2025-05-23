@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
 import traceback
-from common import setup_logging, SAVE_DIR
+from common import setup_logging, SAVE_DIR, MissingCriticalDataError, InvalidDataError
 
 # Set up logging
 logger = setup_logging('etf_downloader')
@@ -47,8 +47,7 @@ def download_simplex_etf_data():
                 links.append((file_link, "PCF" if ".pcf" in file_link.lower() else "CSV"))
         
         if not links:
-            logger.warning("No ETF 318A links found")
-            return None
+            raise MissingCriticalDataError("No ETF 318A download links found on the Simplex webpage.")
             
         # Prioritize PCF format if available, otherwise use CSV
         for link, format_type in links:
@@ -71,17 +70,19 @@ def download_simplex_etf_data():
             # Try to read the file to extract Fund Date
             try:
                 df = pd.read_csv(temp_path)
-                
-                # Extract Fund Date from column if available
+                raw_fund_date_val = None
                 if 'Fund Date' in df.columns and len(df) > 0:
-                    fund_date = str(df["Fund Date"].iloc[0]).replace("/", "")
-                    if fund_date.lower() == "nan":
-                        fund_date = "unknown"
+                    raw_fund_date_val = df["Fund Date"].iloc[0]
+                    fund_date = str(raw_fund_date_val).replace("/", "").strip()
+                    if fund_date.lower() == "nan" or not fund_date: # Check for empty string after strip
+                        raise InvalidDataError(f"Extracted Fund Date is missing or invalid: '{raw_fund_date_val}' from file {temp_path}")
                 else:
-                    fund_date = "unknown"
-            except Exception as e:
-                logger.warning(f"Could not extract Fund Date: {str(e)}")
-                fund_date = "unknown"
+                    raise MissingCriticalDataError(f"'Fund Date' column not found or empty in downloaded file {temp_path}")
+            except Exception as e: # Catch pandas errors or our own above
+                # If it's already one of our custom errors, re-raise, otherwise wrap it.
+                if isinstance(e, (MissingCriticalDataError, InvalidDataError)):
+                    raise
+                raise InvalidDataError(f"Could not extract valid Fund Date from downloaded file {temp_path}: {str(e)}") from e
             
             # Get current date-time
             current_datetime = datetime.now().strftime("%Y%m%d%H%M")
@@ -96,20 +97,27 @@ def download_simplex_etf_data():
             logger.info(f"ETF {format_type} file saved successfully to: {final_path}")
             return final_path
         
-        logger.warning("Failed to download any ETF 318A data files")
-        return None
+        # This part is reached if the loop completes without a successful download and return
+        raise MissingCriticalDataError("Failed to download any ETF 318A data files after trying all available links.")
     
     except Exception as e:
         logger.error(f"Error downloading ETF data: {str(e)}")
         logger.error(traceback.format_exc())
-        return None
+        raise MissingCriticalDataError(f"Error downloading ETF data: {str(e)}") from e
 
 if __name__ == "__main__":
-    # Download the ETF data file
-    etf_path = download_simplex_etf_data()
-    
-    if etf_path:
-        print(f"✅ ETF data file saved successfully to: {etf_path}")
-    else:
-        print("❌ Failed to download ETF data file")
+    etf_path = None # Initialize etf_path
+    try:
+        etf_path = download_simplex_etf_data()
+        if etf_path: # Should be true if no exception
+            print(f"✅ ETF data file saved successfully to: {etf_path}")
+        else:
+            # This case should ideally not be reached if exceptions are raised correctly
+            print("❌ Failed to download ETF data file (no specific error caught, but no path returned).")
+            exit(1)
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        print(f"❌ Failed to download ETF data file: {e}")
+        exit(1)
+    except Exception as e: # Catch any other unexpected errors
+        print(f"❌ An unexpected error occurred during ETF data download: {e}")
         exit(1)

@@ -10,6 +10,7 @@ import time
 from cboe_vix_downloader import download_vix_futures_from_cboe
 from yahoo_vix_downloader import download_vix_futures_from_yfinance
 from pcf_vix_extractor import extract_vix_futures_from_pcf, find_latest_etf_file
+from common import MissingCriticalDataError, InvalidDataError # Ensure these are imported
 
 # Set up logging with more detailed format
 logging.basicConfig(
@@ -58,8 +59,7 @@ def format_vix_data_for_output(cboe_data, yfinance_data, simplex_data):
     
     # If no valid date is found, we cannot proceed
     if not price_date:
-        logger.error("No valid price date found in any data source")
-        return pd.DataFrame()  # Return empty DataFrame
+        raise MissingCriticalDataError("No valid price_date could be determined from any data source (CBOE, Yahoo, PCF) for formatting VIX data.")
     
     # List to store all rows
     all_rows = []
@@ -69,9 +69,11 @@ def format_vix_data_for_output(cboe_data, yfinance_data, simplex_data):
         # Get unique CBOE contracts (no duplicates)
         cboe_contracts = {}
         for key, value in cboe_data.items():
-            # Skip non-price fields and null values
-            if key in ['date', 'timestamp'] or value is None:
+            # Skip non-price fields
+            if key in ['date', 'timestamp']:
                 continue
+            if value is None: # Check for None price value
+                raise MissingCriticalDataError(f"Missing price for {key} in CBOE data during final formatting.")
                 
             # Process CBOE tickers
             vix_future = None
@@ -104,9 +106,11 @@ def format_vix_data_for_output(cboe_data, yfinance_data, simplex_data):
     if yfinance_data:
         yahoo_contracts = {}
         for key, value in yfinance_data.items():
-            # Skip non-price fields and null values
-            if key in ['date', 'timestamp'] or value is None:
+            # Skip non-price fields
+            if key in ['date', 'timestamp']:
                 continue
+            if value is None: # Check for None price value
+                raise MissingCriticalDataError(f"Missing price for {key} in Yahoo data during final formatting.")
                 
             # Determine vix_future
             vix_future = None
@@ -141,9 +145,11 @@ def format_vix_data_for_output(cboe_data, yfinance_data, simplex_data):
     if simplex_data:
         pcf_contracts = {}
         for key, value in simplex_data.items():
-            # Skip non-price fields and null values
-            if key in ['date', 'timestamp'] or value is None:
+            # Skip non-price fields
+            if key in ['date', 'timestamp']:
                 continue
+            if value is None: # Check for None price value
+                raise MissingCriticalDataError(f"Missing price for {key} in Simplex PCF data during final formatting.")
                 
             # Determine vix_future
             vix_future = None
@@ -183,8 +189,7 @@ def save_vix_data(df, save_dir=SAVE_DIR):
     Save the VIX futures data to CSV files
     """
     if df.empty:
-        logger.error("Cannot save empty dataframe")
-        return False
+        raise InvalidDataError("Cannot save an empty VIX futures DataFrame.")
         
     timestamp = df['timestamp'].iloc[0]
     
@@ -215,30 +220,49 @@ def save_vix_data(df, save_dir=SAVE_DIR):
             combined_df = pd.concat([master_df, df], ignore_index=True)
             combined_df.to_csv(master_csv_path, index=False)
         except Exception as e:
-            logger.error(f"Error updating master CSV: {str(e)}")
-            logger.error("Cannot proceed with saving data")
-            return False
+            logger.error(f"Error updating master CSV: {str(e)}") # Keep log for context
+            raise InvalidDataError(f"Failed to write to master CSV '{master_csv_path}': {str(e)}") from e
     else:
         # Create new master file
+        try:
         df.to_csv(master_csv_path, index=False)
+        except Exception as e:
+            logger.error(f"Error creating new master CSV: {str(e)}") # Keep log for context
+            raise InvalidDataError(f"Failed to create new master CSV '{master_csv_path}': {str(e)}") from e
     
     return True
 
 def download_vix_futures():
     """Download VIX futures data from all sources and combine them"""
     overall_start_time = time.time()
+    cboe_data, yfinance_data, simplex_data = None, None, None # Initialize
     
-    # Download from all sources
-    cboe_data = download_vix_futures_from_cboe()
-    yfinance_data = download_vix_futures_from_yfinance()
+    # Download from CBOE
+    try:
+        cboe_data = download_vix_futures_from_cboe()
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        logger.warning(f"Failed to retrieve data from CBOE: {e}")
+        cboe_data = None
+    
+    # Download from Yahoo Finance
+    try:
+        yfinance_data = download_vix_futures_from_yfinance()
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        logger.warning(f"Failed to retrieve data from Yahoo Finance: {e}")
+        yfinance_data = None
     
     # Try to get PCF data from the ETF files
     logger.info("Attempting to get VIX futures from PCF data")
-    latest_etf_file = find_latest_etf_file()
-    if latest_etf_file:
-        simplex_data = extract_vix_futures_from_pcf(latest_etf_file)
-    else:
-        logger.error("No ETF file found for PCF extraction")
+    try:
+        latest_etf_file = find_latest_etf_file() # find_latest_etf_file itself logs errors if no file
+        if latest_etf_file:
+            simplex_data = extract_vix_futures_from_pcf(latest_etf_file)
+        else:
+            # This case might be redundant if find_latest_etf_file raises an error or returns None and that's handled
+            logger.warning("No ETF file found for PCF extraction by find_latest_etf_file.")
+            simplex_data = None
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        logger.warning(f"Failed to retrieve data from Simplex PCF: {e}")
         simplex_data = None
     
     # Log summary of results from each source
@@ -265,23 +289,20 @@ def download_vix_futures():
     
     # Check if we got data from any source
     if not cboe_data and not yfinance_data and not simplex_data:
-        logger.error("Failed to get data from all sources")
-        return False
+        raise MissingCriticalDataError("Failed to retrieve VIX futures data from all available sources (CBOE, Yahoo, PCF).")
     
     # Format data into new structure
     df = format_vix_data_for_output(cboe_data, yfinance_data, simplex_data)
     
-    if df.empty:
-        logger.error("No valid price data could be formatted. Not saving empty files.")
-        return False
+    if df.empty: # Should ideally be caught by format_vix_data_for_output raising error
+        raise MissingCriticalDataError("Formatting VIX data resulted in an empty dataset, even though some sources might have provided data.")
     
     # Save the data
-    save_success = save_vix_data(df, SAVE_DIR)
+    save_vix_data(df, SAVE_DIR) # This will now raise an error on failure
     
-    if save_success:
-        # Log results
-        logger.info(f"Saved VIX futures data with {len(df)} price records")
-        logger.info("Data sample:")
+    # Log results (if save_vix_data was successful)
+    logger.info(f"Saved VIX futures data with {len(df)} price records")
+    logger.info("Data sample:")
         logger.info(df.head(10).to_string())
         
         # Log any duplicate prices for the same future to highlight discrepancies
@@ -297,15 +318,22 @@ def download_vix_futures():
         
         logger.info(f"Total processing time: {time.time() - overall_start_time:.2f}s")
         return True
-    else:
-        logger.error("Failed to save VIX futures data")
-        return False
+    # Removed else block as save_vix_data now raises error
 
 if __name__ == "__main__":
     logger.info("Starting VIX futures download process")
-    success = download_vix_futures()
-    if not success:
-        logger.error("Script completed with errors.")
-        sys.exit(1)  # Exit with error code
-    else:
-        logger.info("Script completed successfully.")
+    try:
+        success = download_vix_futures()
+        if success: # Should be true if no exception from download_vix_futures
+            logger.info("Script completed successfully.")
+        else:
+            # This case might be unreachable if download_vix_futures always raises or returns True
+            logger.error("Script completed with an unspecified issue (returned False but no exception).")
+            sys.exit(1)
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        logger.error(f"VIX Futures Download Script failed: {e}")
+        sys.exit(1)
+    except Exception as e: # Catch any other unexpected errors at the top level
+        logger.error(f"An unexpected error occurred in the main script: {e}")
+        logger.error(traceback.format_exc())
+        sys.exit(1)

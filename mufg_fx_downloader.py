@@ -5,6 +5,8 @@ from datetime import datetime
 import logging
 import traceback
 import re
+import io
+from common import MissingCriticalDataError, InvalidDataError
 
 # Set up paths and logging
 DATA_DIR = "data"
@@ -68,12 +70,10 @@ def extract_date_from_csv(content):
         except Exception as e:
             logger.warning(f"Error searching for date in DataFrame: {str(e)}")
         
-        logger.error("Could not extract date from CSV content - no fallback used")
-        return None
+        raise InvalidDataError("Could not extract date from CSV content.")
     
     except Exception as e:
-        logger.error(f"Error extracting date: {str(e)}")
-        return None
+        raise InvalidDataError(f"Error extracting date: {str(e)}") from e
 
 def download_mufg_fx_rates():
     """
@@ -107,8 +107,7 @@ def download_mufg_fx_rates():
                 logger.warning(f"Failed to decode with {encoding}: {str(e)}")
         
         if not content:
-            logger.error("Could not decode CSV with any encoding")
-            return None
+            raise InvalidDataError("Could not decode CSV with any available encoding (shift_jis, iso-8859-1, utf-8, cp932).")
         
         # Save raw file for debugging
         raw_file_path = os.path.join(DATA_DIR, "mufg_fx_raw.csv")
@@ -117,10 +116,10 @@ def download_mufg_fx_rates():
         logger.info(f"Saved raw CSV to: {raw_file_path}")
         
         # Extract date from CSV content - no fallback
-        csv_date = extract_date_from_csv(content)
-        if csv_date is None:
-            logger.error("Date extraction failed - cannot proceed without a valid date")
-            return None
+        csv_date = extract_date_from_csv(content) # This will now raise InvalidDataError on failure
+        # If extract_date_from_csv could still theoretically return None (it shouldn't after its changes):
+        # if csv_date is None:
+        #     raise MissingCriticalDataError("Date extraction failed - cannot proceed without a valid date.")
         
         # Parse the CSV data
         lines = content.strip().split('\n')
@@ -170,8 +169,7 @@ def download_mufg_fx_rates():
             logger.info(f"Filtered exchange rates: {exchange_rates}")
             
             if len(exchange_rates) < len(STANDARD_LABELS):
-                logger.error(f"Not enough valid exchange rates found. Expected at least {len(STANDARD_LABELS)}, got {len(exchange_rates)}")
-                return None
+                raise MissingCriticalDataError(f"Not enough valid exchange rates found in MUFG data. Expected at least {len(STANDARD_LABELS)}, got {len(exchange_rates)}. Rates found: {exchange_rates}")
             
             # Match standard labels with the exchange rates
             for i, label in enumerate(STANDARD_LABELS):
@@ -191,15 +189,21 @@ def download_mufg_fx_rates():
             return fx_data_list
         else:
             if not usd_line:
-                logger.error("USD line not found in CSV data")
+                raise MissingCriticalDataError("USD line not found in MUFG FX CSV data.")
+            # It's possible numeric_values is empty even if usd_line is found, if regex fails.
             if not numeric_values:
-                logger.error("No numeric values found in USD line")
-            return None
+                 raise MissingCriticalDataError("No numeric values suitable for FX rates found in MUFG USD line.")
+            # If both are true, it implies some other logic failure if this path is reached.
+            # However, the primary check for not enough rates (below) is more specific.
+            # For now, the above two are sufficient.
     
-    except Exception as e:
-        logger.error(f"Error downloading FX rates: {str(e)}")
+    except (requests.exceptions.RequestException, InvalidDataError, MissingCriticalDataError) as e:
+        logger.error(f"Failed to download or parse MUFG FX rates: {str(e)}")
+        raise # Re-raise the caught error (custom or request-related)
+    except Exception as e: # Catch any other unexpected errors
+        logger.error(f"Unexpected error downloading MUFG FX rates: {str(e)}")
         logger.error(traceback.format_exc())
-        return None
+        raise InvalidDataError(f"An unexpected error occurred with MUFG FX downloader: {str(e)}") from e
 
 def save_fx_rates(fx_data_list):
     """
@@ -261,21 +265,22 @@ def process_fx_rates():
     """Main function to process FX rates"""
     logger.info("Starting FX rate data processing")
     
-    # Download FX rates
-    fx_data_list = download_mufg_fx_rates()
-    
-    if fx_data_list:
-        # Save to CSV
-        daily_file, master_file = save_fx_rates(fx_data_list)
-        if daily_file and master_file:
-            logger.info(f"Successfully saved FX rate data to {daily_file} and {master_file}")
-            return True
-    
-    logger.warning("FX rate data processing failed")
-    return False
+    try:
+        fx_data_list = download_mufg_fx_rates()
+        if fx_data_list: # Should be true if no exception
+            daily_file, master_file = save_fx_rates(fx_data_list)
+            if daily_file and master_file:
+                logger.info(f"Successfully saved FX rate data to {daily_file} and {master_file}")
+                return True
+        # This part might be unreachable if download_mufg_fx_rates is guaranteed to raise or return valid data
+        logger.warning("MUFG FX rate download resulted in no data, though no direct error was raised.")
+        return False
+    except (MissingCriticalDataError, InvalidDataError, requests.exceptions.RequestException) as e:
+        logger.error(f"MUFG FX rate data processing failed: {str(e)}")
+        return False
 
 if __name__ == "__main__":
-    import io  # Import here to avoid issues if not needed
+    # import io # Moved to top
     
     success = process_fx_rates()
     

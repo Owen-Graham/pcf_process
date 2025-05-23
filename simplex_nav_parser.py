@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from common import setup_logging, SAVE_DIR
+from common import setup_logging, SAVE_DIR, MissingCriticalDataError, InvalidDataError
 
 # Set up logging
 logger = setup_logging('simplex_nav_parser')
@@ -80,8 +80,7 @@ def parse_simplex_nav_with_browser():
             
             # If fund_date wasn't found, use current date
             if fund_date is None:
-                fund_date = datetime.now().strftime("%Y%m%d")
-                logger.info(f"Using current date as fund date: {fund_date}")
+                raise MissingCriticalDataError("Could not extract fund date from Simplex website.")
             
             # Try to find the NAV value
             nav_float = None
@@ -102,7 +101,7 @@ def parse_simplex_nav_with_browser():
                             logger.info(f"Extracted NAV value: {nav_float}")
                             source_note = " (browser rendered)"
                         except ValueError as e:
-                            logger.warning(f"Could not convert NAV text to float: {str(e)}")
+                            raise InvalidDataError(f"Could not convert NAV text '{nav_text}' to float (direct find): {str(e)}")
                     else:
                         logger.warning("NAV element is empty")
             except Exception as e:
@@ -132,7 +131,7 @@ def parse_simplex_nav_with_browser():
                                         logger.info(f"Extracted NAV value from table: {nav_float}")
                                         source_note = " (table cell)"
                                     except ValueError as e:
-                                        logger.warning(f"Could not convert table cell text to float: {str(e)}")
+                                        raise InvalidDataError(f"Could not convert NAV text '{nav_text}' from table cell to float: {str(e)}")
                 except Exception as e:
                     logger.warning(f"Error finding NAV in table: {str(e)}")
             
@@ -157,7 +156,7 @@ def parse_simplex_nav_with_browser():
                                 logger.info(f"Extracted NAV value after JS execution: {nav_float}")
                                 source_note = " (JS execution)"
                             except ValueError as e:
-                                logger.warning(f"Could not convert NAV text after JS to float: {str(e)}")
+                                raise InvalidDataError(f"Could not convert NAV text '{nav_text}' after JS execution to float: {str(e)}")
                 except Exception as e:
                     logger.warning(f"Error executing JavaScript: {str(e)}")
             
@@ -192,7 +191,7 @@ def parse_simplex_nav_with_browser():
                                         source_note = " (rendered HTML)"
                                         break
                                 except ValueError:
-                                    continue
+                                    logger.warning(f"Could not convert potential NAV match '{match}' from rendered HTML to float. Trying next match."); continue
                         if nav_float is not None:
                             break
                 except Exception as e:
@@ -209,8 +208,15 @@ def parse_simplex_nav_with_browser():
             
             # If we couldn't extract a NAV value, return None
             if nav_float is None:
-                logger.error("Could not extract NAV value using any method")
-                return None
+                # Attempt to save screenshot before raising error, if driver is available
+                if driver:
+                    try:
+                        screenshot_file = os.path.join(SAVE_DIR, "simplex_error_screenshot.png")
+                        driver.save_screenshot(screenshot_file)
+                        logger.info(f"Saved error screenshot to {screenshot_file}")
+                    except Exception as se:
+                        logger.warning(f"Error taking screenshot during error handling: {str(se)}")
+                raise MissingCriticalDataError("Could not extract NAV value using any method from Simplex website.")
             
             # Create the NAV data dictionary
             nav_data = {
@@ -237,7 +243,7 @@ def parse_simplex_nav_with_browser():
         logger.error(traceback.format_exc())
         
         # Return None to indicate failure
-        return None
+        raise MissingCriticalDataError(f"Failed to parse Simplex NAV data due to an overarching error: {str(e)}") from e
 
 def save_nav_data(nav_data, save_dir=SAVE_DIR):
     """
@@ -302,18 +308,19 @@ def process_simplex_nav():
     """Main function to process Simplex NAV data"""
     logger.info("Starting Simplex NAV data processing")
     
-    # Parse NAV data using headless browser
-    nav_data = parse_simplex_nav_with_browser()
-    
-    if nav_data:
-        # Save to CSV
-        daily_file, master_file = save_nav_data(nav_data)
-        if daily_file and master_file:
-            logger.info(f"Successfully saved NAV data to {daily_file} and {master_file}")
-            return True
-    
-    logger.warning("NAV data processing failed")
-    return False
+    try:
+        nav_data = parse_simplex_nav_with_browser()
+        if nav_data: # Should be true if no exception
+            daily_file, master_file = save_nav_data(nav_data)
+            if daily_file and master_file:
+                logger.info(f"Successfully saved NAV data to {daily_file} and {master_file}")
+                return True
+        # This part might be unreachable if parse_simplex_nav_with_browser is guaranteed to raise or return valid data
+        logger.warning("Simplex NAV parsing resulted in no data, though no direct error was raised.")
+        return False
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        logger.error(f"Simplex NAV parsing failed: {str(e)}")
+        return False
 
 if __name__ == "__main__":
     import argparse

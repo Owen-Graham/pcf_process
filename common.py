@@ -5,6 +5,15 @@ from datetime import datetime
 import pandas as pd
 import traceback
 
+# Custom Exceptions
+class MissingCriticalDataError(Exception):
+    """Custom exception for missing critical data."""
+    pass
+
+class InvalidDataError(Exception):
+    """Custom exception for invalid or malformed data."""
+    pass
+
 # Define global constants
 SAVE_DIR = "data"
 os.makedirs(SAVE_DIR, exist_ok=True)
@@ -65,7 +74,7 @@ def normalize_vix_ticker(ticker):
         Normalized ticker (e.g., VXH5)
     """
     if not ticker or not isinstance(ticker, str):
-        return ticker
+        raise InvalidDataError(f"Invalid ticker: {ticker}. Ticker must be a non-empty string.")
         
     # If ticker is in format VX<letter><2-digit-year>
     match = re.match(r'(VX[A-Z])(\d{2})$', ticker)
@@ -285,8 +294,10 @@ def format_vix_data(futures_data, source):
     
     for key, value in futures_data.items():
         # Skip non-price fields
-        if key in ['date', 'timestamp'] or value is None:
+        if key in ['date', 'timestamp']:
             continue
+        if value is None:
+            raise MissingCriticalDataError(f"Missing price value for key '{key}' in source '{source}'.")
         
         # Determine VIX future code and symbol
         vix_future = None
@@ -363,16 +374,19 @@ def read_latest_file(pattern, default_cols=None, directory=SAVE_DIR):
     """
     latest_file = find_latest_file(pattern, directory)
     
-    if latest_file:
-        try:
-            df = pd.read_csv(latest_file)
-            return df
-        except Exception as e:
-            logging.error(f"Error reading file {latest_file}: {str(e)}")
-            logging.error(traceback.format_exc())
+    if not latest_file:
+        raise MissingCriticalDataError(f"No file found for pattern '{pattern}' in directory '{directory}'.")
     
-    return pd.DataFrame(columns=default_cols if default_cols else [])
-
+    try:
+        df = pd.read_csv(latest_file)
+        if df.empty:
+            raise MissingCriticalDataError(f"File {latest_file} is empty.")
+        return df
+    except Exception as e:
+        # Log the original error for debugging purposes if desired, then raise the custom error
+        logging.error(f"Original error reading file {latest_file}: {str(e)}")
+        logging.error(traceback.format_exc())
+        raise MissingCriticalDataError(f"Error reading file {latest_file}: {str(e)}")
 
 def map_position_to_contract(position):
     """

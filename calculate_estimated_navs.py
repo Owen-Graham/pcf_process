@@ -8,6 +8,8 @@ import logging
 import sys
 import traceback
 
+from common import normalize_vix_ticker, find_latest_file
+
 # Set up paths and logging
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -23,64 +25,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("estimated_navs_calculator")
 
-def normalize_vix_ticker(ticker):
-    """
-    Normalize VIX futures ticker to standard format (VXH5 instead of VXH25)
-    
-    Args:
-        ticker: VIX futures ticker (e.g., VXH25, VXH5)
-    
-    Returns:
-        Normalized ticker (e.g., VXH5)
-    """
-    if not ticker or not isinstance(ticker, str):
-        return ticker
-        
-    # If ticker is in format VX<letter><2-digit-year>
-    match = re.match(r'(VX[A-Z])(\d{2})$', ticker)
-    if match:
-        prefix = match.group(1)
-        year = match.group(2)
-        # Take only the last digit of the year
-        return f"{prefix}{year[-1]}"
-    return ticker
-
-def find_latest_file(pattern):
-    """
-    Find the latest file matching a pattern
-    
-    Args:
-        pattern: File pattern to match (e.g., "vix_futures_*.csv")
-    
-    Returns:
-        str: Path to the latest file or None if no files found
-    """
-    try:
-        # Get full pattern path
-        full_pattern = os.path.join(DATA_DIR, pattern)
-        logger.info(f"Looking for files matching: {full_pattern}")
-        
-        # Use glob to find all matching files
-        matching_files = glob.glob(full_pattern)
-        
-        # Log what was found
-        if matching_files:
-            logger.info(f"Found {len(matching_files)} matching files: {matching_files}")
-        else:
-            logger.error(f"No files found matching pattern: {pattern}")
-            return None
-        
-        # Sort by modification time (newest first)
-        matching_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-        
-        # Return the latest file
-        return matching_files[0]
-    
-    except Exception as e:
-        logger.error(f"Error finding files with pattern {pattern}: {str(e)}")
-        logger.error(traceback.format_exc())
-        return None
-
 def read_latest_file(pattern, default_cols=None):
     """
     Read the latest file matching the pattern
@@ -92,10 +36,10 @@ def read_latest_file(pattern, default_cols=None):
     Returns:
         pandas.DataFrame: DataFrame with the file contents or None if file not found or error
     """
-    latest_file = find_latest_file(pattern)
+    latest_file = find_latest_file(pattern, directory=DATA_DIR)
     
     if not latest_file:
-        logger.error(f"No file found matching pattern: {pattern}")
+        logger.error(f"No file found matching pattern: {pattern} in directory {DATA_DIR}")
         return None
     
     try:
