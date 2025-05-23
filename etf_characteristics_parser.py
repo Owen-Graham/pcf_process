@@ -242,11 +242,11 @@ def parse_etf_characteristics(file_path=None):
             logger.info(f"Found all required columns: Name='{name_col}', Code='{code_col}', Shares='{shares_col}'")
             
             # Find rows with VIX futures
-                for _, row in holdings_df.iterrows():
-                    code = row[code_col] if not pd.isna(row[code_col]) else ""
-                    name = row[name_col] if not pd.isna(row[name_col]) else ""
-                    
-                    # Check if this is a VIX future
+            for _, row in holdings_df.iterrows():
+                code = row[code_col] if not pd.isna(row[code_col]) else ""
+                name = row[name_col] if not pd.isna(row[name_col]) else ""
+                
+                # Check if this is a VIX future
                     is_vix_future = False
                     name_str = str(name).upper()
                     code_str = str(code).upper()
@@ -274,60 +274,8 @@ def parse_etf_characteristics(file_path=None):
                             raise InvalidDataError(f"Could not extract VIX future code from identified VIX future row: name='{name}', code='{code}'.")
                         # else: # Not a VIX future or not parsable and not identified as VIX, so we just skip.
                             # logger.warning(f"Could not extract future code from: name='{name}', code='{code}'")
-            else: # This 'else' block corresponds to the 'if name_col and code_col and shares_col:' which is now handled by raising errors.
-                  # So this block relating to scanning all columns should ideally not be reached if columns are missing.
-                  # However, to adhere to the plan of modifying the fallback:
-                logger.warning("Attempting to scan all columns as primary column identification failed (this path should ideally not be taken).")
-                
-                # Find a likely shares column
-                shares_col = None
-                for col in holdings_df.columns:
-                    if holdings_df[col].dtype in ['int64', 'float64']:
-                        # Check if values are in a reasonable range for shares
-                        values = holdings_df[col].dropna()
-                        if len(values) > 0 and values.mean() > 0 and values.mean() < 1000:
-                            shares_col = col
-                            logger.info(f"Using '{shares_col}' as likely shares column")
-                            break
-                
-                if not shares_col:
-                    raise MissingCriticalDataError("Could not identify a suitable shares column even after scanning all columns.")
-                
-                # Scan all text columns for VIX futures
-                for _, row in holdings_df.iterrows():
-                    vix_future_found = False
-                    vix_code = None
-                    
-                    # Scan each column for VIX future indications
-                    for col in holdings_df.columns:
-                        if pd.isna(row[col]):
-                            continue
-                            
-                        cell_text = str(row[col]).upper()
-                        if 'VIX' in cell_text or 'CBOEVIX' in cell_text or 'FUTURE' in cell_text:
-                            # Try to extract a VIX future code
-                            for other_col in holdings_df.columns:
-                                if other_col != col and not pd.isna(row[other_col]):
-                                    extracted_code = extract_vix_future_code(row[col], row[other_col])
-                                    if extracted_code:
-                                        vix_code = extracted_code
-                                        vix_future_found = True
-                                        break
-                        
-                        if vix_future_found:
-                            break
-                    
-                    if vix_future_found and vix_code:
-                        # Get the shares amount
-                        shares_amount = 0
-                        if not pd.isna(row[shares_col]):
-                            try:
-                                shares_amount = int(float(row[shares_col]))
-                            except (ValueError, TypeError):
-                                logger.warning(f"Could not convert shares amount to integer: {row[shares_col]}")
-                        
-                        futures_rows.append((vix_code, shares_amount, "Unknown", "Unknown"))
-                        logger.info(f"Found future through scan: {vix_code}, shares: {shares_amount}")
+            # The following 'else' block is now unreachable due to earlier error checks for name_col, code_col, and shares_col.
+            # It has been removed.
             
             # Sort futures by contract date/code
             def sort_vix_futures(item):
