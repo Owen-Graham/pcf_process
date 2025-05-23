@@ -426,3 +426,44 @@ Initial basket value: 666648017.58 JPY
 2025-04-14 01:22:19,484 - limits_alerter - WARNING - No historical data for ^VFTW1
 2025-04-14 01:22:19,484 - limits_alerter - ERROR - Could not find price for VXJ5 using any ticker format
 2025-04-14 01:22:19,484 - limits_alerter - ERROR - Could not get VIX futures prices for initial basket. Exiting.
+2025-05-23 23:08:45,621 - limits_alerter - INFO - ==================================================
+2025-05-23 23:08:45,622 - limits_alerter - INFO - Starting limits alerter with most recent available data
+2025-05-23 23:08:45,622 - limits_alerter - INFO - ==================================================
+2025-05-23 23:08:45,622 - limits_alerter - INFO - Getting closing data for 318A.T from 2025-05-16 to 2025-05-23
+2025-05-23 23:08:49,179 - limits_alerter - ERROR - Error getting stock data: Too Many Requests. Rate limited. Try after a while.
+2025-05-23 23:08:49,185 - limits_alerter - ERROR - Traceback (most recent call last):
+  File "/home/owen/workspace/pcf_process/price_utils.py", line 94, in get_closing_price
+    hist = stock.history(start=start_date, end=end_date)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/utils.py", line 104, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/base.py", line 82, in history
+    return self._lazy_load_price_history().history(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/utils.py", line 104, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/scrapers/history.py", line 175, in history
+    data = get_fn(
+           ^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/data.py", line 32, in wrapped
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/data.py", line 418, in cache_get
+    return self.get(url, user_agent_headers, params, proxy, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/utils.py", line 104, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/data.py", line 349, in get
+    return self._make_request(url, request_method = self._session.get, user_agent_headers=user_agent_headers, params=params, proxy=proxy, timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/utils.py", line 104, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owen/workspace/pcf_process/.venv/lib/python3.12/site-packages/yfinance/data.py", line 411, in _make_request
+    raise YFRateLimitError()
+yfinance.exceptions.YFRateLimitError: Too Many Requests. Rate limited. Try after a while.
+
+2025-05-23 23:08:49,186 - limits_alerter - ERROR - Could not get ETF data. Exiting.

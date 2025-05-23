@@ -2095,3 +2095,79 @@
 2025-05-23 05:34:53,281 - etf_characteristics - INFO - Near future: VXM5 with 729 shares
 2025-05-23 05:34:53,285 - etf_characteristics - INFO - Saved ETF characteristics to data/etf_characteristics_202505230534.csv and data/etf_characteristics_master.csv
 2025-05-23 05:34:53,285 - etf_characteristics - INFO - Successfully saved ETF characteristics to data/etf_characteristics_202505230534.csv
+2025-05-23 22:30:19,242 - etf_characteristics - INFO - Starting ETF characteristics processing
+2025-05-23 22:30:19,248 - etf_characteristics - INFO - Found latest Simplex ETF file: data/318A-CSV-20250523-202505232205.csv
+2025-05-23 22:30:19,248 - etf_characteristics - INFO - Parsing ETF characteristics from PCF file: data/318A-CSV-20250523-202505232205.csv
+2025-05-23 22:30:19,251 - etf_characteristics - INFO - Header columns: ['ETF Code', 'ETF Name  ', 'Fund Cash Component', 'Shares Outstanding', 'Fund Date', 'Unnamed: 5', 'Unnamed: 6']
+2025-05-23 22:30:19,251 - etf_characteristics - INFO - Found fund date: 20250523.0
+2025-05-23 22:30:19,251 - etf_characteristics - INFO - Found shares outstanding: 1820000
+2025-05-23 22:30:19,252 - etf_characteristics - INFO - Found fund cash component: 1898229020.0
+2025-05-23 22:30:19,253 - etf_characteristics - INFO - Holdings columns: ['Code', 'Name  ', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-05-23 22:30:19,253 - etf_characteristics - WARNING - Error parsing VIX futures holdings: Could not identify the instrument Name/Description column in PCF holdings.
+2025-05-23 22:30:19,254 - etf_characteristics - WARNING - Exception details: Could not identify the instrument Name/Description column in PCF holdings.
+Traceback (most recent call last):
+  File "/home/owen/workspace/pcf_process/etf_characteristics_parser.py", line 214, in parse_etf_characteristics
+    raise MissingCriticalDataError("Could not identify the instrument Name/Description column in PCF holdings.")
+common.MissingCriticalDataError: Could not identify the instrument Name/Description column in PCF holdings.
+2025-05-23 22:30:19,255 - etf_characteristics - ERROR - Error parsing ETF characteristics: Near future contract code was not determined.
+2025-05-23 22:30:19,256 - etf_characteristics - ERROR - Exception details:
+Traceback (most recent call last):
+  File "/home/owen/workspace/pcf_process/etf_characteristics_parser.py", line 335, in parse_etf_characteristics
+    raise MissingCriticalDataError("Near future contract code was not determined.")
+common.MissingCriticalDataError: Near future contract code was not determined.
+2025-05-23 22:30:19,256 - etf_characteristics - ERROR - ETF characteristics processing failed: Overall error parsing ETF characteristics from data/318A-CSV-20250523-202505232205.csv: Near future contract code was not determined.
+2025-05-23 22:44:36,508 - etf_characteristics - INFO - Starting ETF characteristics processing
+2025-05-23 22:44:36,516 - etf_characteristics - INFO - Found latest Simplex ETF file: data/318A-CSV-20250523-202505232205.csv
+2025-05-23 22:44:36,516 - etf_characteristics - INFO - Parsing ETF characteristics from PCF file: data/318A-CSV-20250523-202505232205.csv
+2025-05-23 22:44:36,521 - etf_characteristics - INFO - Header columns: ['ETF Code', 'ETF Name  ', 'Fund Cash Component', 'Shares Outstanding', 'Fund Date', 'Unnamed: 5', 'Unnamed: 6']
+2025-05-23 22:44:36,522 - etf_characteristics - INFO - Found fund date: 20250523.0
+2025-05-23 22:44:36,522 - etf_characteristics - INFO - Found shares outstanding: 1820000
+2025-05-23 22:44:36,522 - etf_characteristics - INFO - Found fund cash component: 1898229020.0
+2025-05-23 22:44:36,526 - etf_characteristics - INFO - Holdings columns: ['Code', 'Name  ', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-05-23 22:44:36,526 - etf_characteristics - WARNING - Error parsing VIX futures holdings: Could not identify the instrument Name/Description column in PCF holdings.
+2025-05-23 22:44:36,526 - etf_characteristics - WARNING - Exception details: Could not identify the instrument Name/Description column in PCF holdings.
+Traceback (most recent call last):
+  File "/home/owen/workspace/pcf_process/etf_characteristics_parser.py", line 214, in parse_etf_characteristics
+    raise MissingCriticalDataError("Could not identify the instrument Name/Description column in PCF holdings.")
+common.MissingCriticalDataError: Could not identify the instrument Name/Description column in PCF holdings.
+2025-05-23 22:44:36,527 - etf_characteristics - ERROR - Error parsing ETF characteristics: Near future contract code was not determined.
+2025-05-23 22:44:36,527 - etf_characteristics - ERROR - Exception details:
+Traceback (most recent call last):
+  File "/home/owen/workspace/pcf_process/etf_characteristics_parser.py", line 335, in parse_etf_characteristics
+    raise MissingCriticalDataError("Near future contract code was not determined.")
+common.MissingCriticalDataError: Near future contract code was not determined.
+2025-05-23 22:44:36,528 - etf_characteristics - ERROR - ETF characteristics processing failed: Overall error parsing ETF characteristics from data/318A-CSV-20250523-202505232205.csv: Near future contract code was not determined.
+2025-05-23 22:45:12,675 - etf_characteristics - INFO - Starting ETF characteristics processing
+2025-05-23 22:45:12,680 - etf_characteristics - INFO - Found latest Simplex ETF file: data/318A-CSV-20250523-202505232205.csv
+2025-05-23 22:45:12,681 - etf_characteristics - INFO - Parsing ETF characteristics from PCF file: data/318A-CSV-20250523-202505232205.csv
+2025-05-23 22:45:12,684 - etf_characteristics - INFO - Header columns: ['ETF Code', 'ETF Name  ', 'Fund Cash Component', 'Shares Outstanding', 'Fund Date', 'Unnamed: 5', 'Unnamed: 6']
+2025-05-23 22:45:12,685 - etf_characteristics - INFO - Found fund date: 20250523.0
+2025-05-23 22:45:12,685 - etf_characteristics - INFO - Found shares outstanding: 1820000
+2025-05-23 22:45:12,685 - etf_characteristics - INFO - Found fund cash component: 1898229020.0
+2025-05-23 22:45:12,687 - etf_characteristics - INFO - Holdings columns: ['Code', 'Name  ', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-05-23 22:45:12,688 - etf_characteristics - INFO - Stripped holdings columns: ['Code', 'Name', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-05-23 22:45:12,688 - etf_characteristics - INFO - Using 'Name' as name column
+2025-05-23 22:45:12,688 - etf_characteristics - INFO - Using 'Code' as code column
+2025-05-23 22:45:12,688 - etf_characteristics - INFO - Found all required columns: Name='Name', Code='Code', Shares='Shares Amount'
+2025-05-23 22:45:12,689 - etf_characteristics - INFO - Found future: VXM5, shares: 729, name: CBOEVIX 2506, code: 2506
+2025-05-23 22:45:12,689 - etf_characteristics - INFO - Sorted futures: [('VXM5', 729, 'CBOEVIX 2506', 2506)]
+2025-05-23 22:45:12,689 - etf_characteristics - INFO - Near future: VXM5 with 729 shares
+2025-05-23 22:45:12,694 - etf_characteristics - INFO - Saved ETF characteristics to data/etf_characteristics_202505232245.csv and data/etf_characteristics_master.csv
+2025-05-23 22:45:12,694 - etf_characteristics - INFO - Successfully saved ETF characteristics to data/etf_characteristics_202505232245.csv
+2025-05-23 23:08:10,752 - etf_characteristics - INFO - Starting ETF characteristics processing
+2025-05-23 23:08:10,760 - etf_characteristics - INFO - Found latest Simplex ETF file: data/318A-CSV-20250523-202505232308.csv
+2025-05-23 23:08:10,760 - etf_characteristics - INFO - Parsing ETF characteristics from PCF file: data/318A-CSV-20250523-202505232308.csv
+2025-05-23 23:08:10,766 - etf_characteristics - INFO - Header columns: ['ETF Code', 'ETF Name  ', 'Fund Cash Component', 'Shares Outstanding', 'Fund Date', 'Unnamed: 5', 'Unnamed: 6']
+2025-05-23 23:08:10,767 - etf_characteristics - INFO - Found fund date: 20250523.0
+2025-05-23 23:08:10,767 - etf_characteristics - INFO - Found shares outstanding: 1820000
+2025-05-23 23:08:10,767 - etf_characteristics - INFO - Found fund cash component: 1898229020.0
+2025-05-23 23:08:10,770 - etf_characteristics - INFO - Holdings columns: ['Code', 'Name  ', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-05-23 23:08:10,773 - etf_characteristics - INFO - Stripped holdings columns: ['Code', 'Name', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-05-23 23:08:10,773 - etf_characteristics - INFO - Using 'Name' as name column
+2025-05-23 23:08:10,774 - etf_characteristics - INFO - Using 'Code' as code column
+2025-05-23 23:08:10,774 - etf_characteristics - INFO - Found all required columns: Name='Name', Code='Code', Shares='Shares Amount'
+2025-05-23 23:08:10,775 - etf_characteristics - INFO - Found future: VXM5, shares: 729, name: CBOEVIX 2506, code: 2506
+2025-05-23 23:08:10,775 - etf_characteristics - INFO - Sorted futures: [('VXM5', 729, 'CBOEVIX 2506', 2506)]
+2025-05-23 23:08:10,775 - etf_characteristics - INFO - Near future: VXM5 with 729 shares
+2025-05-23 23:08:10,782 - etf_characteristics - INFO - Saved ETF characteristics to data/etf_characteristics_202505232308.csv and data/etf_characteristics_master.csv
+2025-05-23 23:08:10,782 - etf_characteristics - INFO - Successfully saved ETF characteristics to data/etf_characteristics_202505232308.csv
