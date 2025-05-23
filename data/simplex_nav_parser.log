@@ -2472,3 +2472,17 @@
 2025-05-22 05:35:14,653 - simplex_nav_parser - INFO - Saved daily NAV data to data/nav_data_202505220535.csv
 2025-05-22 05:35:14,656 - simplex_nav_parser - INFO - Updated master NAV data file data/nav_data_master.csv
 2025-05-22 05:35:14,657 - simplex_nav_parser - INFO - Successfully saved NAV data to data/nav_data_202505220535.csv and data/nav_data_master.csv
+2025-05-23 05:34:53,772 - simplex_nav_parser - INFO - Starting Simplex NAV data processing
+2025-05-23 05:34:53,772 - simplex_nav_parser - INFO - Parsing NAV data using headless browser
+2025-05-23 05:34:53,772 - simplex_nav_parser - INFO - Initializing Chrome WebDriver
+2025-05-23 05:34:54,767 - simplex_nav_parser - INFO - Loading URL: https://www.simplexasset.com/etf/eng/etf.html
+2025-05-23 05:34:56,393 - simplex_nav_parser - INFO - Waiting for page to load...
+2025-05-23 05:35:01,408 - simplex_nav_parser - INFO - Page loaded successfully
+2025-05-23 05:35:01,428 - simplex_nav_parser - INFO - Found fund date: 20250522
+2025-05-23 05:35:01,441 - simplex_nav_parser - INFO - Found NAV element with text: '1,043円'
+2025-05-23 05:35:01,441 - simplex_nav_parser - INFO - Extracted NAV value: 1043.0
+2025-05-23 05:35:01,441 - simplex_nav_parser - INFO - Final NAV data: {'timestamp': '202505230535', 'source': 'https://www.simplexasset.com/etf/eng/etf.html (browser rendered)', 'fund_date': '20250522', 'nav': 1043.0, 'fund_code': '318A'}
+2025-05-23 05:35:01,502 - simplex_nav_parser - INFO - WebDriver closed successfully
+2025-05-23 05:35:01,504 - simplex_nav_parser - INFO - Saved daily NAV data to data/nav_data_202505230535.csv
+2025-05-23 05:35:01,507 - simplex_nav_parser - INFO - Updated master NAV data file data/nav_data_master.csv
+2025-05-23 05:35:01,507 - simplex_nav_parser - INFO - Successfully saved NAV data to data/nav_data_202505230535.csv and data/nav_data_master.csv
