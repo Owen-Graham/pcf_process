@@ -194,6 +194,8 @@ def parse_etf_characteristics(file_path=None):
             # Skip the first 3 rows (header section and blank row)
             holdings_df = pd.read_csv(file_path, skiprows=3)
             logger.info(f"Holdings columns: {holdings_df.columns.tolist()}")
+            holdings_df.columns = holdings_df.columns.str.strip()
+            logger.info(f"Stripped holdings columns: {holdings_df.columns.tolist()}") # Log the new column names
             
             # Look for the CBOEVIX futures in the holdings
             futures_rows = []
@@ -211,7 +213,7 @@ def parse_etf_characteristics(file_path=None):
                     logger.info(f"Using '{name_col}' as name column")
                     break
             if name_col is None:
-                raise MissingCriticalDataError("Could not identify the instrument Name/Description column in PCF holdings.")
+                raise MissingCriticalDataError(f"Could not identify the instrument Name/Description column (expected one of {name_cols}). Found columns: {holdings_df.columns.tolist()}")
             
             # Find the actual code column
             code_col = None
@@ -221,7 +223,7 @@ def parse_etf_characteristics(file_path=None):
                     logger.info(f"Using '{code_col}' as code column")
                     break
             if code_col is None:
-                raise MissingCriticalDataError("Could not identify the instrument Code/Ticker column in PCF holdings.")
+                raise MissingCriticalDataError(f"Could not identify the instrument Code/Ticker column (expected one of {code_cols}). Found columns: {holdings_df.columns.tolist()}")
             
             # Check if we have the required columns
             shares_col = 'Shares Amount' if 'Shares Amount' in holdings_df.columns else None
@@ -235,7 +237,7 @@ def parse_etf_characteristics(file_path=None):
                         logger.info(f"Using alternative shares column: {shares_col}")
                         break
             if shares_col is None:
-                raise MissingCriticalDataError("Could not identify the Shares Amount column in PCF holdings.")
+                raise MissingCriticalDataError(f"Could not identify the Shares Amount column (expected 'Shares Amount' or similar). Found columns: {holdings_df.columns.tolist()}")
             
             # This part of the original if condition (name_col and code_col) is now guaranteed by checks above
             # if name_col and code_col and shares_col:
