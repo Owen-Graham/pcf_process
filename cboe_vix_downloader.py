@@ -1,4 +1,6 @@
 import os
+import sys # Added
+import pandas as pd # Added
 import re
 import time as time_module  # Rename to avoid conflict
 import traceback
@@ -379,3 +381,65 @@ def download_vix_futures_from_cboe():
                 logger.info("Browser session closed")
             except Exception as e:
                 logger.warning(f"Error closing browser: {str(e)}")
+
+def save_cboe_data(data_dict, save_dir=SAVE_DIR):
+    if not data_dict or len(data_dict) <= 2: # Basic check for non-empty data beyond timestamp/date
+        logger.warning("No CBOE data provided to save or data is empty.")
+        return None
+
+    timestamp = data_dict.get('timestamp', datetime.now().strftime("%Y%m%d%H%M"))
+    price_date = data_dict.get('date', 'unknown_date')
+    
+    records = []
+    for key, value in data_dict.items():
+        if key in ['date', 'timestamp']:
+            continue
+        records.append({
+            'timestamp': timestamp,
+            'price_date': price_date,
+            'symbol': key,
+            'price': value
+        })
+    
+    if not records:
+        logger.warning("No actual contract records found in CBOE data to save.")
+        return None
+
+    df = pd.DataFrame(records)
+    
+    # Sort by symbol for consistent output
+    df = df.sort_values(by='symbol').reset_index(drop=True)
+
+    file_name = f"cboe_vix_futures_{timestamp}.csv"
+    file_path = os.path.join(save_dir, file_name)
+    try:
+        df.to_csv(file_path, index=False)
+        logger.info(f"CBOE VIX futures data saved to {file_path}")
+        return file_path
+    except Exception as e:
+        logger.error(f"Failed to save CBOE data to CSV: {e}")
+        return None
+
+if __name__ == "__main__":
+    logger.info("Running CBOE VIX Downloader as a standalone script...")
+    data = None
+    try:
+        data = download_vix_futures_from_cboe()
+        if data:
+            logger.info(f"Successfully downloaded CBOE VIX futures data: {len(data)-2} contracts found.")
+            file_saved_path = save_cboe_data(data)
+            if file_saved_path:
+                print(f"✅ CBOE VIX futures data downloaded and saved to {file_saved_path}")
+            else:
+                print("⚠️ CBOE VIX futures data downloaded but failed to save.")
+        else:
+            # This case should ideally be less frequent if download_vix_futures_from_cboe raises exceptions for no data
+            print("ℹ️ No data returned from CBOE VIX download function, though no direct error was raised.")
+    except (MissingCriticalDataError, InvalidDataError) as e:
+        print(f"❌ ERROR: {e}")
+        logger.error(f"CBOE VIX download failed: {e}", exc_info=True)
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred in CBOE VIX downloader: {e}", exc_info=True)
+        sys.exit(1)
