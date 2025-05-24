@@ -2171,3 +2171,20 @@ common.MissingCriticalDataError: Near future contract code was not determined.
 2025-05-23 23:08:10,775 - etf_characteristics - INFO - Near future: VXM5 with 729 shares
 2025-05-23 23:08:10,782 - etf_characteristics - INFO - Saved ETF characteristics to data/etf_characteristics_202505232308.csv and data/etf_characteristics_master.csv
 2025-05-23 23:08:10,782 - etf_characteristics - INFO - Successfully saved ETF characteristics to data/etf_characteristics_202505232308.csv
+2025-05-24 05:33:30,453 - etf_characteristics - INFO - Starting ETF characteristics processing
+2025-05-24 05:33:30,456 - etf_characteristics - INFO - Found latest Simplex ETF file: data/318A-CSV-20250523-202505240533.csv
+2025-05-24 05:33:30,456 - etf_characteristics - INFO - Parsing ETF characteristics from PCF file: data/318A-CSV-20250523-202505240533.csv
+2025-05-24 05:33:30,458 - etf_characteristics - INFO - Header columns: ['ETF Code', 'ETF Name  ', 'Fund Cash Component', 'Shares Outstanding', 'Fund Date', 'Unnamed: 5', 'Unnamed: 6']
+2025-05-24 05:33:30,458 - etf_characteristics - INFO - Found fund date: 20250523.0
+2025-05-24 05:33:30,458 - etf_characteristics - INFO - Found shares outstanding: 1820000
+2025-05-24 05:33:30,458 - etf_characteristics - INFO - Found fund cash component: 1898229020.0
+2025-05-24 05:33:30,460 - etf_characteristics - INFO - Holdings columns: ['Code', 'Name  ', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-05-24 05:33:30,460 - etf_characteristics - INFO - Stripped holdings columns: ['Code', 'Name', 'ISIN', 'Exchange', 'Currency', 'Shares Amount', 'Stock Price']
+2025-05-24 05:33:30,460 - etf_characteristics - INFO - Using 'Name' as name column
+2025-05-24 05:33:30,460 - etf_characteristics - INFO - Using 'Code' as code column
+2025-05-24 05:33:30,460 - etf_characteristics - INFO - Found all required columns: Name='Name', Code='Code', Shares='Shares Amount'
+2025-05-24 05:33:30,461 - etf_characteristics - INFO - Found future: VXM5, shares: 729, name: CBOEVIX 2506, code: 2506
+2025-05-24 05:33:30,461 - etf_characteristics - INFO - Sorted futures: [('VXM5', 729, 'CBOEVIX 2506', 2506)]
+2025-05-24 05:33:30,461 - etf_characteristics - INFO - Near future: VXM5 with 729 shares
+2025-05-24 05:33:30,465 - etf_characteristics - INFO - Saved ETF characteristics to data/etf_characteristics_202505240533.csv and data/etf_characteristics_master.csv
+2025-05-24 05:33:30,465 - etf_characteristics - INFO - Successfully saved ETF characteristics to data/etf_characteristics_202505240533.csv
