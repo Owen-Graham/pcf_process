@@ -2336,3 +2336,22 @@
 2025-05-30 03:03:55,992 - INFO - Saved daily FX data to data/fx_data_202505300303.csv
 2025-05-30 03:03:55,998 - INFO - Updated master FX data file data/fx_data_master.csv
 2025-05-30 03:03:55,998 - INFO - Successfully saved FX rate data to data/fx_data_202505300303.csv and data/fx_data_master.csv
+2025-05-31 03:02:26,997 - INFO - Starting FX rate data processing
+2025-05-31 03:02:26,997 - INFO - Downloading FX rates from: https://www.bk.mufg.jp/gdocs/kinri/list_j/kinri/spot_rate.csv
+2025-05-31 03:02:27,360 - INFO - Successfully decoded CSV with shift_jis encoding
+2025-05-31 03:02:27,360 - INFO - Saved raw CSV to: data/mufg_fx_raw.csv
+2025-05-31 03:02:27,361 - INFO - Extracted date from CSV: 2025-05-30
+2025-05-31 03:02:27,361 - INFO - Found USD line: "001","USD (米ドル)","   144.87","   145.28","   146.67","   142.87","   142.46","   142.16","   140.87"
+2025-05-31 03:02:27,361 - INFO - Extracted numeric values: [1.0, 144.87, 145.28, 146.67, 142.87, 142.46, 142.16, 140.87]
+2025-05-31 03:02:27,361 - INFO - Filtered exchange rates: [144.87, 145.28, 146.67, 142.87, 142.46, 142.16, 140.87]
+2025-05-31 03:02:27,361 - INFO - Mapped T.T.S. to rate 144.87
+2025-05-31 03:02:27,361 - INFO - Mapped ACC. to rate 145.28
+2025-05-31 03:02:27,361 - INFO - Mapped CASH S. to rate 146.67
+2025-05-31 03:02:27,362 - INFO - Mapped T.T.B. to rate 142.87
+2025-05-31 03:02:27,362 - INFO - Mapped A/S to rate 142.46
+2025-05-31 03:02:27,362 - INFO - Mapped D/PED/A to rate 142.16
+2025-05-31 03:02:27,362 - INFO - Mapped CASH B. to rate 140.87
+2025-05-31 03:02:27,362 - INFO - Created 7 FX rate entries with date 2025-05-30
+2025-05-31 03:02:27,364 - INFO - Saved daily FX data to data/fx_data_202505310302.csv
+2025-05-31 03:02:27,370 - INFO - Updated master FX data file data/fx_data_master.csv
+2025-05-31 03:02:27,370 - INFO - Successfully saved FX rate data to data/fx_data_202505310302.csv and data/fx_data_master.csv
