@@ -12,6 +12,8 @@ on:
     - cron: "0 21 * * 0-4"
     # Limits Alerter - 07:30 JST (22:30 UTC previous day) - Mon-Fri
     - cron: "30 22 * * 0-4"
+    # JST 15:15 Data Capture (VIX, FX, TSE Closing) - Daily at 06:15 UTC
+    - cron: "15 6 * * *"
   workflow_dispatch:  # Allow manual triggering
 
 permissions:
@@ -456,3 +458,95 @@ jobs:
         echo "=== ESTIMATED NAVS CALCULATOR LOG ==="
         cat data/estimated_navs_calculator.log || echo "Log file not found"
         echo "======================================="
+
+  jst_1515_data_capture:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '15 6 * * *')
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Setup Chrome # For Playwright
+      uses: browser-actions/setup-chrome@v1
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas requests beautifulsoup4 yfinance playwright
+        playwright install --with-deps chromium
+
+    - name: Run TSE 318A Closing Price Recorder
+      run: python record_tse_closing_data.py
+
+    - name: Determine Target VIX Contracts for TradingView
+      id: get_contracts
+      run: |
+        contracts=$(python get_target_vix_contracts.py)
+        if [ -z "$contracts" ]; then
+          echo "No contracts determined by get_target_vix_contracts.py. Skipping TradingView parse."
+          echo "skip_tv=true" >> $GITHUB_OUTPUT
+        else
+          echo "Target VIX contracts for TradingView: $contracts"
+          echo "contracts_for_tv=$contracts" >> $GITHUB_OUTPUT
+          echo "skip_tv=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Run TradingView VIX and FX Parser
+      if: steps.get_contracts.outputs.skip_tv == 'false'
+      run: python parse_tradingview.py ${{ steps.get_contracts.outputs.contracts_for_tv }}
+
+    - name: Commit and Push 15:15 JST Data
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+
+        git stash -u || true
+        git pull origin main --rebase
+        git stash pop || true
+
+        # Add generated data files and logs
+        git add data/tse_318a_closing_price_*.csv
+        git add data/cboe_vix_futures_*.csv
+        git add data/tradingview_fx_data_*.csv
+        # Add log files
+        git add data/record_tse_closing_data.log
+        git add data/get_target_vix_contracts.log
+        git add data/parse_tradingview.log
+
+        git commit -m "JST 15:15 data capture $(date +'%Y-%m-%d')" || echo "No changes to commit for 15:15 JST data."
+
+        git push --force
+
+    - name: Upload 15:15 JST Data as Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: jst-1515-data
+        path: |
+          data/tse_318a_closing_price_*.csv
+          data/cboe_vix_futures_*.csv
+          data/tradingview_fx_data_*.csv
+          data/record_tse_closing_data.log
+          data/get_target_vix_contracts.log
+          data/parse_tradingview.log
+        retention-days: 399
+
+    - name: Display Log Files (15:15 JST)
+      if: always()
+      run: |
+        echo "=== TSE Closing Price Recorder LOG ==="
+        cat data/record_tse_closing_data.log || echo "Log file not found"
+        echo "===================================="
+        echo "=== Get Target VIX Contracts LOG ==="
+        cat data/get_target_vix_contracts.log || echo "Log file not found"
+        echo "===================================="
+        echo "=== TradingView Parser LOG ==="
+        cat data/parse_tradingview.log || echo "Log file not found"
+        echo "============================"

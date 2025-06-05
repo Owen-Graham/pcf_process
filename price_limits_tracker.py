@@ -8,12 +8,10 @@ import logging
 import argparse
 import traceback
 import sys
-import yfinance as yf
 
 # Import shared utility functions
 from price_utils import get_daily_price_limits, get_closing_price, get_tse_closing_time
-from common import setup_logging, SAVE_DIR, get_yfinance_ticker_for_vix_future, normalize_vix_ticker, \
-    get_next_vix_contracts
+from common import setup_logging, SAVE_DIR, normalize_vix_ticker, find_latest_file, MissingCriticalDataError, get_tradingview_vix_contract_code
 
 # Set up logging
 logger = setup_logging('limits_alerter')
@@ -239,14 +237,13 @@ def get_latest_us_market_time(reference_time):
     return market_time
 
 
-def get_vix_futures_prices(composition, reference_time, label=""):
+def get_vix_futures_prices(composition, reference_time, label=""): # reference_time is currently unused with CSVs
     """
-    Get VIX futures prices from Yahoo Finance using only position-based tickers.
-    Only uses ^VXIND and ^VFTW ticker formats with no fallbacks.
+    Get VIX futures prices from the latest cboe_vix_futures_YYYYMMDDHHMM.csv file.
 
     Args:
-        composition: Dictionary mapping futures tickers to weights
-        reference_time: Reference time (only used for logging and TSE closing time check)
+        composition: Dictionary mapping futures tickers to weights (used to know which tickers to look for)
+        reference_time: Not currently used with CSV file loading. Kept for interface consistency.
         label: Optional label for logging (e.g., "Initial" or "Current")
 
     Returns:
@@ -254,213 +251,198 @@ def get_vix_futures_prices(composition, reference_time, label=""):
     """
     try:
         futures_prices = {}
-        price_details = {}  # Store additional details about each price
+        price_details = {}
 
-        logger.info(f"===== Getting {label} VIX Futures Prices =====")
-        logger.info(f"Reference time: {reference_time}")
+        logger.info(f"===== Getting {label} VIX Futures Prices from CSV =====")
 
-        # For INITIAL prices (TSE closing), we need prices at exactly 15:00 JST
-        use_latest_price = True
-        if label == "INITIAL":
-            jst = pytz.timezone('Asia/Tokyo')
-            if reference_time.tzinfo is None:
-                reference_time = jst.localize(reference_time)
+        # Find the latest VIX futures CSV file
+        # Files are named like cboe_vix_futures_YYYYMMDDHHMM.csv
+        vix_file_pattern = "cboe_vix_futures_*.csv"
+        latest_vix_file = find_latest_file(vix_file_pattern, directory=SAVE_DIR)
+
+        if not latest_vix_file:
+            logger.error(f"No VIX futures CSV file found with pattern {vix_file_pattern} in {SAVE_DIR}")
+            raise MissingCriticalDataError(f"No VIX futures CSV file found for {label} prices.")
+
+        logger.info(f"Reading VIX futures data from: {latest_vix_file}")
+        df_vix = pd.read_csv(latest_vix_file)
+
+        if df_vix.empty:
+            logger.error(f"VIX futures file {latest_vix_file} is empty.")
+            raise MissingCriticalDataError(f"VIX futures file {latest_vix_file} is empty for {label} prices.")
+
+        # Ensure required columns are present
+        required_cols = ['timestamp', 'price_date', 'symbol', 'price']
+        if not all(col in df_vix.columns for col in required_cols):
+            logger.error(f"Missing required columns in {latest_vix_file}. Required: {required_cols}")
+            raise MissingCriticalDataError(f"Malformed VIX futures CSV {latest_vix_file}.")
+
+        # The 'timestamp' in cboe_vix_futures_*.csv is the script execution time.
+        # The 'price_date' is the date extracted from TradingView for the contract.
+        # We should use 'price_date' for the 'timestamp' in price_details,
+        # and the file's 'timestamp' (script run time) can be part of the source if needed.
+
+        for _index, row in df_vix.iterrows():
+            raw_ticker = row['symbol']  # e.g., CBOE:VXM2025
+
+            # Attempt to normalize the ticker from "CBOE:VXM2025" to "VXM5"
+            # The normalize_vix_ticker expects "VXM2025" or "VXM25"
+            contract_part = raw_ticker.split(':')[-1] # Should give "VXM2025"
+            if not contract_part.startswith("VX"):
+                logger.warning(f"Skipping unexpected symbol format in VIX CSV: {raw_ticker}")
+                continue
+
+            try:
+                normalized_ticker = normalize_vix_ticker(contract_part) # e.g. VXM2025 -> VXM5
+            except Exception as e:
+                logger.warning(f"Could not normalize ticker {contract_part} from {raw_ticker}: {e}")
+                continue
+
+            price = row['price']
+            price_timestamp_str = row['price_date'] # This is the date of the price on TradingView
+
+            # Convert price_date to datetime object
+            try:
+                price_dt = pd.to_datetime(price_timestamp_str).to_pydatetime()
+            except ValueError:
+                logger.warning(f"Could not parse price_date '{price_timestamp_str}' for {normalized_ticker}. Skipping.")
+                continue
+
+            if pd.isna(price) or price <= 0:
+                logger.warning(f"Invalid price for {normalized_ticker} in {latest_vix_file}: {price}")
+                continue
+
+            # Store if this ticker is in our composition
+            # Composition keys might be like 'VXM5' or 'VXN2025'
+            # We need to check against normalized_ticker which is 'VXM5'
+            if normalized_ticker in composition or contract_part in composition: # Check both forms
+                 # Prefer normalized_ticker for consistency if available
+                key_to_use = normalized_ticker
+
+                futures_prices[key_to_use] = float(price)
+                price_details[key_to_use] = {
+                    'price': float(price),
+                    'timestamp': price_dt, # This is the market data's date
+                    'source': latest_vix_file,
+                    # 'position' was from yfinance logic, not directly available here unless derived
+                }
+                logger.info(f"Loaded price for {key_to_use} ({raw_ticker}): {price:.4f} from {price_dt} (source: {latest_vix_file})")
             else:
-                reference_time = reference_time.astimezone(jst)
+                # Log if a price is in the CSV but not in the current composition (for info)
+                logger.debug(f"Price for {normalized_ticker} ({raw_ticker}) found in CSV but not in current composition: {composition.keys()}")
 
-            # If this is exactly at 15:00 JST, it's TSE closing time
-            if reference_time.hour == 15 and reference_time.minute == 0:
-                logger.info("Using TSE closing time for initial prices - need historical data")
-                # For TSE closing, we'll need to get historical data (not latest price)
-                # For this case, we'll fall back to a date-based lookup
-                use_latest_price = False
-                lookback_days = 7
-                start_date = (reference_time - timedelta(days=lookback_days)).strftime('%Y-%m-%d')
-                end_date = reference_time.strftime('%Y-%m-%d')
-                logger.info(f"Historical data date range: {start_date} to {end_date}")
 
-        # Use position-based tickers for contracts
-        next_contracts = get_next_vix_contracts(6)  # Get up to 6 upcoming contracts
-
-        # First, determine position mapping for the futures we need
-        position_map = {}
-        for futures_ticker in composition.keys():
-            normalized_ticker = normalize_vix_ticker(futures_ticker)
-            if normalized_ticker in next_contracts:
-                position = next_contracts.index(normalized_ticker) + 1  # 1-indexed
-                position_map[normalized_ticker] = position
-                logger.info(f"Determined {normalized_ticker} is contract position {position}")
-            else:
-                logger.error(f"Could not determine position for {normalized_ticker}")
-                return None, None
-
-        # Get prices for all futures in composition
-        for normalized_ticker, position in position_map.items():
-            # Only try positions 1-6 which should be standard
-            if position <= 6:
-                # Use only these two position-based ticker formats - no fallbacks
-                specific_tickers = [f"^VXIND{position}", f"^VFTW{position}"]
-
-                price_found = False
-                for ticker_str in specific_tickers:
-                    try:
-                        logger.info(f"Getting price for {normalized_ticker} using {ticker_str}")
-
-                        if use_latest_price:
-                            # Get the most current price using fast_info
-                            ticker = yf.Ticker(ticker_str)
-                            price = ticker.fast_info.last_price
-                            # For latest prices, use current timestamp
-                            price_date = datetime.now()
-                        else:
-                            # For historical data (TSE closing time), use date-based lookup
-                            data = yf.download(ticker_str, start=start_date, end=end_date, progress=False)
-                            if not data.empty and 'Close' in data.columns and len(data['Close']) > 0:
-                                # Find the closest price to reference_time
-                                if data.index.tz is None:
-                                    data.index = data.index.tz_localize('UTC')
-
-                                ref_tz = reference_time.tzinfo
-                                data.index = data.index.tz_convert(ref_tz)
-
-                                time_diffs = abs(data.index - reference_time)
-                                closest_idx = time_diffs.argmin()
-                                # Fix the FutureWarning by using iloc[0]
-                                price = float(
-                                    data['Close'].iloc[closest_idx].iloc[0] if hasattr(data['Close'].iloc[closest_idx],
-                                                                                       'iloc') else data['Close'].iloc[
-                                        closest_idx])
-                                price_date = data.index[closest_idx]
-                            else:
-                                logger.warning(f"No historical data for {ticker_str}")
-                                continue
-
-                        # Validate price
-                        if pd.isna(price) or price <= 0:
-                            logger.warning(f"Invalid price for {ticker_str}: {price}")
-                            continue
-
-                        futures_prices[normalized_ticker] = price
-                        # Store details about the price
-                        price_details[normalized_ticker] = {
-                            'price': price,
-                            'timestamp': price_date,
-                            'source': ticker_str,
-                            'position': position
-                        }
-                        logger.info(
-                            f"Found price for {normalized_ticker} using {ticker_str}: {price:.4f} (from {price_date})")
-                        price_found = True
-                        break
-                    except Exception as e:
-                        logger.warning(f"Failed to get price for {ticker_str}: {str(e)}")
-
-                # No VIX index fallback - strict failure if position-based tickers don't work
-                if not price_found:
-                    logger.error(f"Could not find price for {normalized_ticker} using any ticker format")
-                    return None, None
-            else:
-                logger.error(f"Position {position} for {normalized_ticker} is beyond supported range")
-                return None, None
-
-        # Check if we have all the prices we need
-        missing_futures = [ticker for ticker in composition.keys() if
-                           normalize_vix_ticker(ticker) not in futures_prices]
+        # Check if we have all the prices we need for the composition
+        # Composition keys are already normalized by get_etf_composition
+        missing_futures = [ticker for ticker in composition.keys() if ticker not in futures_prices]
         if missing_futures:
-            logger.error(f"Missing prices for futures: {missing_futures}")
-            return None, None
+            logger.error(f"Missing prices for futures (after reading {latest_vix_file}): {missing_futures}")
+            logger.error(f"Available prices in CSV were for: {list(df_vix['symbol'])}")
+            logger.error(f"Normalized and loaded tickers: {list(futures_prices.keys())}")
+            return None, None # Strict failure if any required future is missing
 
-        # Log a detailed summary of all futures prices
-        logger.info(f"===== {label} VIX Futures Prices Summary =====")
+        logger.info(f"===== {label} VIX Futures Prices Summary (from {latest_vix_file}) =====")
         for ticker, details in price_details.items():
             logger.info(f"{ticker} [{details['source']}]: {details['price']:.4f} at {details['timestamp']}")
-        logger.info("==========================================")
+        logger.info("===================================================================")
 
         return futures_prices, price_details
 
+    except MissingCriticalDataError: # Already logged
+        return None, None
+    except FileNotFoundError:
+        logger.error(f"VIX futures CSV file not found for {label} prices.")
+        return None, None
+    except pd.errors.EmptyDataError:
+        logger.error(f"VIX futures CSV file is empty for {label} prices.")
+        return None, None
     except Exception as e:
-        logger.error(f"Error getting VIX futures prices: {str(e)}")
+        logger.error(f"Error getting {label} VIX futures prices from CSV: {str(e)}")
         logger.error(traceback.format_exc())
         return None, None
 
-def get_exchange_rate(reference_time, label=""):
+def get_exchange_rate(reference_time, label=""): # reference_time is currently unused with CSVs
     """
-    Get the most current USD/JPY exchange rate using fast_info.
-    No fallbacks - fails cleanly if current rate cannot be found.
+    Get the USD/JPY exchange rate from the latest tradingview_fx_data_YYYYMMDDHHMM.csv file.
 
     Args:
-        reference_time: Reference time (only used for logging and TSE closing time check)
+        reference_time: Not currently used with CSV file loading. Kept for interface consistency.
         label: Optional label for logging (e.g., "Initial" or "Current")
 
     Returns:
         tuple: (exchange_rate, details) or (None, None) if failure
     """
     try:
-        logger.info(f"===== Getting {label} USD/JPY Exchange Rate =====")
-        logger.info(f"Reference time: {reference_time}")
+        logger.info(f"===== Getting {label} USD/JPY Exchange Rate from CSV =====")
 
-        # For INITIAL prices (TSE closing), we need prices at exactly 15:00 JST
-        use_latest_price = True
-        if label == "INITIAL":
-            jst = pytz.timezone('Asia/Tokyo')
-            if reference_time.tzinfo is None:
-                reference_time = jst.localize(reference_time)
-            else:
-                reference_time = reference_time.astimezone(jst)
+        # Find the latest FX CSV file
+        # Files are named like tradingview_fx_data_YYYYMMDDHHMM.csv
+        fx_file_pattern = "tradingview_fx_data_*.csv"
+        latest_fx_file = find_latest_file(fx_file_pattern, directory=SAVE_DIR)
 
-            # If this is exactly at 15:00 JST, it's TSE closing time
-            if reference_time.hour == 15 and reference_time.minute == 0:
-                logger.info("Using TSE closing time for initial rate - need historical data")
-                # For TSE closing, we'll need to get historical data (not latest price)
-                use_latest_price = False
-                lookback_days = 7
-                start_date = (reference_time - timedelta(days=lookback_days)).strftime('%Y-%m-%d')
-                end_date = reference_time.strftime('%Y-%m-%d')
-                logger.info(f"Historical data date range: {start_date} to {end_date}")
+        if not latest_fx_file:
+            logger.error(f"No FX data CSV file found with pattern {fx_file_pattern} in {SAVE_DIR}")
+            raise MissingCriticalDataError(f"No FX data CSV file found for {label} rate.")
 
-        usdjpy = yf.Ticker("USDJPY=X")
+        logger.info(f"Reading FX data from: {latest_fx_file}")
+        df_fx = pd.read_csv(latest_fx_file)
 
-        if use_latest_price:
-            # Get the most current exchange rate using fast_info
-            exchange_rate = usdjpy.fast_info.last_price
-            rate_date = datetime.now()
-        else:
-            # For historical data (TSE closing time), use date-based lookup
-            fx_data = usdjpy.history(start=start_date, end=end_date)
+        if df_fx.empty:
+            logger.error(f"FX data file {latest_fx_file} is empty.")
+            raise MissingCriticalDataError(f"FX data file {latest_fx_file} is empty for {label} rate.")
 
-            if len(fx_data) == 0:
-                logger.error(f"No USD/JPY data found for the specified period")
-                return None, None
+        # Ensure required columns are present
+        # columns: timestamp, date, source_url, pair, label, rate
+        required_cols = ['timestamp', 'date', 'pair', 'rate', 'source_url']
+        if not all(col in df_fx.columns for col in required_cols):
+            logger.error(f"Missing required columns in {latest_fx_file}. Required: {required_cols}")
+            raise MissingCriticalDataError(f"Malformed FX data CSV {latest_fx_file}.")
 
-            # Find the closest rate to reference_time
-            if fx_data.index.tz is None:
-                fx_data.index = fx_data.index.tz_localize('UTC')
+        # Find the USDJPY rate
+        usdjpy_data = df_fx[df_fx['pair'] == 'USDJPY']
+        if usdjpy_data.empty:
+            logger.error(f"No USDJPY data found in {latest_fx_file}")
+            raise MissingCriticalDataError(f"No USDJPY data in {latest_fx_file} for {label} rate.")
 
-            ref_tz = reference_time.tzinfo
-            fx_data.index = fx_data.index.tz_convert(ref_tz)
+        # Get the latest USDJPY entry if multiple (should usually be one)
+        latest_usdjpy_row = usdjpy_data.iloc[-1]
+        exchange_rate = latest_usdjpy_row['rate']
 
-            time_diffs = abs(fx_data.index - reference_time)
-            closest_idx = time_diffs.argmin()
-            exchange_rate = float(fx_data['Close'].iloc[closest_idx])
-            rate_date = fx_data.index[closest_idx]
+        # 'date' in the CSV is the market date of the rate
+        # 'timestamp' in the CSV is the script execution time
+        rate_timestamp_str = latest_usdjpy_row['date']
+        source_url = latest_usdjpy_row['source_url']
 
-        if pd.isna(exchange_rate) or exchange_rate <= 0:
-            logger.error(f"Invalid exchange rate: {exchange_rate}")
+        try:
+            rate_dt = pd.to_datetime(rate_timestamp_str).to_pydatetime()
+        except ValueError:
+            logger.warning(f"Could not parse rate date '{rate_timestamp_str}' for USDJPY. Skipping.")
             return None, None
 
-        # Create details dictionary
+        if pd.isna(exchange_rate) or exchange_rate <= 0:
+            logger.error(f"Invalid exchange rate for USDJPY in {latest_fx_file}: {exchange_rate}")
+            return None, None
+
         rate_details = {
-            'rate': exchange_rate,
-            'timestamp': rate_date,
-            'source': 'USDJPY=X'
+            'rate': float(exchange_rate),
+            'timestamp': rate_dt, # This is the market data's date
+            'source': latest_fx_file, # File source
+            'original_source_url': source_url # e.g. https://www.tradingview.com/symbols/USDJPY/
         }
 
-        logger.info(f"{label} USD/JPY exchange rate: {exchange_rate:.2f} from {rate_date}")
+        logger.info(f"{label} USD/JPY exchange rate: {exchange_rate:.3f} from {rate_dt} (source: {latest_fx_file})")
+        return float(exchange_rate), rate_details
 
-        return exchange_rate, rate_details
-
+    except MissingCriticalDataError: # Already logged
+        return None, None
+    except FileNotFoundError:
+        logger.error(f"FX data CSV file not found for {label} rate.")
+        return None, None
+    except pd.errors.EmptyDataError:
+        logger.error(f"FX data CSV file is empty for {label} rate.")
+        return None, None
     except Exception as e:
-        logger.error(f"Error getting exchange rate: {str(e)}")
+        logger.error(f"Error getting {label} USD/JPY exchange rate from CSV: {str(e)}")
         logger.error(traceback.format_exc())
         return None, None
 
@@ -752,7 +734,22 @@ def main():
         logger.error("Could not get ETF composition. Exiting.")
         return 1
 
-    logger.info(f"ETF composition for {closing_time.strftime('%Y-%m-%d')}: {composition}")
+    logger.info(f"ETF composition (normalized) for {closing_time.strftime('%Y-%m-%d')}: {composition}")
+
+    # Convert normalized contract codes from composition to TradingView format
+    # This list would be used if parse_tradingview.py were invoked directly.
+    tradingview_contract_codes = []
+    if composition:
+        for normalized_code in composition.keys():
+            try:
+                tv_code = get_tradingview_vix_contract_code(normalized_code)
+                tradingview_contract_codes.append(tv_code)
+            except ValueError as e:
+                logger.error(f"Error converting normalized code {normalized_code} to TradingView code: {e}")
+        logger.info(f"TradingView-formatted VIX contract codes for parse_tradingview.py: {tradingview_contract_codes}")
+    else:
+        logger.warning("ETF composition is empty, cannot generate TradingView contract codes.")
+
 
     # Calculate the exact 15:00 JST time for the initial basket valuation
     # This ensures we use the prices at TSE closing time
@@ -837,24 +834,50 @@ def main():
 
     # Calculate shares outstanding from ETF characteristics
     shares_outstanding = 0
+    nav_per_share = 0 # Initialize nav_per_share
     try:
         etf_file = os.path.join(SAVE_DIR, "etf_characteristics_master.csv")
-        if os.path.exists(etf_file):
-            df = pd.read_csv(etf_file)
-            if 'shares_outstanding' in df.columns and not df.empty:
-                shares_outstanding = df.iloc[-1]['shares_outstanding']
-                if shares_outstanding > 0:
-                    nav_per_share = current_basket_value / shares_outstanding
-                    logger.info(
-                        f"Estimated NAV per share: {nav_per_share:.2f} JPY (based on {shares_outstanding:,} shares outstanding)")
-                else:
-                    logger.warning("Invalid shares_outstanding value (must be positive)")
-            else:
-                logger.warning("shares_outstanding column not found in ETF characteristics")
+        if not os.path.exists(etf_file):
+            logger.warning(f"ETF characteristics file not found: {etf_file}. Cannot calculate NAV per share.")
         else:
-            logger.warning("ETF characteristics file not found")
+            df_etf_char = pd.read_csv(etf_file)
+            if df_etf_char.empty:
+                logger.warning(f"ETF characteristics file {etf_file} is empty. Cannot calculate NAV per share.")
+            elif 'shares_outstanding' not in df_etf_char.columns:
+                logger.warning(f"'shares_outstanding' column not found in {etf_file}. Cannot calculate NAV per share.")
+            elif 'fund_date' not in df_etf_char.columns:
+                logger.warning(f"'fund_date' column not found in {etf_file}. Cannot reliably get latest shares_outstanding.")
+            else:
+                try:
+                    df_etf_char['date'] = pd.to_datetime(df_etf_char['fund_date'], format='%Y%m%d')
+                     # Use closing_time (from get_etf_closing_data) as the reference for selecting the latest record.
+                    # Ensure closing_time is timezone naive for comparison if df_etf_char['date'] is naive.
+                    ref_date_for_shares = closing_time.replace(tzinfo=None) if closing_time.tzinfo else closing_time
+
+                    df_etf_char_sorted = df_etf_char[df_etf_char['date'] <= ref_date_for_shares].sort_values('date', ascending=False)
+
+                    if df_etf_char_sorted.empty:
+                        logger.warning(f"No 'shares_outstanding' data found in {etf_file} on or before {ref_date_for_shares.strftime('%Y-%m-%d')}.")
+                    else:
+                        latest_record = df_etf_char_sorted.iloc[0]
+                        shares_outstanding = latest_record['shares_outstanding']
+                        fund_date_of_shares = latest_record['date']
+                        if pd.isna(shares_outstanding) or shares_outstanding <= 0:
+                            logger.warning(f"Invalid 'shares_outstanding' value ({shares_outstanding}) found for fund_date {fund_date_of_shares.strftime('%Y-%m-%d')}.")
+                        else:
+                            nav_per_share = current_basket_value / shares_outstanding
+                            logger.info(
+                                f"New TSE:318A Price (Estimated NAV per share): {nav_per_share:.2f} JPY "
+                                f"(Basket: {current_basket_value:,.2f} JPY / Shares: {shares_outstanding:,.0f} "
+                                f"as of fund_date {fund_date_of_shares.strftime('%Y-%m-%d')})"
+                            )
+                except Exception as e_parse:
+                    logger.warning(f"Error processing ETF characteristics file for shares_outstanding: {str(e_parse)}")
+                    logger.error(traceback.format_exc())
+
     except Exception as e:
-        logger.warning(f"Could not calculate NAV per share: {str(e)}")
+        logger.warning(f"Could not calculate NAV per share due to an unexpected error: {str(e)}")
+        logger.error(traceback.format_exc())
 
     # Check for alerts (compare current basket value to price limits)
     is_alert = check_for_alerts(
@@ -893,7 +916,11 @@ def main():
             f.write(f"=== Basket Value Change ===\n")
             f.write(f"Initial Basket Value: {initial_basket_value:,.2f} JPY\n")
             f.write(f"Current Basket Value: {current_basket_value:,.2f} JPY\n")
-            f.write(f"Change: {pct_change:.2%} ({current_basket_value - initial_basket_value:,.2f} JPY)\n\n")
+            f.write(f"Change: {pct_change:.2%} ({current_basket_value - initial_basket_value:,.2f} JPY)\n")
+            if nav_per_share > 0 : # nav_per_share might be 0 if shares_outstanding was not available
+                f.write(f"New TSE:318A Price (Estimated NAV per share): {nav_per_share:.2f} JPY\n\n")
+            else:
+                f.write(f"New TSE:318A Price (Estimated NAV per share): Not available\n\n")
 
             f.write(f"=== Initial Futures Prices ===\n")
             f.write(f"Initial Reference Time: {tse_closing_time}\n")

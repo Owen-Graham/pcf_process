@@ -75,15 +75,33 @@ def normalize_vix_ticker(ticker):
     """
     if not ticker or not isinstance(ticker, str):
         raise InvalidDataError(f"Invalid ticker: {ticker}. Ticker must be a non-empty string.")
-        
-    # If ticker is in format VX<letter><2-digit-year>
-    match = re.match(r'(VX[A-Z])(\d{2})$', ticker)
-    if match:
-        prefix = match.group(1)
-        year = match.group(2)
-        # Take only the last digit of the year
+
+    # Try to match VX<letter><4-digit-year>, e.g., VXF2025
+    match_4_digit = re.match(r'^(VX[A-Z])(\d{4})$', ticker, re.IGNORECASE)
+    if match_4_digit:
+        prefix = match_4_digit.group(1).upper()
+        year = match_4_digit.group(2)
         return f"{prefix}{year[-1]}"
-    return ticker
+
+    # Try to match VX<letter><2-digit-year>, e.g., VXH25
+    match_2_digit = re.match(r'^(VX[A-Z])(\d{2})$', ticker, re.IGNORECASE)
+    if match_2_digit:
+        prefix = match_2_digit.group(1).upper()
+        year = match_2_digit.group(2)
+        return f"{prefix}{year[-1]}"
+
+    # Try to match VX<letter><1-digit-year>, e.g., VXH5 (already normalized)
+    match_1_digit = re.match(r'^(VX[A-Z])(\d{1})$', ticker, re.IGNORECASE)
+    if match_1_digit:
+        return ticker.upper() # Already in the desired format, ensure uppercase
+
+    # If none of the above, it might be an invalid format or a different kind of ticker
+    # For this function's specific purpose, if it doesn't match VX + Letter + Year(s),
+    # it's not a standard VIX future code it can normalize in this way.
+    # Depending on strictness, either raise error or return original.
+    # Given the usage, returning original for non-matching is safer if other tickers pass through.
+    # However, the function name implies it's for VIX tickers. Let's be strict.
+    raise InvalidDataError(f"Ticker {ticker} is not a recognized VIX futures format for normalization (e.g., VXM5, VXM25, VXM2025).")
 
 def get_yfinance_ticker_for_vix_future(contract_code):
     """
@@ -434,3 +452,152 @@ def map_contract_to_position(contract_code):
     
     # Not found in the next 6 months
     return None
+
+def get_tradingview_vix_contract_code(normalized_contract_code, current_dt=None):
+    """
+    Convert a normalized VIX contract code (e.g., "VXM5") to the TradingView
+    specific contract code (e.g., "VXM2025").
+
+    Args:
+        normalized_contract_code (str): Normalized VIX code like "VXM5", "VXH6".
+        current_dt (datetime, optional): The current datetime to use as a reference.
+                                         Defaults to datetime.now(). Used for testing.
+
+    Returns:
+        str: TradingView specific contract code (e.g., "VXM2025").
+    """
+    if not isinstance(normalized_contract_code, str) or not re.match(r"^VX[A-Z]\d$", normalized_contract_code):
+        raise ValueError(
+            f"Invalid normalized_contract_code: '{normalized_contract_code}'. Expected format like 'VXM5'."
+        )
+
+    if current_dt is None:
+        current_dt = datetime.now()
+
+    month_letter = normalized_contract_code[2]
+    year_digit = int(normalized_contract_code[3])
+
+    current_year = current_dt.year
+    current_century = (current_year // 100) * 100  # e.g., 2000 for 2024
+    current_decade_within_century = (current_year // 10) % 10 # e.g. 2 for 2024, 0 for 2001
+
+    # Determine the contract's full year
+    # Start by assuming the year_digit is in the current decade
+    contract_year = (current_year // 10) * 10 + year_digit
+
+    # If this calculated contract_year is far in the past (e.g. current 2024, year_digit 0 -> 2020, but should be 2030)
+    # or if the contract_year is in the past relative to current_year (e.g. current 2025, year_digit 4 -> 2024, should be 2034)
+    # then it's likely in the next decade.
+    # A simple rule: if contract_year % 10 < current_year % 10 and contract_year < current_year, it's next decade.
+    # Or if the contract month is earlier than current month in the same year_digit year.
+    # More robust: If contract_year < current_year, and year_digit implies a year earlier in the decade than current_year's last digit,
+    # it must be the next decade.
+    # Example: current_year = 2024 (ends in 4), contract_year_digit = 3. contract_year becomes 2023. This should be 2033.
+    # Example: current_year = 2024 (ends in 4), contract_year_digit = 5. contract_year becomes 2025. This is correct.
+    # Example: current_year = 2029 (ends in 9), contract_year_digit = 0. contract_year becomes 2020. This should be 2030.
+
+    # If the calculated year (e.g., 2020 for '0' when current is 2029)
+    # is less than the current year, and the single year digit indicates this,
+    # then it must be for the next decade.
+    if contract_year < current_year and year_digit < (current_year % 10):
+         contract_year += 10
+    # Also, if contract_year is same as current_year, but month is past, it implies next year of that month.
+    # However, VIX futures roll, so a VXM5 in Jan 2025 is still VXM2025.
+    # The critical part is getting the decade right.
+    # If contract_year was formed (e.g. 2020 from '0' when current is 2019) and current is 2019 -> contract_year should be 2020 (correct)
+    # If contract_year was formed (e.g. 2029 from '9' when current is 2020) and current is 2020 -> contract_year should be 2029 (correct)
+
+    # If contract_year ends up being more than 10 years in the past, it's likely previous century's end.
+    # This logic primarily handles the decade rollover correctly.
+    # e.g. current 2023, code VXM2 -> 2022. This implies next decade for VXM2 -> 2032.
+    # Let's test this: current_year = 2023, year_digit = 2. contract_year initially 2022.
+    # 2022 < 2023 and 2 < 3. So contract_year becomes 2032. Correct.
+
+    # What if current_year = 2023, year_digit = 3. contract_year initially 2023.
+    # 2023 is not < 2023. So it remains 2023. Correct.
+
+    # What if current_year = 2023, year_digit = 4. contract_year initially 2024.
+    # 2024 is not < 2023. So it remains 2024. Correct.
+
+    # What if current_year = 2029, year_digit = 0. contract_year initially 2020.
+    # 2020 < 2029 and 0 < 9. So contract_year becomes 2030. Correct.
+
+    # What if current_year = 2029, year_digit = 8. contract_year initially 2028.
+    # 2028 < 2029 and 8 < 9. So contract_year becomes 2038. Correct.
+
+    # This seems to handle the year calculation correctly by ensuring the contract year is not in the past
+    # unless the year digit explicitly means the earlier part of the current decade.
+    # A simpler approach for contract year:
+    # Start with current_year's decade: (current_year // 10) * 10
+    # Add year_digit: potential_year = (current_year // 10) * 10 + year_digit
+    # If potential_year < current_year, then this contract must be in the next decade.
+    #   contract_full_year = potential_year + 10
+    # Else
+    #   contract_full_year = potential_year
+    # This might be too simple. E.g. current_year = 2025, contract_code = VXM4 (April 2024).
+    # potential_year = 2020 + 4 = 2024. 2024 < 2025. So contract_full_year = 2034. Incorrect.
+
+    # Let's refine:
+    # The year for the contract is derived from current_year's first three digits + contract's year_digit
+    base_year_prefix = current_year // 10  # e.g., 202 for 2024
+    contract_full_year = base_year_prefix * 10 + year_digit # e.g., 2020 + 5 = 2025 for VXM5 in 2024
+
+    # If this makes the contract_full_year < current_year, it means the contract is for the next decade.
+    # E.g. current_year = 2024, code is 'VXM3' (March 2023).
+    # contract_full_year = 2020 + 3 = 2023.
+    # Since 2023 < 2024, it must be that this '3' refers to 2033.
+    if contract_full_year < current_year:
+        # Check if it's a genuinely past contract within the decade or if it should roll to next decade
+        # If year_digit is less than current_year's last digit, it implies next decade.
+        if year_digit < (current_year % 10):
+             contract_full_year += 10
+        # Else, it's a past contract in the current decade (e.g. VXM3 in Dec 2023 is still VXM2023)
+        # This case should be handled by context (is it a historical lookup or future?)
+        # For TradingView codes, they always mean a specific future or current contract.
+        # So if 'VXM3' is requested in 2024, it means VXM2033.
+        # If 'VXM3' is requested in 2023 (before March), it's VXM2023.
+        # If 'VXM3' is requested in 2023 (after March), it means VXM2033 for a *new* contract.
+        # The standard is that the year digit implies the nearest future year ending in that digit.
+
+    # Simplified logic based on typical future contract naming:
+    # The year for the contract is current_year's decade + contract's year_digit.
+    # If this year is < current_year, then it's 10 years later.
+    # This ensures we always get a future or current year.
+
+    calculated_year = (current_year // 10) * 10 + year_digit
+    if calculated_year < current_year:
+        # This implies the contract is for the next decade if we are looking for future contracts
+        # e.g. current 2024, contract VXM3 -> (202*10)+3 = 2023. 2023 < 2024, so VXM2033.
+        # e.g. current 2024, contract VXM5 -> (202*10)+5 = 2025. 2025 > 2024, so VXM2025.
+        # e.g. current 2024, contract VXM4 -> (202*10)+4 = 2024. 2024 == 2024, so VXM2024.
+        # This seems more robust for "what is the upcoming contract ending in year_digit"
+        contract_full_year = calculated_year + 10
+    else:
+        contract_full_year = calculated_year
+
+    # One final check: if current_year is 2025, VXM5 should be VXM2025, not VXM2035.
+    # If calculated_year == current_year, it should be contract_full_year = calculated_year.
+    # If current_year = 2025, year_digit = 5. calculated_year = 2020+5 = 2025. contract_full_year = 2025. (Correct)
+    # If current_year = 2025, year_digit = 4. calculated_year = 2020+4 = 2024. 2024 < 2025 -> contract_full_year = 2034. (Correct for future)
+    # If current_year = 2025, year_digit = 6. calculated_year = 2020+6 = 2026. 2026 > 2025 -> contract_full_year = 2026. (Correct)
+
+    # The MONTH_CODES are 1-indexed for month numbers
+    contract_month_number = MONTH_CODES.get(month_letter)
+    if not contract_month_number:
+        raise ValueError(f"Invalid month letter '{month_letter}' in contract code.")
+
+    # If the calculated_year is the same as current_year,
+    # and the contract_month is earlier than the current_month,
+    # then this contract is for the next decade.
+    # e.g. current is Nov 2024 (month 11), contract is VXM4 (April, month 6).
+    # calculated_year = 2024. contract_month = 4. current_month = 11.
+    # 4 < 11, so VXM4 should be VXM2034 if we are in Nov 2024.
+    # This is only if contract_full_year was not already pushed to next decade.
+    if contract_full_year == current_year and contract_month_number < current_dt.month:
+        contract_full_year += 10
+    # e.g. current Nov 2024 (month 11), contract VXX4 (Nov, month 11) -> VXX2024
+    # e.g. current Nov 2024 (month 11), contract VXZ4 (Dec, month 12) -> VXZ2024
+
+    return f"VX{month_letter}{contract_full_year}"
+
+# Unit tests for get_tradingview_vix_contract_code will be added to test_common.py
